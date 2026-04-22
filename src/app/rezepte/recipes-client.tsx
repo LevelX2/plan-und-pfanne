@@ -10,7 +10,7 @@ import type { MealType, Recipe } from "@/lib/types";
 const STORAGE_KEY = "recipes-snapshot-v2";
 
 const mealTypeLabels: Record<MealType, string> = {
-  breakfast: "Fruehstueck",
+  breakfast: "Frühstück",
   lunch: "Mittagessen",
   dinner: "Abendessen",
   snack: "Snack",
@@ -76,11 +76,11 @@ export function RecipesClient({ initialRecipes }: RecipesClientProps) {
 
       <section className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Rezept-App fuer dein Handy</p>
-          <h1>Deine Rezepte bleiben auch ohne WLAN auf dem Geraet.</h1>
+          <p className={styles.eyebrow}>Rezept-App für dein Handy</p>
+          <h1>Deine Rezepte bleiben auch ohne WLAN auf dem Gerät.</h1>
           <p className={styles.lead}>
-            Diese Ansicht speichert den Rezeptbestand lokal auf deinem Handy. Oeffne die Seite
-            spaeter erneut online, damit neue oder geaenderte Rezepte wieder synchronisiert werden.
+            Diese Ansicht speichert den Rezeptbestand lokal auf deinem Handy. Öffne die Seite
+            später erneut online, damit neue oder geänderte Rezepte wieder synchronisiert werden.
           </p>
         </div>
         <div className={styles.heroStat}>
@@ -93,11 +93,12 @@ export function RecipesClient({ initialRecipes }: RecipesClientProps) {
       <section className={styles.installCard}>
         <div>
           <p className={styles.sectionKicker}>Installieren</p>
-          <h2>Zum Home-Bildschirm hinzufuegen</h2>
+          <h2>Zum Home-Bildschirm hinzufügen</h2>
           <p className={styles.installCopy}>
-            Android: Browser-Menue und dann &quot;Installieren&quot;. iPhone: Teilen und dann
-            &quot;Zum Home-Bildschirm&quot;. Die Offline-Nutzung betrifft zunaechst die
-            Rezeptbibliothek. Andere Bereiche der App brauchen weiterhin eine Verbindung.
+            Android: Browser-Menü und dann &quot;Installieren&quot;. iPhone: Teilen und dann
+            &quot;Zum Home-Bildschirm&quot;. Offline ist hier bewusst vor allem die Rezeptbibliothek
+            gedacht. Dashboard und Einkaufsliste können zuvor geladene Daten zeigen, Einstellungen
+            und neue Generierungen brauchen aber weiterhin eine Verbindung.
           </p>
         </div>
 
@@ -105,7 +106,7 @@ export function RecipesClient({ initialRecipes }: RecipesClientProps) {
           <span className={isOffline ? styles.statusOffline : styles.statusOnline}>
             {isOffline ? "offline aktiv" : "online synchronisiert"}
           </span>
-          <p>Oeffne diese Seite online erneut, wenn du neue Rezepte oder geaenderte Inhalte laden willst.</p>
+          <p>Öffne diese Seite online erneut, wenn du neue Rezepte oder geänderte Inhalte laden willst.</p>
         </div>
       </section>
 
@@ -161,7 +162,7 @@ export function RecipesClient({ initialRecipes }: RecipesClientProps) {
                       </div>
 
                       <span className={styles.detailToggle}>
-                        {isOpen ? "Details ausblenden" : "Zutaten und Zubereitung offline oeffnen"}
+                        {isOpen ? "Details ausblenden" : "Zutaten und Zubereitung offline öffnen"}
                       </span>
                     </button>
 
@@ -194,7 +195,7 @@ export function RecipesClient({ initialRecipes }: RecipesClientProps) {
                           </ol>
 
                           <Link className={styles.detailLink} href={`/rezepte/${recipe.id}`}>
-                            Online-Detailseite fuer {formatMealType(recipe.mealType)} oeffnen
+                            Online-Detailseite für {formatMealType(recipe.mealType)} öffnen
                           </Link>
                         </div>
                       </div>

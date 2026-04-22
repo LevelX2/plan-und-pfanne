@@ -1,7 +1,7 @@
 ---
 typ: status
 status: aktiv
-letzte_aktualisierung: 2026-04-22
+letzte_aktualisierung: 2026-04-23
 quellen:
   - ../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse.md
   - ../../../README.md
@@ -22,16 +22,19 @@ tags:
 - Die Rezeptbibliothek ist nach Mahlzeitentyp gruppiert und bietet ausklappbare Zutaten- und Zubereitungsdetails sowie eine eigene Detailseite pro Rezept.
 - Die Einkaufsliste wird aus dem aktuellen Wochenplan abgeleitet, nach Einkaufskategorien gruppiert und lokal mit Abhakstatus gespeichert.
 - Die Einstellungslogik ist jetzt über eine reale Seite erreichbar; Speichern regeneriert die aktuelle Woche und führt zurück nach `/einstellungen`.
+- Das Einstellungsformular behandelt erwartete Validierungs- und Speicherfehler jetzt inline statt über harte Laufzeitfehler.
 - SQLite ist nicht nur vorbereitet, sondern aktiv genutzt: `data/planner.sqlite` enthält Seed-Rezepte sowie bereits erzeugte Wochen- und Tagespläne mitsamt gespeicherten Mahlzeiten.
 - Fachliche Kernmodule für Typen, Datumslogik, Formatierung, Datenbank, Store und Planungslogik sind angebunden und erzeugen die aktuelle Woche bei Bedarf automatisch.
 - PWA-Basis mit Manifest, Icons, Service Worker und Anfrage auf persistenten Browser-Speicher ist vorhanden.
-- `npm run lint` und `npm run build` liefen am 2026-04-22 erfolgreich durch; die Build-Ausgabe enthält weiterhin eine nicht blockierende Turbopack-Warnung zur NFT-Dateinachverfolgung.
+- Für unerwartete Laufzeitfehler und nicht gefundene Seiten gibt es jetzt nutzerfreundliche App-Fallbacks.
+- `npm run lint` und `npm run build` liefen am 2026-04-23 erfolgreich durch; die Build-Ausgabe enthält weiterhin eine nicht blockierende Turbopack-Warnung zur NFT-Dateinachverfolgung.
 - Die Scheduler-Route `/api/scheduler/weekly` ist vorhanden und per Request verifiziert; `force=1` erzwingt die Generierung auch außerhalb des Sonntags.
+- Die Scheduler-Route ist in Production nicht mehr stillschweigend offen: Ohne `SCHEDULER_SECRET` antwortet sie bewusst mit `503`.
 
 ## Teilweise umgesetzt
-- Der reale Offlinescope ist größer als im README beschrieben: Dashboard, Rezeptbibliothek und Einkaufsliste werden lokal abgesichert. Der Modus bleibt aber weitgehend lesend; serverseitige Änderungen funktionieren offline nicht.
+- Der reale Offlinescope ist jetzt in Produkttexten klarer benannt: Dashboard, Rezeptbibliothek und Einkaufsliste werden lokal abgesichert. Der Modus bleibt aber weitgehend lesend; serverseitige Änderungen funktionieren offline nicht.
 - Railway-Deployment ist nicht mehr nur vorbereitet; eine produktive URL ist bekannt: `https://plan-und-pfanne-production.up.railway.app`. Der produktive Stand wurde zuletzt manuell per Railway-CLI ausgerollt; ein GitHub-Push allein ist aktuell nicht als sicher ausreichender Deploy-Mechanismus dokumentiert.
-- Die Scheduler-Route ist lokal funktionsfähig, aber noch nicht an einen echten externen Cron- oder Hosting-Trigger angebunden.
+- Die Scheduler-Route ist lokal und live funktionsfähig, aber noch nicht an einen echten externen Cron- oder Hosting-Trigger angebunden.
 
 ## Offen
 - Der Offlinescope, die Nutzungsgrenzen und das Synchronisationsversprechen sollten produktseitig noch expliziter geklärt werden.
@@ -40,3 +43,4 @@ tags:
 ## Wichtige Grenzen
 - Der Wochenplan wird heuristisch und zufallsbasiert erzeugt; identische Einstellungen führen daher nicht zwingend zu reproduzierbaren Ergebnissen.
 - `next build` liefert weiterhin eine Warnung zur Turbopack-Dateinachverfolgung rund um den Datenbankpfad. Das ist kein aktueller Build-Blocker, aber ein technischer Nacharbeitskandidat.
+- In Production bleibt die Scheduler-Route ohne `SCHEDULER_SECRET` absichtlich deaktiviert; der produktive Aufrufweg muss daher zusammen mit Secret, Trigger und Monitoring vervollständigt werden.

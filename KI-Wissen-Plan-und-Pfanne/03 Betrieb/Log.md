@@ -48,3 +48,12 @@
 - Verwendeter Befehl war `railway up -s plan-und-pfanne`.
 - Die produktive URL zeigte danach erfolgreich die neuen Routen `/einstellungen` und `/api/scheduler/weekly`.
 - Daraus ergibt sich als aktueller Betriebsstand, dass ein GitHub-Push allein nicht als verlässlich ausreichender Live-Deploy-Trigger behandelt werden soll, bis der Auto-Deploy-Pfad separat bestätigt ist.
+
+## [2026-04-23] umsetzung | Fehler- und Offline-Verhalten produktnäher abgesichert
+- Das Einstellungsformular behandelt erwartete Validierungs- und Speicherfehler jetzt inline statt über harte Laufzeitabbrüche.
+- App-weite Fallback-Seiten für unerwartete Fehler und nicht gefundene Routen wurden ergänzt.
+- Der Service Worker versucht bei Offline-Navigation zuerst die gecachte Zielseite und fällt danach auf `/` und `/rezepte` zurück.
+- Produkttexte und README benennen den realen Offlinescope jetzt klarer als bewusst weitgehend lesenden Modus.
+- Die Scheduler-Route ist in Production ohne `SCHEDULER_SECRET` absichtlich deaktiviert und nicht mehr stillschweigend offen erreichbar.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich, Turbopack-NFT-Warnung bleibt als nicht blockierender Restpunkt bestehen.

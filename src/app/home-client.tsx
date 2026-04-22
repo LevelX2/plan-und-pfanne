@@ -118,6 +118,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
           <p className={styles.lead}>
             Die App speichert Wochenplan, Rezepte und Einkaufsliste lokal auf deinem Handy. Wenn
             du wieder online bist, kannst du neu synchronisieren oder die Woche frisch generieren.
+            Einstellungen ändern und neue Server-Aktionen brauchen weiterhin eine Verbindung.
           </p>
         </div>
 
@@ -133,11 +134,11 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
             <div className={styles.actionRow}>
               <form action={regenerateCurrentWeekAction}>
                 <button className={styles.primaryButton} disabled={isOffline} type="submit">
-                  {isOffline ? "Offline nicht verfuegbar" : "Woche neu generieren"}
+                  {isOffline ? "Offline nicht verfügbar" : "Woche neu generieren"}
                 </button>
               </form>
               <Link className={styles.secondaryButton} href="/rezepte">
-                Rezeptdatenbank oeffnen
+                Rezeptdatenbank öffnen
               </Link>
             </div>
             <div className={styles.inlineMeta}>
@@ -151,11 +152,11 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
       <section className={styles.offlineCard}>
         <div>
           <p className={styles.sectionKicker}>Offline-Modus</p>
-          <h2>{isOffline ? "Wochenplan aus dem Geraetespeicher aktiv" : "Wochenplan online synchronisiert"}</h2>
+          <h2>{isOffline ? "Wochenplan aus dem Gerätespeicher aktiv" : "Wochenplan online synchronisiert"}</h2>
           <p className={styles.offlineCopy}>
             {isOffline
-              ? "Du arbeitest gerade mit dem zuletzt gespeicherten Stand. Sobald wieder Internet da ist, kannst du die Woche aktualisieren."
-              : "Der aktuelle Wochenplan wurde lokal gespeichert und steht dir auch ohne Verbindung weiter zur Verfuegung."}
+              ? "Du arbeitest gerade mit dem zuletzt gespeicherten Stand. Dashboard, Rezeptbibliothek und Einkaufsliste bleiben lesbar. Änderungen an Einstellungen oder neue Generierungen warten auf die nächste Verbindung."
+              : "Der aktuelle Wochenplan wurde lokal gespeichert und steht dir mit Rezeptbibliothek und Einkaufsliste auch ohne Verbindung weiter zur Verfügung."}
           </p>
         </div>
         <div className={styles.offlineMeta}>
@@ -185,7 +186,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
           <span>aktive Mahlzeiten</span>
         </article>
         <article className={styles.metricCard}>
-          <p>Staerkster Tag</p>
+          <p>Stärkster Tag</p>
           <strong>{bestDay.weekdayLabel}</strong>
           <span>{qualityLabel(bestDay.score)}</span>
         </article>
@@ -196,7 +197,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
           <article className={styles.sectionCard}>
             <div className={styles.sectionHeader}>
               <div>
-                <p className={styles.sectionKicker}>Wochenuebersicht</p>
+                <p className={styles.sectionKicker}>Wochenübersicht</p>
                 <h2>Alle 7 Tage auf einen Blick</h2>
               </div>
               <p className={styles.sectionHint}>
@@ -309,10 +310,10 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
 
           <article className={styles.sectionCard}>
             <p className={styles.sectionKicker}>Rezeptpool</p>
-            <h2>Verfuegbare Mahlzeiten</h2>
+            <h2>Verfügbare Mahlzeiten</h2>
             <ul className={styles.stackList}>
               <li>
-                <span>Fruehstueck</span>
+                <span>Frühstück</span>
                 <strong>{recipeCounts.breakfast}</strong>
               </li>
               <li>
@@ -344,6 +345,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
               <li>Rezeptbibliothek mit Zutaten und Zubereitung</li>
               <li>Einkaufsliste mit lokalem Abhaken</li>
               <li>Neue Synchronisierung, sobald wieder Internet da ist</li>
+              <li>Einstellungen ändern nur online</li>
             </ul>
           </article>
         </aside>

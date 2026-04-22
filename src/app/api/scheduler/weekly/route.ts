@@ -8,7 +8,7 @@ function isAuthorized(request: NextRequest) {
   const configuredSecret = process.env.SCHEDULER_SECRET;
 
   if (!configuredSecret) {
-    return true;
+    return process.env.NODE_ENV !== "production";
   }
 
   const bearer = request.headers.get("authorization");
@@ -18,6 +18,17 @@ function isAuthorized(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === "production" && !process.env.SCHEDULER_SECRET) {
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "SCHEDULER_SECRET fehlt in Production. Die Route ist absichtlich nicht offen zugänglich.",
+      },
+      { status: 503 },
+    );
+  }
+
   if (!isAuthorized(request)) {
     return Response.json(
       {

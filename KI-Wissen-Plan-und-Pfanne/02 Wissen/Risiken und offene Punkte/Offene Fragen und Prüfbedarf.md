@@ -1,7 +1,7 @@
 ---
 typ: risiko
 status: aktiv
-letzte_aktualisierung: 2026-04-22
+letzte_aktualisierung: 2026-04-23
 quellen:
   - ../../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse.md
   - ../../../KODEX_STAND.md
@@ -20,6 +20,9 @@ tags:
 - Die zuvor fehlenden Routen `/einstellungen`, `/tage/[date]` und `/api/scheduler/weekly` sind inzwischen real umgesetzt.
 - `README.md` und `KODEX_STAND.md` wurden auf den aktuellen Produktstand nachgezogen.
 - Die SQLite-Datei im Projektverzeichnis ist nun als lokaler Laufzeit- und Entwicklungszustand eingeordnet; `data/*.sqlite` bleibt unversioniert.
+- Erwartete Formularfehler unter `/einstellungen` führen nicht mehr in harte Laufzeitabbrüche, sondern werden inline behandelt.
+- Für unerwartete Fehler und nicht gefundene Seiten gibt es nutzerfreundliche Fallback-Seiten.
+- Die Scheduler-Route ist in Production ohne `SCHEDULER_SECRET` nicht mehr offen erreichbar.
 
 ## Verbleibende Produktfragen
 - Welches Produktversprechen soll offline gelten:
@@ -30,9 +33,9 @@ tags:
 
 ## Technische Prüfstellen
 - Die Turbopack-Warnung zur breiten Dateinachverfolgung ist jetzt als nicht blockierender Restpunkt eingeordnet, aber noch nicht bereinigt.
-- Der Service Worker cached breit genug für einen nützlichen Lesemodus, aber Cache-Invaliderung und Offline-Verhalten pro Route sind noch nicht explizit dokumentiert oder getestet.
+- Der Service Worker cached breit genug für einen nützlichen Lesemodus, aber Cache-Invaliderung und Offline-Verhalten pro Route sind noch nicht explizit getestet.
 - Alle Hauptseiten laufen mit `force-dynamic`, obwohl der Build statische Artefakte für einzelne Assets erzeugt. Die beabsichtigte Caching- und Renderstrategie sollte bei weiterem Ausbau bewusst entschieden werden.
-- Die neue Scheduler-Route ist lokal verifiziert, aber der produktive Zielkontext für Authentisierung, Aufrufquelle und Monitoring ist noch nicht final entschieden.
+- Die Scheduler-Route ist lokal und live verifiziert, aber der produktive Zielkontext für Secret-Verwaltung, Aufrufquelle und Monitoring ist noch nicht final entschieden.
 - Der alte Ordner `C:\Users\Lui\OneDrive\Projekte\gluten freie Rezepte` ist weiterhin als OneDrive-Reparse-Restzustand sichtbar und nicht automatisch bereinigt.
 
 ## Empfohlene nächste Wissens- oder Umsetzungsprüfungen

@@ -227,6 +227,26 @@
   margin-top: 24px;
 }
 
+.formMessage,
+.fieldError {
+  border-radius: 18px;
+  color: #8f2e17;
+}
+
+.formMessage {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border: 1px solid rgba(180, 71, 39, 0.18);
+  background: rgba(180, 71, 39, 0.08);
+  line-height: 1.6;
+}
+
+.fieldError {
+  padding: 0 2px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 .primaryButton,
 .secondaryButton {
   appearance: none;
@@ -242,6 +262,12 @@
   background: linear-gradient(135deg, #d06e2f, #b7551c);
   color: #fffaf5;
   box-shadow: 0 16px 28px rgba(176, 85, 28, 0.28);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .secondaryButton {

@@ -19,22 +19,22 @@ npm install
 npm run dev
 ```
 
-Fuer Tests auf dem Handy im selben WLAN:
+Für Tests auf dem Handy im selben WLAN:
 
 ```bash
 npm run dev:handy
 ```
 
-Dann die lokale IPv4-Adresse im Browser des Handys oeffnen, zum Beispiel `http://192.168.178.23:3000`.
+Dann die lokale IPv4-Adresse im Browser des Handys öffnen, zum Beispiel `http://192.168.178.23:3000`.
 
-## Build und Qualitaet
+## Build und Qualität
 
 ```bash
 npm run lint
 npm run build
 ```
 
-Stand 2026-04-22:
+Stand 2026-04-23:
 
 - `npm run lint` erfolgreich
 - `npm run build` erfolgreich
@@ -48,7 +48,9 @@ Die App ist als PWA vorbereitet und speichert derzeit nach vorherigem Online-Lad
 - Rezeptbibliothek
 - Einkaufslistenstatus
 
-Offline ist der Modus aktuell weitgehend lesend. Schreibende Server-Aktionen wie Speichern der Einstellungen oder Neugenerieren des Wochenplans brauchen weiterhin eine Verbindung.
+Offline ist der Modus aktuell bewusst weitgehend lesend. Dashboard, Rezeptbibliothek und Einkaufsliste bleiben nach vorherigem Laden nutzbar. Schreibende Server-Aktionen wie Speichern der Einstellungen oder Neugenerieren des Wochenplans brauchen weiterhin eine Verbindung.
+
+Bei Offline-Navigation versucht der Service Worker zuerst die bereits gecachte Zielseite. Wenn diese nicht vorhanden ist, fällt er auf `/` und danach auf `/rezepte` zurück.
 
 ## Datenhaltung
 
@@ -59,25 +61,31 @@ Offline ist der Modus aktuell weitgehend lesend. Schreibende Server-Aktionen wie
 
 ## Scheduler-Endpunkt
 
-Der Endpunkt `/api/scheduler/weekly` erzeugt den Wochenplan fuer die naechste Woche.
+Der Endpunkt `/api/scheduler/weekly` erzeugt den Wochenplan für die nächste Woche.
 
-- `GET /api/scheduler/weekly` fuehrt die Standardlogik aus
-- `GET /api/scheduler/weekly?force=1` erzwingt die Generierung auch ausserhalb des Sonntags
-- `POST /api/scheduler/weekly` ist ebenfalls verfuegbar
+- `GET /api/scheduler/weekly` führt die Standardlogik aus
+- `GET /api/scheduler/weekly?force=1` erzwingt die Generierung auch außerhalb des Sonntags
+- `POST /api/scheduler/weekly` ist ebenfalls verfügbar
+- In Production ist `SCHEDULER_SECRET` aktuell Pflicht. Ohne gesetztes Secret antwortet die Route bewusst mit `503`, statt offen erreichbar zu sein.
 - Wenn `SCHEDULER_SECRET` gesetzt ist, erwartet die Route entweder `Authorization: Bearer <secret>` oder `?token=<secret>`
+
+## Fehlerbehandlung
+
+- Das Formular unter `/einstellungen` zeigt erwartete Validierungs- und Speicherfehler inline an, statt die Seite mit einem harten Fehler abbrechen zu lassen.
+- Für unerwartete Laufzeitfehler und nicht gefundene Seiten gibt es nutzerfreundliche App-Fallbacks.
 
 ## Deployment auf Railway
 
-Das Projekt ist fuer Railway vorbereitet:
+Das Projekt ist für Railway vorbereitet:
 
 - `Dockerfile`
 - `railway.toml`
 - `output: "standalone"` in `next.config.ts`
-- volumenfaehiger Datenbankpfad ueber `DATA_DIR` oder `RAILWAY_VOLUME_MOUNT_PATH`
+- volumenfähiger Datenbankpfad über `DATA_DIR` oder `RAILWAY_VOLUME_MOUNT_PATH`
 
 Aktueller Betriebsstand:
 
-- Ein GitHub-Push allein fuehrt derzeit offenbar nicht verlaesslich zu einem Live-Deploy.
+- Ein GitHub-Push allein führt derzeit offenbar nicht verlässlich zu einem Live-Deploy.
 - Der produktive Stand wurde zuletzt manuell per Railway-CLI aus dem Projektverzeichnis ausgerollt.
 - Verwendeter Weg:
 
@@ -85,13 +93,13 @@ Aktueller Betriebsstand:
 railway up -s plan-und-pfanne
 ```
 
-Voraussetzung dafuer:
+Voraussetzung dafür:
 
 - Railway-CLI ist eingeloggt
-- das lokale Verzeichnis ist mit dem Projekt `plan-und-pfanne` verknuepft
+- das lokale Verzeichnis ist mit dem Projekt `plan-und-pfanne` verknüpft
 - Zielservice ist `plan-und-pfanne`
 
-Empfehlung fuer persistente Daten:
+Empfehlung für persistente Daten:
 
 - Volume mounten
 - Mount Path auf `/data` oder `/app/data` setzen

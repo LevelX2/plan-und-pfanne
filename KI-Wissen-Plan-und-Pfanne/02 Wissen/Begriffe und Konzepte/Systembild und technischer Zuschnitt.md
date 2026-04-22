@@ -1,7 +1,7 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-22
+letzte_aktualisierung: 2026-04-23
 quellen:
   - ../../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse.md
   - ../../../README.md
@@ -54,7 +54,10 @@ tags:
 - Alle zentralen Seiten verwenden aktuell `force-dynamic`.
 - Interaktive Oberflächen sind in Client-Komponenten ausgelagert, die Server-Komponenten liefern die initialen Daten aus dem Store.
 - Die Scheduler-Route akzeptiert `GET` und `POST`; mit `force=1` lässt sich die Generierung der nächsten Woche außerhalb des Sonntags erzwingen.
+- In Production ist `SCHEDULER_SECRET` aktuell Pflicht; ohne Secret antwortet die Scheduler-Route bewusst mit `503`, statt offen erreichbar zu sein.
 - Wenn `SCHEDULER_SECRET` gesetzt ist, schützt die Scheduler-Route den Zugriff per Bearer-Header oder Query-Token.
+- Das Einstellungsformular nutzt erwartete Fehlerzustände für Validierungs- und Speicherprobleme statt harter Formularabbrüche.
+- App-weite Fallback-Seiten für unerwartete Fehler und nicht gefundene Routen sind vorhanden.
 
 ## Persistenzbild
 - `src/lib/db.ts` initialisiert SQLite, legt Tabellen an und seeded Standard-Einstellungen sowie Demo-Rezepte.
@@ -66,7 +69,7 @@ tags:
 ## Offline- und PWA-Zuschnitt
 - Manifest und App-Icons sind vorhanden.
 - Ein Service Worker ist vorhanden.
-- Der Service Worker cached App-Shell und gleich-originäre `GET`-Requests und verwendet bei Offline-Navigation einen Fallback auf `/rezepte`.
+- Der Service Worker cached App-Shell und gleich-originäre `GET`-Requests. Bei Offline-Navigation versucht er zuerst die bereits gecachte Zielseite und fällt danach auf `/` und anschließend `/rezepte` zurück.
 - Dashboard-Snapshot, Rezeptbestand und Einkaufslistenstatus werden zusätzlich in IndexedDB gespeichert.
 - Der reale Offlinescope umfasst damit aktuell Dashboard, Rezeptbibliothek und Einkaufsliste nach vorherigem Online-Laden.
 - Offline-Schreibzugriffe auf serverseitige Funktionen wie Regenerierung oder Einstellungsänderung sind aktuell nicht vorgesehen.

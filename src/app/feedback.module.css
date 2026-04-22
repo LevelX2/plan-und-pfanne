@@ -1,0 +1,87 @@
+.page {
+  min-height: 100vh;
+  padding: 32px 18px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at top left, rgba(154, 209, 191, 0.5), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(255, 209, 161, 0.36), transparent 24%),
+    linear-gradient(180deg, #f5f1e8 0%, #efe9db 100%);
+}
+
+.card {
+  width: min(720px, 100%);
+  padding: 32px;
+  border-radius: 32px;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  box-shadow: 0 22px 60px rgba(19, 38, 29, 0.08);
+  background: rgba(255, 252, 247, 0.9);
+  backdrop-filter: blur(12px);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+.card h1 {
+  margin: 16px 0 14px;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+
+.copy {
+  color: rgba(19, 38, 29, 0.76);
+  line-height: 1.7;
+}
+
+.actions,
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.actions {
+  margin-top: 24px;
+}
+
+.nav {
+  margin-top: 30px;
+}
+
+.primaryButton,
+.secondaryButton,
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 600;
+}
+
+.primaryButton {
+  border: 0;
+  background: linear-gradient(135deg, #d06e2f, #b7551c);
+  color: #fffaf5;
+  cursor: pointer;
+}
+
+.secondaryButton,
+.nav a {
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  background: rgba(255, 252, 247, 0.82);
+  color: #13261d;
+}
+
+@media (max-width: 760px) {
+  .card {
+    padding: 24px;
+    border-radius: 24px;
+  }
+}

@@ -1,5 +1,6 @@
 const CACHE_NAME = "plan-und-pfanne-offline-v2";
 const APP_SHELL = ["/", "/rezepte", "/einkaufsliste", "/manifest.webmanifest", "/icon", "/apple-icon"];
+const OFFLINE_FALLBACKS = ["/", "/rezepte"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -51,7 +52,23 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(async () => {
           const cachedPage = await caches.match(request);
-          return cachedPage || caches.match("/rezepte");
+          if (cachedPage) {
+            return cachedPage;
+          }
+
+          for (const fallback of OFFLINE_FALLBACKS) {
+            const fallbackResponse = await caches.match(fallback);
+            if (fallbackResponse) {
+              return fallbackResponse;
+            }
+          }
+
+          return new Response("Offline nicht verfügbar.", {
+            status: 503,
+            headers: {
+              "Content-Type": "text/plain; charset=utf-8",
+            },
+          });
         }),
     );
     return;

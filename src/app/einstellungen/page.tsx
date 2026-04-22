@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./settings.module.css";
-import { regenerateCurrentWeekAction, saveSettingsAction } from "@/app/actions";
+import { regenerateCurrentWeekAction } from "@/app/actions";
+import { SettingsForm } from "./settings-form";
 import { formatCalories, formatGrams } from "@/lib/format";
 import { getSettings } from "@/lib/store";
 
@@ -98,117 +99,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               mit Kommas.
             </p>
 
-            <form action={saveSettingsAction}>
-              <div className={styles.formGrid}>
-                <div className={styles.inputGroup}>
-                  <label htmlFor="calorieTarget">Kalorienziel pro Tag</label>
-                  <input
-                    defaultValue={settings.calorieTarget}
-                    id="calorieTarget"
-                    max={5000}
-                    min={1200}
-                    name="calorieTarget"
-                    step={50}
-                    type="number"
-                  />
-                </div>
-
-                <div className={styles.inputGroup}>
-                  <label htmlFor="mealsPerDay">Mahlzeiten pro Tag</label>
-                  <select defaultValue={String(settings.mealsPerDay)} id="mealsPerDay" name="mealsPerDay">
-                    <option value="3">3 Mahlzeiten</option>
-                    <option value="4">4 Mahlzeiten mit Snack</option>
-                  </select>
-                </div>
-
-                <div className={styles.inputGroup}>
-                  <label htmlFor="macroProteinPct">Protein in %</label>
-                  <input
-                    defaultValue={settings.macroProteinPct}
-                    id="macroProteinPct"
-                    max={60}
-                    min={20}
-                    name="macroProteinPct"
-                    step={1}
-                    type="number"
-                  />
-                </div>
-
-                <div className={styles.inputGroup}>
-                  <label htmlFor="macroCarbsPct">Kohlenhydrate in %</label>
-                  <input
-                    defaultValue={settings.macroCarbsPct}
-                    id="macroCarbsPct"
-                    max={60}
-                    min={10}
-                    name="macroCarbsPct"
-                    step={1}
-                    type="number"
-                  />
-                </div>
-
-                <div className={styles.inputGroup}>
-                  <label htmlFor="macroFatPct">Fett in %</label>
-                  <input
-                    defaultValue={settings.macroFatPct}
-                    id="macroFatPct"
-                    max={50}
-                    min={10}
-                    name="macroFatPct"
-                    step={1}
-                    type="number"
-                  />
-                </div>
-
-                <div className={styles.inputGroup}>
-                  <label htmlFor="maxRecipeRepeatsPerWeek">Maximale Wiederholungen pro Woche</label>
-                  <select
-                    defaultValue={String(settings.maxRecipeRepeatsPerWeek)}
-                    id="maxRecipeRepeatsPerWeek"
-                    name="maxRecipeRepeatsPerWeek"
-                  >
-                    <option value="1">1 Wiederholung</option>
-                    <option value="2">2 Wiederholungen</option>
-                    <option value="3">3 Wiederholungen</option>
-                    <option value="4">4 Wiederholungen</option>
-                  </select>
-                </div>
-
-                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label htmlFor="excludedIngredients">Ausgeschlossene Zutaten</label>
-                  <textarea
-                    defaultValue={settings.excludedIngredients.join(", ")}
-                    id="excludedIngredients"
-                    name="excludedIngredients"
-                    placeholder="zum Beispiel Pilze, Sellerie, Koriander"
-                  />
-                </div>
-
-                <div className={`${styles.checkboxGrid} ${styles.fullWidth}`}>
-                  <label className={styles.checkboxLabel}>
-                    <input defaultChecked={settings.vegetarian} name="vegetarian" type="checkbox" />
-                    <span className={styles.checkboxText}>
-                      <strong>Vegetarisch planen</strong>
-                      <span>Berücksichtigt nur vegetarische Rezepte im Wochenplan.</span>
-                    </span>
-                  </label>
-
-                  <label className={styles.checkboxLabel}>
-                    <input defaultChecked={settings.reduceMeat} name="reduceMeat" type="checkbox" />
-                    <span className={styles.checkboxText}>
-                      <strong>Fleisch reduzieren</strong>
-                      <span>Schiebt fleischlastige Kombinationen im Planer weiter nach hinten.</span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              <div className={styles.actionRow}>
-                <button className={styles.primaryButton} type="submit">
-                  Änderungen speichern und Woche neu planen
-                </button>
-              </div>
-            </form>
+            <SettingsForm settings={settings} />
           </article>
         </div>
 

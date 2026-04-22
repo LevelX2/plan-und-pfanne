@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Plan und Pfanne",
-  description: "Wochenplanung, Rezepte und Einkaufsliste fuer den Alltag und unterwegs.",
+  description: "Wochenplanung, Rezepte und Einkaufsliste für den Alltag und unterwegs.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

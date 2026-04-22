@@ -16,12 +16,34 @@ const settingsSchema = z.object({
   maxRecipeRepeatsPerWeek: z.coerce.number().int().min(1).max(4),
 });
 
+type SettingsFieldErrors = Partial<
+  Record<
+    | "calorieTarget"
+    | "macroCarbsPct"
+    | "macroFatPct"
+    | "macroProteinPct"
+    | "mealsPerDay"
+    | "excludedIngredients"
+    | "maxRecipeRepeatsPerWeek",
+    string[]
+  >
+>;
+
+export type SettingsFormState = {
+  status: "idle" | "error";
+  message: string;
+  fieldErrors: SettingsFieldErrors;
+};
+
 export async function regenerateCurrentWeekAction() {
   regenerateCurrentWeekPlan();
 }
 
-export async function saveSettingsAction(formData: FormData) {
-  const parsed = settingsSchema.parse({
+export async function saveSettingsAction(
+  _prevState: SettingsFormState,
+  formData: FormData,
+): Promise<SettingsFormState> {
+  const parsed = settingsSchema.safeParse({
     calorieTarget: formData.get("calorieTarget"),
     macroCarbsPct: formData.get("macroCarbsPct"),
     macroFatPct: formData.get("macroFatPct"),
@@ -36,24 +58,50 @@ export async function saveSettingsAction(formData: FormData) {
     maxRecipeRepeatsPerWeek: formData.get("maxRecipeRepeatsPerWeek"),
   });
 
-  const macroSum = parsed.macroCarbsPct + parsed.macroFatPct + parsed.macroProteinPct;
-  if (Math.round(macroSum) !== 100) {
-    throw new Error("Die Makroverteilung muss in Summe 100 % ergeben.");
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "Bitte prüfe deine Eingaben und korrigiere die markierten Felder.",
+      fieldErrors: parsed.error.flatten().fieldErrors as SettingsFieldErrors,
+    };
   }
 
-  saveSettings({
-    calorieTarget: parsed.calorieTarget,
-    macroCarbsPct: parsed.macroCarbsPct,
-    macroFatPct: parsed.macroFatPct,
-    macroProteinPct: parsed.macroProteinPct,
-    mealsPerDay: parsed.mealsPerDay,
-    glutenFreeOnly: true,
-    vegetarian: parsed.vegetarian,
-    reduceMeat: parsed.reduceMeat,
-    excludedIngredients: parsed.excludedIngredients,
-    maxRecipeRepeatsPerWeek: parsed.maxRecipeRepeatsPerWeek,
-  });
+  const macroSum = parsed.data.macroCarbsPct + parsed.data.macroFatPct + parsed.data.macroProteinPct;
+  if (Math.round(macroSum) !== 100) {
+    return {
+      status: "error",
+      message: "Die Makroverteilung muss zusammen genau 100 % ergeben.",
+      fieldErrors: {
+        macroProteinPct: ["Zusammen mit Kohlenhydraten und Fett müssen es 100 % sein."],
+        macroCarbsPct: ["Zusammen mit Protein und Fett müssen es 100 % sein."],
+        macroFatPct: ["Zusammen mit Protein und Kohlenhydraten müssen es 100 % sein."],
+      },
+    };
+  }
 
-  regenerateCurrentWeekPlan();
+  try {
+    saveSettings({
+      calorieTarget: parsed.data.calorieTarget,
+      macroCarbsPct: parsed.data.macroCarbsPct,
+      macroFatPct: parsed.data.macroFatPct,
+      macroProteinPct: parsed.data.macroProteinPct,
+      mealsPerDay: parsed.data.mealsPerDay,
+      glutenFreeOnly: true,
+      vegetarian: parsed.data.vegetarian,
+      reduceMeat: parsed.data.reduceMeat,
+      excludedIngredients: parsed.data.excludedIngredients,
+      maxRecipeRepeatsPerWeek: parsed.data.maxRecipeRepeatsPerWeek,
+    });
+
+    regenerateCurrentWeekPlan();
+  } catch {
+    return {
+      status: "error",
+      message:
+        "Deine Einstellungen konnten gerade nicht gespeichert werden. Bitte versuche es noch einmal.",
+      fieldErrors: {},
+    };
+  }
+
   redirect("/einstellungen?status=gespeichert");
 }
