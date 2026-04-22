@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Glutenfreie Rezepte",
-    short_name: "GF Rezepte",
-    description: "Installierbare Rezept-App mit offline verfuegbaren glutenfreien Rezepten.",
-    start_url: "/rezepte",
+    name: "Plan und Pfanne",
+    short_name: "Plan & Pfanne",
+    description: "Installierbare Koch- und Wochenplan-App mit offline verfuegbaren Rezepten und Einkaufsliste.",
+    start_url: "/",
     scope: "/",
     display: "standalone",
     background_color: "#f5f1e8",

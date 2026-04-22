@@ -168,6 +168,44 @@
   margin: 0 auto 24px;
 }
 
+.offlineCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, 0.7fr);
+  gap: 18px;
+  max-width: 1320px;
+  margin: 0 auto 24px;
+  padding: 24px 28px;
+  border-radius: 28px;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  box-shadow: 0 22px 60px rgba(19, 38, 29, 0.08);
+  background: rgba(255, 252, 247, 0.84);
+  backdrop-filter: blur(12px);
+}
+
+.offlineCard h2 {
+  margin: 8px 0 12px;
+  font-size: 1.8rem;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+
+.offlineCopy {
+  max-width: 48rem;
+  line-height: 1.7;
+  color: rgba(19, 38, 29, 0.74);
+}
+
+.offlineMeta {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+}
+
+.offlineMeta p {
+  color: rgba(19, 38, 29, 0.7);
+  line-height: 1.6;
+}
+
 .metricCard {
   display: grid;
   gap: 10px;
@@ -398,7 +436,8 @@
 @media (max-width: 1100px) {
   .hero,
   .contentGrid,
-  .metricsGrid {
+  .metricsGrid,
+  .offlineCard {
     grid-template-columns: 1fr;
   }
 

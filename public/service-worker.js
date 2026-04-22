@@ -1,4 +1,4 @@
-const CACHE_NAME = "gf-rezepte-offline-v1";
+const CACHE_NAME = "plan-und-pfanne-offline-v2";
 const APP_SHELL = ["/", "/rezepte", "/einkaufsliste", "/manifest.webmanifest", "/icon", "/apple-icon"];
 
 self.addEventListener("install", (event) => {

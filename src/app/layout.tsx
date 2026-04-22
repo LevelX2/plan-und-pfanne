@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Glutenfreie Wochenplan-App",
-  description: "Wochenplanung, Makrosteuerung und Einkaufsliste für glutenfreie Rezepte.",
+  title: "Plan und Pfanne",
+  description: "Wochenplanung, Rezepte und Einkaufsliste fuer den Alltag und unterwegs.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "GF Rezepte",
+    title: "Plan und Pfanne",
   },
 };
 
