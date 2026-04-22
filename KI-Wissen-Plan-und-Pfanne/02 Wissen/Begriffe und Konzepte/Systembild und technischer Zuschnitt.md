@@ -35,6 +35,9 @@ tags:
 - lokale Entwicklung über `npm run dev`
 - Handy-Test im gleichen WLAN über `npm run dev:handy`
 - vorbereiteter Railway-Deploy mit Dockerfile, `railway.toml` und Healthcheck-Route
+- bekannte produktive Railway-URL: `https://plan-und-pfanne-production.up.railway.app`
+- der produktive Stand wurde zuletzt manuell per Railway-CLI aus dem Projektverzeichnis mit `railway up -s plan-und-pfanne` ausgerollt
+- ein GitHub-Push allein ist damit aktuell nicht als verlässlich ausreichender Live-Deploy-Trigger zu behandeln
 - volumenfähiger Datenbankpfad für persistente SQLite-Daten im Hosting über `DATA_DIR` oder `RAILWAY_VOLUME_MOUNT_PATH`
 - `npm run lint` und `npm run build` sind aktuell erfolgreich verifiziert
 

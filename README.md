@@ -75,6 +75,22 @@ Das Projekt ist fuer Railway vorbereitet:
 - `output: "standalone"` in `next.config.ts`
 - volumenfaehiger Datenbankpfad ueber `DATA_DIR` oder `RAILWAY_VOLUME_MOUNT_PATH`
 
+Aktueller Betriebsstand:
+
+- Ein GitHub-Push allein fuehrt derzeit offenbar nicht verlaesslich zu einem Live-Deploy.
+- Der produktive Stand wurde zuletzt manuell per Railway-CLI aus dem Projektverzeichnis ausgerollt.
+- Verwendeter Weg:
+
+```bash
+railway up -s plan-und-pfanne
+```
+
+Voraussetzung dafuer:
+
+- Railway-CLI ist eingeloggt
+- das lokale Verzeichnis ist mit dem Projekt `plan-und-pfanne` verknuepft
+- Zielservice ist `plan-und-pfanne`
+
 Empfehlung fuer persistente Daten:
 
 - Volume mounten

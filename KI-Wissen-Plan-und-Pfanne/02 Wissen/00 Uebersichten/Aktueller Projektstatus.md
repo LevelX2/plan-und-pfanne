@@ -30,7 +30,7 @@ tags:
 
 ## Teilweise umgesetzt
 - Der reale Offlinescope ist größer als im README beschrieben: Dashboard, Rezeptbibliothek und Einkaufsliste werden lokal abgesichert. Der Modus bleibt aber weitgehend lesend; serverseitige Änderungen funktionieren offline nicht.
-- Railway-Deployment ist technisch vorbereitet; ein tatsächlich laufender Deploy ist aus dem Workspace selbst weiterhin nicht belegbar.
+- Railway-Deployment ist nicht mehr nur vorbereitet; eine produktive URL ist bekannt: `https://plan-und-pfanne-production.up.railway.app`. Der produktive Stand wurde zuletzt manuell per Railway-CLI ausgerollt; ein GitHub-Push allein ist aktuell nicht als sicher ausreichender Deploy-Mechanismus dokumentiert.
 - Die Scheduler-Route ist lokal funktionsfähig, aber noch nicht an einen echten externen Cron- oder Hosting-Trigger angebunden.
 
 ## Offen

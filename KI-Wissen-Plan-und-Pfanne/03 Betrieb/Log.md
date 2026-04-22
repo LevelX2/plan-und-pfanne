@@ -37,3 +37,14 @@
 - Verifikation:
   `npm run lint` erfolgreich, `npm run build` erfolgreich, Turbopack-NFT-Warnung zum Dateisystemzugriff bleibt als nicht blockierender Restpunkt bestehen.
 - Der alte Ordner `C:\Users\Lui\OneDrive\Projekte\gluten freie Rezepte` wurde geprüft und wirkt aktuell wie ein OneDrive-Reparse-Restzustand ohne direkt auswertbare Dateien; keine automatische Löschung durchgeführt.
+
+## [2026-04-23] betrieb | Produktive Railway-URL bekannt
+- Die produktive Railway-Adresse wurde als `https://plan-und-pfanne-production.up.railway.app` festgehalten.
+- Der Wissensstand wurde von „Deployment vorbereitet“ auf „produktive URL bekannt“ nachgeschärft.
+- Nicht automatisch mitdokumentiert ist damit, ob der dort laufende Stand bereits alle aktuellen Commits enthält; das wäre gesondert zu verifizieren.
+
+## [2026-04-23] betrieb | Produktiver Stand per Railway-CLI ausgerollt
+- Der produktive Stand wurde manuell per Railway-CLI aus dem Projektverzeichnis ausgerollt.
+- Verwendeter Befehl war `railway up -s plan-und-pfanne`.
+- Die produktive URL zeigte danach erfolgreich die neuen Routen `/einstellungen` und `/api/scheduler/weekly`.
+- Daraus ergibt sich als aktueller Betriebsstand, dass ein GitHub-Push allein nicht als verlässlich ausreichender Live-Deploy-Trigger behandelt werden soll, bis der Auto-Deploy-Pfad separat bestätigt ist.
