@@ -3,3 +3,124 @@
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
+
+# Projekt Agent Instructions
+
+## Projektbezogene Wissensbasis
+
+Für dieses Repository existiert eine projektbezogene KI-Wissensbasis im Ordner:
+
+`KI-Wissen-Plan-und-Pfanne/`
+
+Bei neuen Threads, neuen Aufgaben und Projektfragen ist diese Wissensbasis primär zu verwenden.
+
+## Pflicht-Einstieg für neue Threads
+
+Zu Beginn projektbezogener Arbeit zuerst diese Dateien lesen:
+
+1. `KI-Wissen-Plan-und-Pfanne/00 Projektstart.md`
+2. `KI-Wissen-Plan-und-Pfanne/02 Wissen/00 Uebersichten/Index.md`
+3. `KI-Wissen-Plan-und-Pfanne/02 Wissen/Prozesse/Arbeitsworkflow Wissenspflege und Projektanfragen.md`
+4. `KI-Wissen-Plan-und-Pfanne/00 Steuerung/Regeldatei KI-Wissenspflege.md`
+
+## Arbeitsmodus
+
+- Arbeite `wiki-first`.
+- Beantworte Projektfragen zuerst aus dem vorhandenen Wissensbestand.
+- Ziehe Rohquellen, Repository-Dateien oder Webquellen nur dann nach, wenn die Wissensbasis Lücken hat, veraltet ist oder verifiziert werden muss.
+- Wenn neue belastbare Erkenntnisse entstehen, die einen erkennbaren dauerhaften Wert haben, führe sie in die Wissensbasis zurück.
+- Prüfe bei wiederverwendbaren technischen Regeln, ob sie in `KI-Wissen-Plan-und-Pfanne/03 Betrieb/Generische Entwicklungsvorgaben.md` gehören.
+- Fachlich enge Einzelfall-Erkenntnisse gehören stattdessen auf die passende Wissensseite.
+
+## Sprachregeln
+
+- Sichtbare UI-Texte sollen echtes Deutsch mit Umlauten und `ß` verwenden.
+- Der Benutzer soll im Chat und in direkt formulierten Anwendungstexten grundsätzlich mit `Du` angesprochen werden, sofern kein abweichender Wunsch geäußert wurde.
+- In Fließtexten, Beschreibungen und Überschriften der Wissensbasis sollen echte Umlaute verwendet werden:
+  `ä` statt `ae`, `ö` statt `oe`, `ü` statt `ue`, `Ä` statt `Ae`, `Ö` statt `Oe`, `Ü` statt `Ue`, `ß` statt `ss`, sofern es sich um normales Deutsch handelt.
+- Ausnahmen:
+  Dateinamen, Pfade, Code-Symbole, IDs, technische Bezeichner, Markdown-Links auf bestehende Dateien und originale Quellzitate bleiben in ihrer technischen oder originalen Schreibweise.
+
+## Wissenspflege bei neuen Quellen
+
+Wenn neue Projektquellen hinzukommen:
+
+1. als Rohquelle in die Wissensbasis aufnehmen oder als Rohquellen-Referenz erfassen
+2. vollständig lesen oder vollständig auswerten
+3. betroffene Wissensseiten aktualisieren oder neu anlegen
+4. Index aktualisieren
+5. Log aktualisieren
+
+## Transparenz vor Wissenspflege
+
+Vor inhaltlich relevanten Ergänzungen oder neuen Wissensseiten soll die Einordnung im Chat kurz transparent gemacht werden. Eine ausdrückliche Freigabe ist für normale, klar zuordenbare Aktualisierungen aber nicht erforderlich.
+
+Bei klaren Fällen darf die Wissenspflege direkt erfolgen. Dabei soll trotzdem kurz sichtbar werden:
+
+1. welche Erkenntnis du aufnehmen oder ändern willst
+2. warum diese Erkenntnis dauerhaft nützlich oder wiederverwendbar ist
+3. welche Wissensseite betroffen wäre oder neu angelegt werden soll
+
+Für diese Vorab-Einordnung verwende nach Möglichkeit dieses sichtbare Format:
+
+1. `Erkenntnis`
+2. `Dauerhafter Nutzen`
+3. `Vorgeschlagene Wissensseite`
+4. `Warum diese Seite`
+5. `Abgrenzung zu Alternativen`
+
+Eine ausdrückliche Zustimmung vor der Änderung ist nur dann wichtig, wenn:
+
+- die Zuordnung zur Zielseite nicht offensichtlich ist
+- neue Seiten oder Strukturänderungen mit weiterreichender Wirkung entstehen
+- bestehende Wissensseiten wesentlich umgebaut, verschoben oder gelöscht werden sollen
+- Widersprüche zwischen Quellen und bestehendem Wissen nicht ohne inhaltliche Entscheidung auflösbar sind
+- Unsicherheit besteht, ob etwas generisch oder projektspezifisch dokumentiert werden sollte
+
+## Wichtige Betriebsregeln
+
+- Rohquellen bleiben unverändert.
+- Widersprüche zwischen neuen Quellen und bestehendem Wissen sichtbar machen, nicht stillschweigend überschreiben.
+- Zwischen dokumentiertem Projektstand und aktuellem Workspace-Stand unterscheiden, wenn offene lokale Änderungen vorliegen.
+- Wiederverwendbare Antworten, Entscheidungen, Analysen oder Risikoerklärungen nicht nur im Chat belassen, sondern als Wissensseiten oder Aktualisierungen zurückführen.
+
+## Wichtige Wissensbasis-Dateien
+
+- Einstieg: `KI-Wissen-Plan-und-Pfanne/02 Wissen/00 Uebersichten/Index.md`
+- Workflow: `KI-Wissen-Plan-und-Pfanne/02 Wissen/Prozesse/Arbeitsworkflow Wissenspflege und Projektanfragen.md`
+- Log: `KI-Wissen-Plan-und-Pfanne/03 Betrieb/Log.md`
+- Qualitätsprüfung: `KI-Wissen-Plan-und-Pfanne/03 Betrieb/Qualitaetspruefung.md`
+
+## Einordnung von Status und Log
+
+- `KI-Wissen-Plan-und-Pfanne/02 Wissen/00 Uebersichten/Aktueller Projektstatus.md` ist eine verdichtete Zustandsübersicht und kein Änderungsprotokoll.
+- Diese Seite soll den aktuellen Stand als Snapshot zeigen, zum Beispiel gegliedert in `Umgesetzt`, `Teilweise umgesetzt`, `Offen` und `Wichtige Grenzen`.
+- Einzelne Schritte, Entscheidungen, Verifikationen und zeitliche Abfolgen gehören nicht als Erzählung in diese Statusseite, sondern in `KI-Wissen-Plan-und-Pfanne/03 Betrieb/Log.md`.
+- `KI-Wissen-Plan-und-Pfanne/03 Betrieb/Log.md` bleibt chronologisch und append-only und beantwortet primär, was wann passiert ist.
+- Wenn sich Statusseite und Log inhaltlich überschneiden, ist die Statusseite zu verdichten statt das Log auszudünnen.
+
+## Abschluss-Kommandos
+
+Wenn der Nutzer sinngemäß `Abschluss`, `abschließen`, `Thread abschließen`, `Dialog beenden` oder `Thread beenden` schreibt, löst das eine Abschlussprüfung aus.
+
+Dabei gilt:
+
+1. Prüfen, ob noch fachliche, technische oder organisatorische Punkte offen sind, die geklärt werden sollten.
+2. Prüfen, ob neue belastbare Erkenntnisse noch in die Wissensbasis zurückgeführt werden sollten.
+3. Prüfen, ob alle zum Abschluss gehörenden Änderungen committed sind oder noch in einen konsistenten Abschlussstand überführt werden müssen.
+4. Falls noch offene Klärpunkte, ungeklärte Probleme oder uncommittete Abschlussänderungen bestehen, diese zuerst kompakt und konkret benennen und den Thread noch nicht als abgeschlossen behandeln.
+5. `Abschluss` bedeutet grundsätzlich, dass der am Ende verbleibende erfolgreiche Abschlussstand committed ist. Ein bloß teilweise bereinigter oder bewusst offen gelassener Stand gilt nicht als Abschluss.
+6. Wenn der Stand erfolgreich abgeschlossen ist, soll der Thread danach als archivierungsreif behandelt werden.
+7. Offene Änderungen oder uncommittete Dateien, die erkennbar nicht zu diesem Thread oder Abschlussstand gehören, sind dabei nicht automatisch ein Blocker. In solchen Fällen soll der Agent sie am Ende kurz als Hinweis nennen, aber den Abschluss dieses Threads nicht unnötig verzögern.
+8. Relevant blockernd sind vor allem offene Änderungen, Konflikte oder ungeklärte Risiken, die zum aktuellen Thread, zu dessen Commit-Stand oder zu unmittelbar betroffenen Dateien gehören.
+
+Wenn der Nutzer sinngemäß `Abschluss mit Commit` schreibt, gilt zusätzlich:
+
+1. Dieselbe Abschlussprüfung wird durchgeführt.
+2. Offene letzte Punkte sollen nach Möglichkeit direkt abgearbeitet werden, sofern sie im aktuellen Rahmen sinnvoll lösbar sind.
+3. Danach sollen alle zum Abschluss gehörenden Änderungen automatisch committed werden, sobald der Stand konsistent ist und keine ungeklärten Rückfragen mehr offen sind.
+4. Wenn im Verlauf des Dialogs mehrere klar trennbare Funktionalitäten umgesetzt wurden, sollen Commits nach Möglichkeit sinnvoll aufgeteilt werden, statt alles in einen Sammel-Commit zu legen.
+5. Nach erfolgreichem Abschluss mit Commit ist der Thread als archivierungsreif zu behandeln.
+6. Andere noch offene Änderungen aus parallelen Threads dürfen dabei als Statushinweis erwähnt werden, sollen aber nicht als Vorwand dienen, den Abschluss dieses Threads künstlich offen zu halten.
+
+Wenn nach der Abschlussprüfung noch relevante Unsicherheiten, Konflikte oder bewusste Entscheidungsfragen offen sind, soll der Agent nicht blind committen, sondern diese kurz benennen und auf den ausstehenden Klärbedarf hinweisen.
