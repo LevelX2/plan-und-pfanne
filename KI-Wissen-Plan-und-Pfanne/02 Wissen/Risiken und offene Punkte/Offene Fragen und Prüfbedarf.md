@@ -1,0 +1,42 @@
+---
+typ: risiko
+status: aktiv
+letzte_aktualisierung: 2026-04-22
+quellen:
+  - ../../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse.md
+  - ../../../KODEX_STAND.md
+  - ../../../README.md
+  - ../../../src/app/actions.ts
+  - ../../../src/lib/store.ts
+tags:
+  - offen
+  - pruefbedarf
+  - risiko
+---
+
+# Offene Fragen und Prüfbedarf
+
+## Inzwischen geschlossene Punkte
+- Die zuvor fehlenden Routen `/einstellungen`, `/tage/[date]` und `/api/scheduler/weekly` sind inzwischen real umgesetzt.
+- `README.md` und `KODEX_STAND.md` wurden auf den aktuellen Produktstand nachgezogen.
+- Die SQLite-Datei im Projektverzeichnis ist nun als lokaler Laufzeit- und Entwicklungszustand eingeordnet; `data/*.sqlite` bleibt unversioniert.
+
+## Verbleibende Produktfragen
+- Welches Produktversprechen soll offline gelten:
+  - nur lesender Zugriff auf zuletzt geladene Inhalte
+  - oder mittelfristig eine breitere, echte Offline-App mit Änderungen und Synchronisation
+- Braucht die zufallsbasierte Wochenplanung später Reproduzierbarkeit, mehr Erklärbarkeit oder einen Vergleich zwischen altem und neuem Plan.
+- Soll die neue Scheduler-Route nur ein technischer Endpunkt bleiben oder als echter Cron- beziehungsweise Hosting-Trigger produktiv angebunden werden.
+
+## Technische Prüfstellen
+- Die Turbopack-Warnung zur breiten Dateinachverfolgung ist jetzt als nicht blockierender Restpunkt eingeordnet, aber noch nicht bereinigt.
+- Der Service Worker cached breit genug für einen nützlichen Lesemodus, aber Cache-Invaliderung und Offline-Verhalten pro Route sind noch nicht explizit dokumentiert oder getestet.
+- Alle Hauptseiten laufen mit `force-dynamic`, obwohl der Build statische Artefakte für einzelne Assets erzeugt. Die beabsichtigte Caching- und Renderstrategie sollte bei weiterem Ausbau bewusst entschieden werden.
+- Die neue Scheduler-Route ist lokal verifiziert, aber der produktive Zielkontext für Authentisierung, Aufrufquelle und Monitoring ist noch nicht final entschieden.
+- Der alte Ordner `C:\Users\Lui\OneDrive\Projekte\gluten freie Rezepte` ist weiterhin als OneDrive-Reparse-Restzustand sichtbar und nicht automatisch bereinigt.
+
+## Empfohlene nächste Wissens- oder Umsetzungsprüfungen
+1. Offlinescope in Produkttexten und Wissensbasis weiter konkretisieren: lesender Modus gegen echte Offline-Synchronisation.
+2. Die Turbopack-Warnung technisch weiter eingrenzen und entscheiden, ob sie nur toleriert oder aktiv bereinigt werden soll.
+3. Entscheiden, wie die Scheduler-Route produktiv ausgelöst, abgesichert und überwacht werden soll.
+4. Den alten OneDrive-Restordner kontrolliert bereinigen, sobald klar ist, dass kein externer Dateiplatzhalter oder Rückfallbedarf mehr besteht.

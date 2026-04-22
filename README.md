@@ -1,102 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Plan und Pfanne
 
-## Getting Started
+Glutenfreie Wochenplan-App mit Rezeptbibliothek, Tagesansichten, Einkaufsliste, Einstellungen und lokalem SQLite-Store.
 
-First, run the development server:
+## Aktueller Produktstand
+
+- Dashboard unter `/` mit aktueller Woche, Tageskarten und Makro-Abweichungen
+- Rezeptbibliothek unter `/rezepte` und Detailseiten unter `/rezepte/[id]`
+- Tagesseiten unter `/tage/[date]`
+- Einkaufsliste unter `/einkaufsliste`
+- Einstellungsseite unter `/einstellungen`
+- Healthcheck unter `/api/health`
+- Scheduler-Endpunkt unter `/api/scheduler/weekly`
+
+## Lokaler Start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Auf dem Handy im selben WLAN testen
-
-Der einfachste Weg ist der neue Befehl:
+Fuer Tests auf dem Handy im selben WLAN:
 
 ```bash
 npm run dev:handy
 ```
 
-Dann die IPv4-Adresse deines PCs herausfinden, zum Beispiel mit:
+Dann die lokale IPv4-Adresse im Browser des Handys oeffnen, zum Beispiel `http://192.168.178.23:3000`.
 
-```powershell
-ipconfig
+## Build und Qualitaet
+
+```bash
+npm run lint
+npm run build
 ```
 
-Und am Handy im selben WLAN diese Adresse im Browser oeffnen:
+Stand 2026-04-22:
 
-```text
-http://DEINE-IP:3000
-```
+- `npm run lint` erfolgreich
+- `npm run build` erfolgreich
+- beim Build bleibt aktuell noch eine Turbopack-Warnung zur NFT-Dateinachverfolgung rund um den datenbanknahen Dateisystemzugriff bestehen
 
-Beispiel:
+## Offline-Umfang
 
-```text
-http://192.168.178.23:3000
-```
+Die App ist als PWA vorbereitet und speichert derzeit nach vorherigem Online-Laden lokal:
 
-Wenn Windows beim ersten Start nach Firewall-Zugriff fragt, den Zugriff fuer dein privates Netzwerk erlauben.
+- Dashboard-Snapshot
+- Rezeptbibliothek
+- Einkaufslistenstatus
 
-## Installierbare Rezept-App fuer das Handy
+Offline ist der Modus aktuell weitgehend lesend. Schreibende Server-Aktionen wie Speichern der Einstellungen oder Neugenerieren des Wochenplans brauchen weiterhin eine Verbindung.
 
-Die Route `/rezepte` ist jetzt fuer die Offline-Nutzung vorbereitet:
+## Datenhaltung
 
-- Web-App-Manifest, App-Icons und Apple-Icon sind vorhanden.
-- Ein Service Worker speichert die Rezeptseite fuer die spaetere Offline-Nutzung.
-- Die Rezeptbibliothek wird lokal im Browser-Speicher des Handys abgelegt.
+- SQLite-Datei: `data/planner.sqlite`
+- `data/*.sqlite` ist per `.gitignore` ausgeschlossen
+- Die Datenbank ist damit als lokaler Laufzeit- und Entwicklungszustand gedacht, nicht als versioniertes Demo-Artefakt
+- Wenn keine Datenbank vorhanden ist, werden Standard-Einstellungen und Demo-Rezepte automatisch angelegt
 
-Wichtig:
+## Scheduler-Endpunkt
 
-- Fuer eine echte Installation auf dem Handy braucht die App eine `HTTPS`-Adresse.
-- Die Offline-Funktion deckt aktuell die Rezeptbibliothek ab.
-- Wochenplan, Einstellungen und Einkaufsliste sind noch nicht komplett auf Offline-Betrieb umgestellt.
+Der Endpunkt `/api/scheduler/weekly` erzeugt den Wochenplan fuer die naechste Woche.
+
+- `GET /api/scheduler/weekly` fuehrt die Standardlogik aus
+- `GET /api/scheduler/weekly?force=1` erzwingt die Generierung auch ausserhalb des Sonntags
+- `POST /api/scheduler/weekly` ist ebenfalls verfuegbar
+- Wenn `SCHEDULER_SECRET` gesetzt ist, erwartet die Route entweder `Authorization: Bearer <secret>` oder `?token=<secret>`
 
 ## Deployment auf Railway
 
 Das Projekt ist fuer Railway vorbereitet:
 
-- `Dockerfile` fuer einen produktionsfaehigen Next.js-Container
-- `railway.toml` mit Dockerfile-Build und Healthcheck
+- `Dockerfile`
+- `railway.toml`
 - `output: "standalone"` in `next.config.ts`
-- `GET /api/health` als Healthcheck-Endpunkt
-- volumenfaehiger Datenbankpfad ueber `RAILWAY_VOLUME_MOUNT_PATH` oder `DATA_DIR`
+- volumenfaehiger Datenbankpfad ueber `DATA_DIR` oder `RAILWAY_VOLUME_MOUNT_PATH`
 
-Empfohlene Schritte in Railway:
+Empfehlung fuer persistente Daten:
 
-1. Repository nach GitHub pushen.
-2. In Railway ein neues Projekt anlegen und das GitHub-Repo verbinden.
-3. Bei der Web-Service-App ein Volume anhaengen.
-4. Als Mount Path entweder `/data` oder `/app/data` verwenden.
-5. Eine Domain generieren.
-6. Nach dem ersten erfolgreichen Deploy die HTTPS-URL am Handy oeffnen und die App installieren.
-
-Hinweis:
-
-- Die SQLite-Datei liegt auf Railway dauerhaft im Volume und bleibt damit ueber Re-Deploys und Neustarts erhalten.
-- Railway bietet fuer Volumes auch Backups an, was fuer die SQLite-Datei nuetzlich ist.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Volume mounten
+- Mount Path auf `/data` oder `/app/data` setzen
+- die SQLite-Datei nicht ins Repository aufnehmen
