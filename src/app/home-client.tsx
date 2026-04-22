@@ -108,6 +108,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
         <Link href="/">Dashboard</Link>
         <Link href="/rezepte">Rezepte</Link>
         <Link href="/einkaufsliste">Einkaufsliste</Link>
+        <Link href="/einstellungen">Einstellungen</Link>
       </nav>
 
       <section className={styles.hero}>
@@ -263,6 +264,10 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
                         </li>
                       ))}
                     </ul>
+
+                    <Link className={styles.textLink} href={`/tage/${day.date}`}>
+                      Tagesansicht für {day.weekdayLabel} öffnen
+                    </Link>
                   </article>
                 );
               })}
@@ -325,6 +330,9 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
             </ul>
             <Link className={styles.textLink} href="/rezepte">
               Alle Rezepte mit Zutaten und Zubereitung ansehen
+            </Link>
+            <Link className={styles.textLink} href="/einstellungen">
+              Planungsprofil anpassen
             </Link>
           </article>
 

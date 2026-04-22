@@ -55,5 +55,5 @@ export async function saveSettingsAction(formData: FormData) {
   });
 
   regenerateCurrentWeekPlan();
-  redirect("/einstellungen");
+  redirect("/einstellungen?status=gespeichert");
 }

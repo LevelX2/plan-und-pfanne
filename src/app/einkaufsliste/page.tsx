@@ -22,6 +22,7 @@ export default function ShoppingListPage() {
         <Link href="/">Dashboard</Link>
         <Link href="/rezepte">Rezepte</Link>
         <Link href="/einkaufsliste">Einkaufsliste</Link>
+        <Link href="/einstellungen">Einstellungen</Link>
       </nav>
 
       <section className={styles.hero}>

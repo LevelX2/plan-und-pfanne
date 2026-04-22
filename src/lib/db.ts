@@ -5,10 +5,11 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { demoRecipes } from "@/lib/data/demo-recipes";
 
+const DEFAULT_DATA_DIR = path.join(/*turbopackIgnore: true*/ process.cwd(), "data");
 const DATA_DIR =
   process.env.DATA_DIR ??
   process.env.RAILWAY_VOLUME_MOUNT_PATH ??
-  "./data";
+  DEFAULT_DATA_DIR;
 const DB_PATH = path.join(DATA_DIR, "planner.sqlite");
 
 let dbInstance: Database.Database | null = null;

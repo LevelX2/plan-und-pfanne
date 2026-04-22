@@ -1,0 +1,327 @@
+.page {
+  min-height: 100vh;
+  padding: 28px 24px 48px;
+  background:
+    radial-gradient(circle at top left, rgba(154, 209, 191, 0.45), transparent 24%),
+    radial-gradient(circle at right center, rgba(255, 209, 161, 0.34), transparent 22%),
+    linear-gradient(180deg, #f5f1e8 0%, #efe9db 100%);
+}
+
+.topNav {
+  display: flex;
+  gap: 10px;
+  max-width: 1320px;
+  margin: 0 auto 18px;
+  flex-wrap: wrap;
+}
+
+.topNav a {
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.78);
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  box-shadow: 0 14px 34px rgba(19, 38, 29, 0.08);
+  font-size: 0.94rem;
+}
+
+.hero,
+.heroPanel,
+.formCard,
+.summaryCard,
+.infoCard,
+.statusCard,
+.mealList li,
+.macroPreview li {
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  box-shadow: 0 22px 60px rgba(19, 38, 29, 0.08);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
+  gap: 24px;
+  max-width: 1320px;
+  margin: 0 auto 24px;
+}
+
+.heroText {
+  padding: 36px;
+  border-radius: 32px;
+  background:
+    linear-gradient(135deg, rgba(20, 76, 57, 0.98), rgba(33, 105, 77, 0.9)),
+    #144c39;
+  color: #f8f4ee;
+}
+
+.eyebrow,
+.sectionKicker,
+.inputGroup label,
+.summaryList dt,
+.macroPreview span,
+.mealList li span {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+.heroText h1 {
+  margin: 16px 0 18px;
+  font-size: clamp(2.6rem, 5vw, 4.8rem);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+
+.lead {
+  max-width: 46rem;
+  line-height: 1.75;
+  color: rgba(248, 244, 238, 0.86);
+}
+
+.heroPanel,
+.formCard,
+.summaryCard,
+.infoCard,
+.statusCard {
+  border-radius: 28px;
+  background: rgba(255, 252, 247, 0.84);
+  backdrop-filter: blur(12px);
+}
+
+.heroPanel {
+  padding: 28px;
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
+.heroPanel h2,
+.formCard h2,
+.summaryCard h2,
+.infoCard h2,
+.statusCard h2 {
+  margin-top: 8px;
+  font-size: 1.8rem;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+}
+
+.heroPanel p,
+.infoCard p,
+.statusCard p,
+.hint {
+  color: rgba(19, 38, 29, 0.74);
+  line-height: 1.7;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(20, 140, 86, 0.14);
+  color: #116541;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+  gap: 24px;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.mainColumn,
+.sideColumn {
+  display: grid;
+  gap: 24px;
+}
+
+.formCard,
+.summaryCard,
+.infoCard,
+.statusCard {
+  padding: 28px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.inputGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.fullWidth {
+  grid-column: 1 / -1;
+}
+
+.inputGroup input,
+.inputGroup select,
+.inputGroup textarea {
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #13261d;
+  font: inherit;
+  padding: 14px 16px;
+}
+
+.inputGroup textarea {
+  min-height: 112px;
+  resize: vertical;
+}
+
+.checkboxGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.checkboxLabel {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(19, 38, 29, 0.1);
+  background: rgba(20, 76, 57, 0.05);
+}
+
+.checkboxLabel input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+.checkboxText {
+  display: grid;
+  gap: 6px;
+}
+
+.checkboxText strong {
+  font-size: 1rem;
+}
+
+.checkboxText span,
+.summaryList dd,
+.macroPreview li small,
+.mealList li p {
+  color: rgba(19, 38, 29, 0.72);
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.primaryButton,
+.secondaryButton {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 20px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #d06e2f, #b7551c);
+  color: #fffaf5;
+  box-shadow: 0 16px 28px rgba(176, 85, 28, 0.28);
+}
+
+.secondaryButton {
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  background: rgba(255, 252, 247, 0.82);
+  color: #13261d;
+}
+
+.summaryList,
+.macroPreview,
+.mealList {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.summaryList div,
+.macroPreview li,
+.mealList li {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: start;
+}
+
+.summaryList div {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(19, 38, 29, 0.08);
+}
+
+.summaryList dd strong,
+.macroPreview strong {
+  font-size: 1rem;
+}
+
+.macroPreview,
+.mealList {
+  list-style: none;
+}
+
+.macroPreview li,
+.mealList li {
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(20, 76, 57, 0.05);
+}
+
+.mealList li {
+  align-items: center;
+}
+
+.mealList li strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.02rem;
+}
+
+@media (max-width: 1080px) {
+  .hero,
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: 18px 14px 28px;
+  }
+
+  .heroText,
+  .heroPanel,
+  .formCard,
+  .summaryCard,
+  .infoCard,
+  .statusCard {
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
