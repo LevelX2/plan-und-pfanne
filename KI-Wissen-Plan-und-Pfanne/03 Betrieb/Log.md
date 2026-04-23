@@ -117,3 +117,11 @@
   12 Frühstücke, 14 Mittagessen, 14 Abendessen und 10 Snacks.
 - Verifikation:
   `npm run lint` erfolgreich, `npm run build` erfolgreich.
+
+## [2026-04-23] umsetzung | Rezeptpool um weitere 20 Web-Rezepte erweitert
+- Der bestehende Import aus BBC-Good-Food-Quellen wurde am selben Tag um weitere 20 glutenfreie Gerichte ergänzt.
+- `src/lib/data/imported-recipes.ts` enthält damit jetzt insgesamt 28 kuratierte Web-Rezepte; der gesamte Seed-Bestand umfasst 70 Rezepte.
+- Die zusätzlichen Datensätze erweitern alle Mahlzeitentypen und verteilen sich im aktuellen lokalen SQLite-Stand auf 17 Frühstücke, 19 Mittagessen, 20 Abendessen und 14 Snacks.
+- `data/planner.sqlite` wurde erneut direkt synchronisiert, damit der lokale Datenstand sofort zum Seed-Code passt und beim nächsten Railway-Deploy konsistent ausgerollt werden kann.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich.

@@ -36,7 +36,7 @@ tags:
 - Das Einstellungsformular enthält jetzt zusätzlich einen gekoppelten Dreiregler für `vegetarisch`, `Fisch` und `Fleisch`; die Werte ergeben zusammen immer `100 %`.
 - Der Zielmix wird persistent in SQLite gespeichert; bestehende lokale Datenbanken werden beim Start automatisch um die neuen Prozentspalten ergänzt.
 - Die Wochenplanung berücksichtigt den Zielmix jetzt als weiche Verteilung für Mittagessen und Abendessen, während Frühstück und Snack davon bewusst ausgenommen bleiben.
-- Der Seed-Rezeptpool wurde um 8 weitere glutenfreie Web-Rezepte erweitert und umfasst lokal jetzt 50 Rezepte.
+- Der Seed-Rezeptpool wurde um insgesamt 28 weitere glutenfreie Web-Rezepte erweitert und umfasst lokal jetzt 70 Rezepte.
 - SQLite ist nicht nur vorbereitet, sondern aktiv genutzt: `data/planner.sqlite` enthält Seed-Rezepte sowie bereits erzeugte Wochen- und Tagespläne mitsamt gespeicherten Mahlzeiten.
 - Fachliche Kernmodule für Typen, Datumslogik, Formatierung, Datenbank, Store und Planungslogik sind angebunden und erzeugen die aktuelle Woche bei Bedarf automatisch.
 - PWA-Basis mit Manifest, Icons, Service Worker und Anfrage auf persistenten Browser-Speicher ist vorhanden.
@@ -50,6 +50,8 @@ tags:
 - Der reale Offlinescope ist jetzt in Produkttexten klarer benannt: Dashboard, Rezeptbibliothek und Einkaufsliste werden lokal abgesichert. Zusätzlich funktionieren aktive Gerichtsauswahl und Einkaufs-Häkchen als lokale Gerätezustände offline; serverseitige Änderungen funktionieren weiterhin nicht offline.
 - Railway-Deployment ist nicht mehr nur vorbereitet; eine produktive URL ist bekannt: `https://plan-und-pfanne-production.up.railway.app`. Der produktive Stand wurde zuletzt manuell per Railway-CLI ausgerollt; ein GitHub-Push allein ist aktuell nicht als sicher ausreichender Deploy-Mechanismus dokumentiert.
 - Neue Rezept-IDs werden über den bestehenden Seed-Mechanismus beim Start in SQLite eingefügt; nach einem neuen Railway-Deploy kommen zusätzliche Seed-Rezepte damit auch in den produktiven Datenbestand.
+- Der lokale SQLite-Stand `data/planner.sqlite` wurde am 2026-04-23 direkt auf 70 Rezepte synchronisiert:
+  17 Frühstücke, 19 Mittagessen, 20 Abendessen und 14 Snacks.
 - Die Scheduler-Route ist lokal und live funktionsfähig, aber noch nicht an einen echten externen Cron- oder Hosting-Trigger angebunden.
 
 ## Offen

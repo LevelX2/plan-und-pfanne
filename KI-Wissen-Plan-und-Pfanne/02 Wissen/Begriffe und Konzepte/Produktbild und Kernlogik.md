@@ -31,13 +31,13 @@ Die Anwendung verbindet Rezeptverwaltung mit automatisierter Wochenplanung. Die 
 - optional Snack
 
 ## Aktueller Rezeptpool
-- 50 Seed-Rezepte sind im aktuellen Datenbestand vorhanden.
-- Darunter sind 8 zusätzliche glutenfreie Rezepte, die am 2026-04-23 aus externen Webquellen strukturiert in den Seed-Bestand übernommen wurden.
+- 70 Seed-Rezepte sind im aktuellen Datenbestand vorhanden.
+- Darunter sind 28 zusätzliche glutenfreie Rezepte, die am 2026-04-23 aus externen Webquellen strukturiert in den Seed-Bestand übernommen wurden.
 - Verteilung nach Mahlzeiten:
-  - 12 Frühstücke
-  - 14 Mittagessen
-  - 14 Abendessen
-  - 10 Snacks
+  - 17 Frühstücke
+  - 19 Mittagessen
+  - 20 Abendessen
+  - 14 Snacks
 - Glutenfreiheit ist im Seed-Bestand durchgängig gesetzt.
 
 ## Planungslogik im verifizierten Code
