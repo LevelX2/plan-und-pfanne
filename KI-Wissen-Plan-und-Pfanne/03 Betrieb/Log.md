@@ -343,3 +343,9 @@
 - Verifikation:
   `npm run lint` erfolgreich,
   `http://localhost:3000/` erfolgreich mit Status `200`.
+
+## [2026-04-23] betrieb | Pages-Workflow auf neuere Actions-Majors gegen Node-20-Warnungen angehoben
+- Der GitHub-Pages-Workflow `/.github/workflows/deploy-pages.yml` nutzte zuvor `actions/configure-pages@v5`, `actions/setup-node@v4` und `actions/upload-pages-artifact@v4`.
+- GitHub zeigte dafür bereits Warnungen zur bevorstehenden Node-20-Ablösung auf den Runnern an.
+- Der Workflow verwendet jetzt die neueren offiziellen Major-Tags `actions/configure-pages@v6`, `actions/setup-node@v6` und `actions/upload-pages-artifact@v5`.
+- Die Build-Node für das Projekt bleibt dabei bewusst vorerst auf `20`, damit das Update der Workflow-Action-Runtimes nicht unnötig mit einer separaten App-Node-Umstellung vermischt wird.
