@@ -13,11 +13,13 @@
 - [[../Begriffe und Konzepte/Benutzerkonzept und Verifikation]]: Zielbild für verpflichtende Anmeldung, passwortlose Verifikation und benutzerscharfe Planungsdaten.
 - [[../Begriffe und Konzepte/Systembild und technischer Zuschnitt]]: aktueller technischer Aufbau mit Next.js, SQLite, PWA-Ansatz und Deployment-Zuschnitt.
 - [[../Risiken und offene Punkte/Offene Fragen und Prüfbedarf]]: bestätigte Lücken, Widersprüche, konzeptionelle Prüfstellen und technische Nacharbeiten.
+- [[../Risiken und offene Punkte/Lokale Mobile-App vs gehosteter Betrieb]]: Abwägung zwischen rein lokalem Handy-Betrieb und gehosteter Web-/PWA-Variante.
 
 ## Entscheidungen und Prozesse
 - [[../Entscheidungen/MVP-Leitentscheidungen]]: bisher erkennbare Leitentscheidungen für MVP und Ausbau.
 - [[../Prozesse/Arbeitsworkflow Wissenspflege und Projektanfragen]]: Standardablauf für Projektarbeit und Wissenspflege.
 - [[../Prozesse/Lokaler Start von Entwicklung und Test]]: lokale Startbefehle, Handy-Test und wichtige Startpfade.
+- [[../Prozesse/Umstiegspfad auf lokale PWA]]: konkreter Migrationsplan von serverzentrierter App zu lokaler PWA mit stabilem Origin-Konzept.
 
 ## Quellenbewertungen
 - [[../Quellenbewertungen/README Bewertung]]: Übersicht über bewertete Quellen und deren Verlässlichkeit.

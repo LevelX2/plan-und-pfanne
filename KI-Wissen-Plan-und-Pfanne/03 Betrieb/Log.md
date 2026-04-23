@@ -66,6 +66,20 @@
 - Der aktuelle Workspace-Stand bleibt dabei bewusst getrennt markiert:
   aktuell Single-User ohne Login, Zielbild künftig benutzerscharf mit Verifikation.
 
+## [2026-04-23] wissensbasis | Railway-Mailversand für Verifikation technisch eingeordnet
+- Offizielle Railway-Dokumentation zu Outbound Networking, Variablen und Railway Domains als externe Rohquellen-Referenz erfasst.
+- `Systembild und technischer Zuschnitt.md` ergänzt:
+  Railway kann Mailversand für dieses Projekt durch gehostete Serverlogik und Variablen tragen, aber nicht als eigener eingebauter Maildienst.
+- Für Verifikationsmails ist damit als Zielbild ein externer Transaktions-Maildienst vorgesehen.
+- Laut dokumentierter Railway-Lage ist SMTP nur auf Pro und höheren Plänen verfügbar; auf Free-, Trial- und Hobby-Plänen ist ein HTTPS-basierter Mailanbieter nötig.
+
+## [2026-04-23] wissensbasis | Resend als bevorzugter Freemium-Mailanbieter konkretisiert
+- Offizielle Quellen zu Resend, Brevo, SMTP2GO und MailerSend als externe Rohquellen-Referenz erfasst.
+- `Benutzerkonzept und Verifikation.md` hält jetzt Resend als bevorzugten Mailanbieter für den MVP fest.
+- Die Einordnung stützt sich auf die gute Next.js-Passung, den dokumentierten Free-Tier, die fehlende Production-Freigabepflicht und die saubere Domain-Verifikation.
+- Zusätzlich wurde der Ist-Stand des Workspaces nachgezogen:
+  `src/lib/auth.ts` sendet produktive Login-Codes bereits über die Resend-API, sobald `RESEND_API_KEY` und `AUTH_FROM_EMAIL` gesetzt sind.
+
 ## [2026-04-23] wissensbasis | Aktive Gerichtsauswahl als Erweiterung von Wochenplan und Einkaufsliste ergänzt
 - Die neue Chat-Anforderung zur selektiven Aktivierung geplanter Gerichte wurde als Rohquelle erfasst.
 - `Produktbild und Kernlogik.md` beschreibt jetzt eine geplante Erweiterung, bei der einzelne geplante Mahlzeiten als aktive Gerichte markiert werden können.
@@ -182,3 +196,73 @@
   In Next.js 16 sollen für `useActionState` keine nicht-async Exporte aus `"use server"`-Dateien als Client-Importquelle verwendet werden.
 - Verifikation:
   `npm run lint` erfolgreich, `npm run build` erfolgreich.
+
+## [2026-04-23] wissensbasis | Lokale Mobile-Variante gegenüber gehostetem Betrieb eingeordnet
+- Die Architekturfrage `rein lokal auf dem Handy` versus `gehostete Web-/PWA-App` wurde als eigene Wissensseite dokumentiert.
+- Die neue Seite hält fest:
+  Eine lokale Single-Device-Variante ist möglich, würde aber einen bewussten Wechsel des Produktmodells bedeuten und nicht nur das Abschalten von Login und Railway.
+- Zusätzlich ist festgehalten:
+  Eine Serverabfrage für neue Rezepte erfordert nicht automatisch Benutzerkonten; sie kann auch als öffentlicher Feed ohne Login gedacht werden.
+- Der Index verweist jetzt direkt auf diese Abwägung.
+
+## [2026-04-23] wissensbasis | Railway-Preislage für Architekturabwägung nachgezogen
+- Offizielle Railway-Quellen zu Pricing, Plans und Free Trial wurden als Rohquellen-Referenz ergänzt.
+- Für die Architekturabwägung ist jetzt festgehalten:
+  Nach dem 30-Tage-Trial endet nicht jede kostenlose Nutzung sofort, weil Railway aktuell auf einen Free-Plan mit 1 USD freien Ressourcen pro Monat zurückfällt.
+- Gleichzeitig wurde als betriebliche Grenze ergänzt:
+  Für eine dauerhaft laufende App ist dieses Restbudget klein, und Cron-Jobs sind laut aktueller Preisseite im Free-Bereich nur während des Trials verfügbar.
+
+## [2026-04-23] wissensbasis | Vergleichsmatrix für lokale Mobile-App und gehosteten Betrieb ergänzt
+- Die bestehende Architektur-Abwägungsseite wurde um eine Vergleichsmatrix erweitert.
+- Die Matrix stellt die beiden Richtungen entlang von Betriebskosten, Offline-Nutzung, Mehrgerätefähigkeit, Datenschutzgefühl, Rezeptnachschub, technischer Passung und Betriebsaufwand gegenüber.
+- Zusätzlich wurden verdichtete Vor- und Nachteile beider Richtungen ergänzt, damit spätere Produktentscheidungen schneller anschlussfähig bleiben.
+
+## [2026-04-23] wissensbasis | Mobile Installations- und Updatewege für Einzelanwender ergänzt
+- Offizielle Quellen zu iPhone-Web-Apps, TestFlight, iOS-Distributionsmethoden, Google-Play-Testing, Android-Installationen aus anderen Quellen sowie GitHub Pages und Releases wurden als Rohquellen-Referenz ergänzt.
+- Die Architektur-Abwägungsseite beschreibt jetzt zusätzlich drei praktische Auslieferungsmodelle:
+  lokale PWA mit statischem Hosting, echte Mobile-App-Hülle und voll manuelle Einzelverteilung.
+- Als projektnaher Zwischenstand ist festgehalten:
+  Ein GitHub-basierter Updateweg passt gut zu einer lokalen PWA, während für iOS-App-Pakete TestFlight deutlich realistischer als ein direkter GitHub-Download ist.
+
+## [2026-04-23] wissensbasis | PWA-Persistenz und lokale Migrationen für Einzelanwender ergänzt
+- Offizielle Quellen zu IndexedDB, Storage-Persistenz, PWA-Updates, Origin-Grenzen und WebKit-Storage-Policy wurden als Rohquellen-Referenz ergänzt.
+- Die Architektur-Abwägungsseite hält jetzt fest:
+  Lokale PWA-Daten wie Einstellungen und Historie können über neue Versionen hinweg erhalten bleiben, wenn dieselbe Origin bestehen bleibt und die lokale Datenbank sauber migriert wird.
+- Zusätzlich ist dokumentiert:
+  Service-Worker- und Asset-Updates löschen IndexedDB nicht automatisch, aber Browserdaten bleiben trotzdem nur best-effort, solange keine persistente Speicherung gewährt und kein manuelles Löschen erfolgt.
+
+## [2026-04-23] wissensbasis | Echter App-Store-Weg als zusätzliche Distributionsoption ergänzt
+- Die bestehende Rohquellen-Referenz zu mobilen Distributionswegen wurde um Apple-Quellen zu Developer-Program, App Store Connect, unlisted Apps und Submission-Prozess ergänzt.
+- Die Architektur-Abwägungsseite beschreibt jetzt zusätzlich den Weg über eine echte Store-App.
+- Für `Plan und Pfanne` ist dabei festgehalten:
+  Ein offizieller iPhone-Installations- und Updateweg ist möglich, aber für nur einen Anwender deutlich aufwendiger als PWA oder TestFlight.
+- Als praktikable Mittelposition ist zusätzlich dokumentiert:
+  `unlisted App Store` kann offizielle Installation und Updates bieten, ohne normale Auffindbarkeit im App Store.
+
+## [2026-04-23] wissensbasis | Detaillierter Umstiegspfad auf lokale PWA ergänzt
+- Eine neue Prozessseite beschreibt den Migrationspfad von der aktuellen serverzentrierten Next.js-App zu einer lokalen PWA.
+- Die Seite trennt jetzt ausdrücklich zwischen
+  stabiler App-Origin für Installation, Speicher und Updates
+  und optional konfigurierbaren Feed- oder Import-URLs für Rezeptnachschub.
+- Zusätzlich ist festgehalten:
+  Der eigentliche Migrationskern liegt nicht im Hostingwechsel, sondern in der Verlagerung von Fachlogik, Persistenz, Migrationen und Releasefluss auf das Gerät.
+
+## [2026-04-23] wissensbasis | GitHub-Origin als früher PWA-Zielpunkt eingeordnet
+- Der Umstiegspfad beschreibt jetzt ausdrücklich, dass eine GitHub-basierte Origin für die PWA früh festgelegt werden kann, solange noch keine realen Installationen oder schützenswerten lokalen Bestände migriert werden müssen.
+- Zusätzlich ist dokumentiert:
+  Eine `github.io`-Adresse ist für den Start plausibel, eine eigene Domain auf GitHub Pages aber langfristig die robustere Variante.
+- Für die technische Umsetzung ist festgehalten:
+  Ein Unterpfad-Modell wie `/<repo>/` erhöht die Komplexität bei `start_url`, `scope`, Asset- und Service-Worker-Pfaden.
+
+## [2026-04-23] umsetzung | Lokale PWA auf statischen Export und GitHub Pages umgestellt
+- Der primäre App-Pfad wurde von serverzentrierter Railway-/Login-Architektur auf eine lokale PWA mit statischem Export umgestellt.
+- `src/lib/local-db.ts` und `src/lib/local-store.ts` bilden jetzt die neue IndexedDB-basierte Persistenz für Einstellungen, Seed-Rezepte, Wochenpläne, Historie und App-Metadaten.
+- Dashboard, Einstellungen, Rezeptbibliothek, Tagesansicht und Einkaufsliste lesen und schreiben jetzt lokal statt über Server Actions oder serverseitigen SQLite-Store.
+- Die früheren dynamischen Detailpfade `/rezepte/[id]` und `/tage/[date]` wurden für GitHub Pages in querybasierte statische Ansichten überführt:
+  `/rezepte?recipe=<id>` und `/tage?date=YYYY-MM-DD`.
+- `next.config.ts`, Manifest, Service Worker, PWA-Registrierung und ein neuer Pages-Workflow sind auf GitHub Pages mit Unterpfad-Zuschnitt vorbereitet.
+- Login-, Logout-, Auth- und Scheduler-Pfade sind im aktuellen Stand nur noch Legacy-Hinweise oder statische Platzhalter und nicht mehr Kern des Produktflusses.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich,
+  `npm run build` mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` und `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich.
