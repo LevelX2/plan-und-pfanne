@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -33,6 +34,21 @@ import { loadOfflineSnapshot, saveOfflineSnapshot } from "@/lib/offline-store";
 import type { Recipe, RecipeMixCategory, UserSettings, WeekPlan } from "@/lib/types";
 import * as localStore from "@/lib/local-store";
 
+function normalizeBasePath(value: string | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "/") {
+    return "";
+  }
+
+  return `/${trimmed.replace(/^\/+|\/+$/g, "")}`;
+}
+
+const APP_ICON_SRC = `${normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH)}/icon-192.png`;
+
 type RecipeCounts = {
   breakfast: number;
   lunch: number;
@@ -65,7 +81,7 @@ type LocalStatusEntry = {
 type DayActivationStatus = {
   className: string;
   countLabel: string;
-  summaryLabel: string;
+  summaryLabel: string | null;
 };
 
 function macroBadgeClass(delta: number) {
@@ -81,25 +97,31 @@ function macroBadgeClass(delta: number) {
 }
 
 function resolveDayActivationStatus(selectedMealCount: number, totalMealCount: number): DayActivationStatus {
-  if (selectedMealCount <= 0) {
+  const normalizedTotalMealCount = Math.max(totalMealCount, 0);
+  const normalizedSelectedMealCount = Math.max(
+    0,
+    Math.min(selectedMealCount, normalizedTotalMealCount),
+  );
+
+  if (normalizedTotalMealCount === 0 || normalizedSelectedMealCount === 0) {
     return {
       className: styles.statusIdle,
-      countLabel: `0 von ${totalMealCount} aktiv`,
-      summaryLabel: "noch nicht aktiv",
+      countLabel: `0 von ${normalizedTotalMealCount} aktiv`,
+      summaryLabel: null,
     };
   }
 
-  if (selectedMealCount >= totalMealCount) {
+  if (normalizedSelectedMealCount === normalizedTotalMealCount) {
     return {
       className: styles.statusGood,
-      countLabel: `${selectedMealCount} von ${totalMealCount} aktiv`,
+      countLabel: `${normalizedSelectedMealCount} von ${normalizedTotalMealCount} aktiv`,
       summaryLabel: "aktiv geplant",
     };
   }
 
   return {
     className: styles.statusWarn,
-    countLabel: `${selectedMealCount} von ${totalMealCount} aktiv`,
+    countLabel: `${normalizedSelectedMealCount} von ${normalizedTotalMealCount} aktiv`,
     summaryLabel: "teilweise aktiv",
   };
 }
@@ -399,6 +421,7 @@ export function HomeClient() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
+  const [isIntroExpanded, setIsIntroExpanded] = useState(false);
   const [selectedMealKeys, setSelectedMealKeys] = useState<string[]>([]);
   const [shoppingMode, setShoppingMode] = useState<ShoppingListMode>("active-only");
   const selectionHydratedRef = useRef(false);
@@ -463,15 +486,18 @@ export function HomeClient() {
   const loadedAt = snapshot?.loadedAt ?? null;
   const planSignature = weekPlan ? createWeekPlanSignature(weekPlan) : "";
   const allMealKeys = weekPlan ? listWeekMealKeys(weekPlan) : [];
+  const selectedMealKeySet = new Set(selectedMealKeys);
+  const uniqueSelectedMealKeys = [...selectedMealKeySet];
   const allShoppingItemCount = weekPlan
     ? countShoppingItems(buildShoppingListGroupsForWeekPlan(weekPlan, "all-planned", []))
     : 0;
   const activeShoppingItemCount = weekPlan
-    ? countShoppingItems(buildShoppingListGroupsForWeekPlan(weekPlan, "active-only", selectedMealKeys))
+    ? countShoppingItems(
+        buildShoppingListGroupsForWeekPlan(weekPlan, "active-only", uniqueSelectedMealKeys),
+      )
     : 0;
-  const selectedMealKeySet = new Set(selectedMealKeys);
   const totalMealCount = allMealKeys.length;
-  const selectedMealCount = selectedMealKeys.length;
+  const selectedMealCount = selectedMealKeySet.size;
   const bestDay = weekPlan
     ? [...weekPlan.days].sort((left, right) => left.score - right.score)[0] ?? null
     : null;
@@ -524,9 +550,10 @@ export function HomeClient() {
       return;
     }
 
+    const normalizedSelectedMealKeys = [...new Set(selectedMealKeys)];
     const selectionSnapshot: WeekSelectionSnapshot = {
       planSignature,
-      selectedMealKeys,
+      selectedMealKeys: normalizedSelectedMealKeys,
       shoppingMode,
       savedAt: new Date().toISOString(),
     };
@@ -567,7 +594,7 @@ export function HomeClient() {
           </div>
 
           <div className={styles.heroPanel}>
-            <p className={styles.panelLabel}>Lokale PWA</p>
+            <p className={styles.panelLabel}>Lokale App</p>
             <h2>Initialisiere Daten auf diesem Gerät</h2>
             <p className={styles.panelCopy}>
               Die App seedet den lokalen Bestand und bereitet die aktuelle Woche für die Nutzung
@@ -596,7 +623,7 @@ export function HomeClient() {
             <p className={styles.panelLabel}>Status</p>
             <h2>Lokaler Start fehlgeschlagen</h2>
             <p className={styles.panelCopy}>
-              Ohne lokale Daten kann die PWA keinen Wochenplan auf diesem Gerät darstellen.
+              Ohne lokale Daten kann die App keinen Wochenplan auf diesem Gerät darstellen.
             </p>
           </div>
         </section>
@@ -634,14 +661,42 @@ export function HomeClient() {
       <LocalNav />
 
       <section className={styles.hero}>
-        <div className={styles.heroText}>
-          <p className={styles.eyebrow}>Plan und Pfanne</p>
-          <h1>Dein Wochenplan bleibt direkt auf deinem Handy erhalten.</h1>
-          <p className={styles.lead}>
-            Diese PWA hält Einstellungen, Wochenplan, aktive Gerichte und Rezeptbestand lokal auf
-            diesem Gerät. Neue Versionen kommen über die installierte App, und neue Rezepte kannst
-            du später separat importieren oder aus einem Feed ergänzen.
-          </p>
+        <div className={`${styles.heroText} ${!isIntroExpanded ? styles.heroTextCollapsed : ""}`}>
+          <div className={styles.heroTitleRow}>
+            <Image
+              alt=""
+              aria-hidden="true"
+              className={styles.heroAppIcon}
+              height={52}
+              src={APP_ICON_SRC}
+              width={52}
+            />
+            <h1 className={styles.heroAppName}>Plan und Pfanne</h1>
+          </div>
+          {isIntroExpanded ? (
+            <p className={styles.lead}>
+              Plan und Pfanne ist deine lokale Koch- und Planungszentrale für den Alltag. Die App
+              speichert deinen Wochenplan, aktivierte Gerichte, persönlichen Ziele, Einkaufshäkchen
+              und den aktuellen Rezeptbestand direkt auf diesem Gerät, damit du auch ohne Login und
+              ohne ständigen Serverkontakt weiterarbeiten kannst. Auf der Startseite siehst du auf
+              einen Blick, welche Tage schon aktiv geplant sind, wie gut Kalorien und Makros zu
+              deinem Ziel passen und welche Gerichte wirklich in die Einkaufsliste einfließen. In
+              der Rezeptübersicht kannst du den Bestand kompakt durchsuchen und einzelne Gerichte
+              nur dann aufklappen, wenn du Zutaten oder Zubereitung brauchst. Die Einkaufsliste
+              konzentriert sich anschließend wahlweise nur auf deine aktiven Gerichte oder auf die
+              komplette Woche, damit du beim Einkaufen und Kochen genau den Ausschnitt vor dir
+              hast, der gerade sinnvoll ist. Neue Rezepte kannst du später per Import oder über
+              eine Quelle ergänzen.
+            </p>
+          ) : null}
+          <button
+            aria-expanded={isIntroExpanded}
+            className={styles.heroToggleButton}
+            onClick={() => setIsIntroExpanded((current) => !current)}
+            type="button"
+          >
+            {isIntroExpanded ? "Weniger anzeigen" : "Mehr zur App"}
+          </button>
         </div>
 
         <div className={styles.heroPanel}>
@@ -694,7 +749,7 @@ export function HomeClient() {
           <p className={styles.offlineCopy}>
             {isOffline
               ? "Die lokale Datenbank bleibt nutzbar: Woche planen, aktive Gerichte pflegen und Einstellungen anpassen funktioniert auch ohne Verbindung. Nur Rezeptimporte oder neue App-Versionen warten auf später."
-              : "Die PWA arbeitet bereits lokal auf diesem Gerät. Solange du online bist, kannst du zusätzlich neue Rezeptquellen abrufen oder eine frisch veröffentlichte Version übernehmen."}
+              : "Die App arbeitet bereits lokal auf diesem Gerät. Solange du online bist, kannst du zusätzlich neue Rezeptquellen abrufen oder eine frisch veröffentlichte Version übernehmen."}
           </p>
         </div>
         <div className={styles.offlineMeta}>
@@ -765,7 +820,7 @@ export function HomeClient() {
                 <button className={styles.secondaryChipButton} onClick={clearAllMeals} type="button">
                   Alle abwählen
                 </button>
-                <Link className={styles.textLink} href="/einkaufsliste">
+                <Link className={styles.selectionLinkButton} href="/einkaufsliste">
                   Einkaufsliste öffnen
                 </Link>
               </div>
@@ -792,25 +847,30 @@ export function HomeClient() {
                         <h3>{day.weekdayLabel}</h3>
                         <p>{formatDateGerman(day.date)}</p>
                       </div>
-                      <span className={dayActivationStatus.className}>
-                        {dayActivationStatus.summaryLabel}
-                      </span>
+                      <div className={styles.dayStatusGroup}>
+                        {dayActivationStatus.summaryLabel ? (
+                          <span className={dayActivationStatus.className}>
+                            {dayActivationStatus.summaryLabel}
+                          </span>
+                        ) : null}
+                        <span className={styles.statusCount}>{dayActivationStatus.countLabel}</span>
+                      </div>
                     </div>
 
                     <div className={styles.dayTotals}>
-                      <div>
+                      <div className={styles.dayTotalCard}>
                         <span>Kalorien</span>
                         <strong>{formatCalories(day.totals.calories)}</strong>
                       </div>
-                      <div>
+                      <div className={styles.dayTotalCard}>
                         <span>Protein</span>
                         <strong>{formatGrams(day.totals.protein)}</strong>
                       </div>
-                      <div>
+                      <div className={styles.dayTotalCard}>
                         <span>Kohlenhydrate</span>
                         <strong>{formatGrams(day.totals.carbs)}</strong>
                       </div>
-                      <div>
+                      <div className={styles.dayTotalCard}>
                         <span>Fett</span>
                         <strong>{formatGrams(day.totals.fat)}</strong>
                       </div>
@@ -829,9 +889,6 @@ export function HomeClient() {
                     </div>
 
                     <div className={styles.dayActionRow}>
-                      <span className={dayActivationStatus.className}>
-                        {dayActivationStatus.countLabel}
-                      </span>
                       <div className={styles.dayActionButtons}>
                         <button
                           className={styles.dayMiniButton}

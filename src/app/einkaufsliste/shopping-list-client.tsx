@@ -60,6 +60,7 @@ function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
   const allItemIds = groups.flatMap((group) =>
     group.items.map((item) => itemId(group.category, item.name, item.unit)),
   );
+  const allItemIdsSnapshot = JSON.stringify(allItemIds);
   const checksStorageKey = createShoppingChecksStorageKey({
     storageNamespace: LOCAL_PWA_STORAGE_NAMESPACE,
     startDate: weekPlan.startDate,
@@ -129,7 +130,7 @@ function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
     let cancelled = false;
     checksHydratedRef.current = false;
 
-    const allowedIds = new Set(allItemIds);
+    const allowedIds = new Set(JSON.parse(allItemIdsSnapshot) as string[]);
 
     void loadOfflineSnapshot<ShoppingSnapshot>(checksStorageKey)
       .then((snapshot) => {
@@ -166,7 +167,7 @@ function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
     return () => {
       cancelled = true;
     };
-  }, [allItemIds, checksStorageKey]);
+  }, [allItemIdsSnapshot, checksStorageKey]);
 
   useEffect(() => {
     if (!checksHydratedRef.current) {
@@ -226,7 +227,7 @@ function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
               Alle geplanten Gerichte
             </button>
           </div>
-          <p className={styles.contextMeta}>
+          <p className={styles.modeSummary}>
             {selectedMealCount} von {totalPlannedMeals} Gerichten aktiv
           </p>
         </div>

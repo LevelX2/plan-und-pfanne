@@ -41,6 +41,8 @@ tags:
 - Die Wochenplanung wird lokal auf dem Gerät erzeugt; `Woche neu generieren` und Einstellungsänderungen laufen ohne Server Action.
 - Die Rezeptbibliothek und die Tagesansicht wurden für den statischen Export auf Query-Parameter umgestellt:
   `/rezepte?recipe=<id>` und `/tage?date=YYYY-MM-DD`.
+- Die Rezeptbibliothek ist für größere Bestände jetzt zweistufig organisiert:
+  Mahlzeiten-Gruppen starten eingeklappt, darin erscheinen kompakte Rezeptzeilen, und Zutaten plus Zubereitung öffnen sich erst pro ausgewähltem Rezept.
 - Aktive Gerichte, Einkaufs-Häkchen und ähnliche UI-Zustände bleiben zusätzlich lokal im Offline-Store erhalten.
 - Die App ist jetzt auf statischen Export mit GitHub Pages zugeschnitten:
   `output: "export"`, `trailingSlash: true`, `images.unoptimized: true` und buildzeitlicher `basePath`.

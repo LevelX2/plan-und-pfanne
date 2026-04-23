@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { requestPersistentStorage } from "@/lib/offline-store";
 
+const OFFLINE_CACHE_PREFIX = "plan-und-pfanne-offline";
+
 function normalizeBasePath(value: string | undefined) {
   if (!value) {
     return "";
@@ -18,7 +20,33 @@ function normalizeBasePath(value: string | undefined) {
 
 export function PwaRegister() {
   useEffect(() => {
+    void requestPersistentStorage();
+
     if (!("serviceWorker" in navigator) || !window.isSecureContext) {
+      return;
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      void navigator.serviceWorker
+        .getRegistrations()
+        .then((registrations) =>
+          Promise.all(registrations.map((registration) => registration.unregister())),
+        )
+        .catch(() => undefined);
+
+      if ("caches" in window) {
+        void caches
+          .keys()
+          .then((keys) =>
+            Promise.all(
+              keys
+                .filter((key) => key.startsWith(OFFLINE_CACHE_PREFIX))
+                .map((key) => caches.delete(key)),
+            ),
+          )
+          .catch(() => undefined);
+      }
+
       return;
     }
 
@@ -32,8 +60,6 @@ export function PwaRegister() {
       .catch((error) => {
         console.error("Service Worker konnte nicht registriert werden.", error);
       });
-
-    void requestPersistentStorage();
   }, []);
 
   return null;

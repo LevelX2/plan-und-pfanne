@@ -102,15 +102,16 @@
 }
 
 .toolbar {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(360px, 1.35fr) minmax(240px, 0.85fr);
   gap: 16px;
-  align-items: center;
+  align-items: start;
 }
 
 .modePanel {
   display: grid;
   gap: 10px;
+  width: 100%;
   padding: 20px 24px;
   border-radius: 28px;
   border: 1px solid rgba(19, 38, 29, 0.08);
@@ -153,9 +154,11 @@
   color: #13261d;
 }
 
-.contextMeta {
-  color: rgba(19, 38, 29, 0.7);
-  line-height: 1.6;
+.modeSummary {
+  color: rgba(19, 38, 29, 0.76);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.45;
 }
 
 .progressCard {
@@ -166,6 +169,8 @@
 
 .clearButton {
   appearance: none;
+  justify-self: start;
+  grid-column: 1 / -1;
   border: 1px solid rgba(19, 38, 29, 0.12);
   border-radius: 999px;
   padding: 14px 18px;
@@ -303,13 +308,16 @@
     font-size: 2.3rem;
   }
 
-  .toolbar,
   .groupHeader,
   .itemText,
   .modeButtons,
   .emptyActions {
     flex-direction: column;
     align-items: start;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
   }
 
   .itemText {

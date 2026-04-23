@@ -72,6 +72,9 @@ Der erzeugte Wochenplan bleibt vollständig erhalten. Zusätzlich soll der Nutze
   - `noch nicht aktiv`, wenn an diesem Tag noch keine Mahlzeit aktiviert ist
   - `teilweise aktiv`, wenn nur ein Teil der geplanten Mahlzeiten aktiviert ist
   - `aktiv geplant`, wenn alle geplanten Mahlzeiten dieses Tages aktiviert sind
+- Statuslabel und Aktiv-Zähler eines Tages sollen möglichst nah beieinander stehen, damit nicht oben ein Zustand und weiter unten getrennt eine zweite Aktiv-Anzeige gesucht werden muss.
+- Wenn an einem Tag noch keine Mahlzeit aktiviert ist, soll kein farbiges Aktiv-Statuslabel erscheinen; in diesem Leerzustand reicht ein neutraler Zähler wie `0 von 4 aktiv`.
+- Verdichtete Tagessummen wie `Kalorien`, `Protein`, `Kohlenhydrate` und `Fett` sollen auf kleineren Karten responsiv auf mindestens zwei Kacheln pro Zeile schrumpfen können, statt unnötig früh auf Einzelspalten zu fallen.
 
 ### Einkaufsliste
 - Oben ein sichtbarer Modus-Schalter zwischen:

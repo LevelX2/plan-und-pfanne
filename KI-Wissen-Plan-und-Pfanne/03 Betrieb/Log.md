@@ -267,6 +267,33 @@
   `npm run build` erfolgreich,
   `npm run build` mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` und `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich.
 
+## [2026-04-23] bugfix | Einkaufsliste behält gesetzte Häkchen jetzt nach dem Tippen
+- Der Klick auf Zutaten in `src/app/einkaufsliste/shopping-list-client.tsx` wurde zuvor direkt wieder neutralisiert, weil die Rehydratisierung der Abhakzustände an einem pro Render neu erzeugten Array hing und dadurch nach jedem lokalen State-Update erneut anlief.
+- Die Abhängigkeit der Rehydratisierung nutzt jetzt eine stabile String-Signatur der aktuellen Listen-IDs statt der flüchtigen Array-Referenz; dadurch bleiben Häkchen beim Abhaken erhalten und werden nur noch bei echten Listenänderungen neu geladen.
+- Die generische Leitplanke für lokal rehydrierte UI-Zustände wurde zusätzlich in `03 Betrieb/Generische Entwicklungsvorgaben.md` festgehalten, damit ähnliche IndexedDB- oder Snapshot-Workflows denselben Fehler nicht wiederholen.
+
+## [2026-04-23] wissensbasis | Finito-Sequenz als neue Abschlussregel dokumentiert
+- Die neue Chat-Anforderung zur Finito-Sequenz wurde als Rohquelle unter `01 Rohquellen/2026-04-23 Finito-Sequenz fuer Thread-Abschluss.md` erfasst.
+- `AGENTS.md` ersetzt die bisherigen Abschluss-Kommandos jetzt durch die neue Finito-Sequenz mit den Triggern `Finito` und `Ende`.
+- Die Prozessseite `02 Wissen/Prozesse/Arbeitsworkflow Wissenspflege und Projektanfragen.md` beschreibt den Thread-Abschluss jetzt ebenfalls als eigenen wiederkehrenden Fall.
+- Die Regel hält ausdrücklich fest, dass Commit-Blöcke sinnvoll getrennt werden, Wissenspflege zum Abschluss gehört und fremde offene Änderungen den Thread-Abschluss nicht automatisch blockieren.
+
+## [2026-04-23] umsetzung | Rezeptbibliothek auf zweistufige Einklapp-Navigation umgestellt
+- Die bisher vollständig aufgeklappte Rezeptliste wurde auf eine hierarchische Bibliotheksansicht umgestellt.
+- In `src/app/rezepte/recipes-client.tsx` starten jetzt alle Mahlzeiten-Gruppen standardmäßig eingeklappt; innerhalb geöffneter Gruppen zeigen Rezepte zunächst nur kompakte Kopfzeilen.
+- Pro Rezept werden im geschlossenen Zustand jetzt Name, Klassifizierung, Vorbereitungszeit und Zutatenanzahl gezeigt; Zutaten und Zubereitung öffnen sich erst nach einem zusätzlichen Klick und können wieder geschlossen werden.
+- Die querybasierte Detailverlinkung über `/rezepte?recipe=<id>` bleibt dabei erhalten und öffnet weiterhin das passende Rezept innerhalb seiner Mahlzeiten-Gruppe.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.
+
+## [2026-04-23] betrieb | Lokaler Next-Dev-Server nach inkonsistentem `.next`-Ordner repariert
+- Im lokalen Vorschau-Setup lief die App kurzzeitig auf `500`, obwohl die Rezeptseite selbst nicht der Auslöser war.
+- Sichtbar waren `ENOENT`-Fehler zu fehlenden Dateien unter `.next/dev`, insbesondere `routes-manifest.json`, `server/app/rezepte/page.js` und mehrere `webpack/*.pack.gz`.
+- Die Reparatur bestand darin, den generierten Ordner `.next` vollständig zu löschen und `npm run dev` im Projekt neu zu starten.
+- Danach antworteten die zuvor betroffenen Routen `/rezepte/` und `/tage/?date=2026-04-20` wieder mit Status `200`.
+- Die lokale Prozessseite hält jetzt zusätzlich fest, dass `npm run dev` und `npm run build` nicht parallel denselben `.next`-Ordner verwenden sollten.
+
 ## [2026-04-23] bugfix | Tagesstatus trennt leere Auswahl von teilaktiven Tagen
 - In `src/app/home-client.tsx` unterscheidet der Tagesstatus im Dashboard jetzt drei Fälle:
   `noch nicht aktiv`, `teilweise aktiv` und `aktiv geplant`.
@@ -275,3 +302,44 @@
 - Verifikation:
   `npm run lint` erfolgreich,
   `npm run build` erfolgreich.
+
+## [2026-04-23] umsetzung | Dashboard-Tageskarten für aktive Gerichte verdichtet
+- In `src/app/home-client.tsx` stehen Statuslabel und Aktiv-Zähler eines Tages jetzt gemeinsam im Kopf der Tageskarte; die doppelte Zähleranzeige neben `Tag auswählen` und `Tag abwählen` entfällt.
+- Die Statusberechnung klemmt ausgewählte Mahlzeiten zusätzlich auf den realen Tagesumfang; bei `0` aktiven Mahlzeiten erscheint jetzt nur noch ein neutraler Zähler statt eines farbigen Aktiv-Statuslabels.
+- `src/lib/week-plan-selection.ts` normalisiert lokal gespeicherte `selectedMealKeys` jetzt zusätzlich eindeutig, damit doppelte Altwerte weder Zähler noch Layout unnötig aufblähen.
+- `src/app/page.module.css` rendert die Tagessummen `Kalorien`, `Protein`, `Kohlenhydrate` und `Fett` jetzt kompakter über ein responsives Auto-Fit-Grid, sodass auf schmaleren Karten mindestens zwei Werte pro Zeile Platz behalten und auf breiteren Karten mehr nebeneinander möglich sind.
+- Die Auswahlleiste nutzt für `Alle auswählen`, `Alle abwählen` und `Einkaufsliste öffnen` jetzt denselben Pillenstil; zusätzlich startet der linke Einführungsblock im Dashboard eingeklappt und zeigt zunächst nur noch den App-Namen.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich,
+  `http://localhost:3000/` lokal erfolgreich mit Status `200` geprüft.
+
+## [2026-04-23] bugfix | Dev-Service-Worker auf localhost erzeugte falschen Serverfehler
+- Auf `http://localhost:3000/` erschien zeitweise ein Browserfehler mit `Hydration failed`, obwohl der Dev-Server selbst weiter `200` auf die Startseite lieferte.
+- Ursache war kein echter Serverabsturz, sondern ein in der Entwicklung aktiver Service Worker, der veraltete Next-Bundles aus dem Offline-Cache gegen frisches HTML laufen ließ.
+- `src/app/layout.tsx` injiziert im Dev-Modus auf `localhost` jetzt einen frühen Reset, der alte Service-Worker-Registrierungen und `plan-und-pfanne-offline*`-Caches einmalig entfernt und die Seite danach neu lädt.
+- `src/app/pwa-register.tsx` registriert den Service Worker im Entwicklungsmodus nicht mehr neu und räumt bestehende Registrierungen/Caches stattdessen ebenfalls auf.
+- Die Prozessseite `02 Wissen/Prozesse/Lokaler Start von Entwicklung und Test.md` dokumentiert diesen lokalen Fehlerfall jetzt zusätzlich.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `http://localhost:3000/` erfolgreich mit Status `200`,
+  ausgeliefertes HTML enthält das Dev-Reset-Skript.
+
+## [2026-04-23] umsetzung | Hero-Einführung und Einkaufslistenmodus mobil lesbarer gemacht
+- Auf der Startseite zeigt der eingeklappte Hero jetzt nur noch den App-Namen `Plan und Pfanne`; das kleine Zusatzlabel darüber entfällt.
+- Die aufgeklappte Einführung in `src/app/home-client.tsx` beschreibt die Rolle der App jetzt deutlich ausführlicher:
+  lokale Speicherung, aktive Gerichte, Wochenüberblick, Rezeptsuche und der Unterschied zwischen fokussierter und kompletter Einkaufsliste.
+- In `src/app/einkaufsliste/shopping-list-client.tsx` ist die Statuszeile `x von y Gerichten aktiv` jetzt als eigener, stärker gewichteter Textblock modelliert.
+- `src/app/einkaufsliste/shopping.module.css` gibt dem Listenmodus-Panel mehr Breite, lässt es auf kleineren Ansichten sauber auf volle Spaltenbreite wachsen und spannt den Button `Häkchen zurücksetzen` kontrolliert über die ganze Toolbar-Zeile.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `http://localhost:3000/` erfolgreich mit Status `200`,
+  `http://localhost:3000/einkaufsliste/` erfolgreich mit Status `200`.
+
+## [2026-04-23] umsetzung | Hero-Titel mit App-Icon und ruhigerem Infotext verfeinert
+- Der Titelblock im Dashboard-Hero zeigt jetzt das echte App-Icon aus `public/icon-192.png` direkt vor `Plan und Pfanne`.
+- Der bisher technische Buttontext `Einführung anzeigen` wurde in `src/app/home-client.tsx` durch `Mehr zur App` ersetzt; der geöffnete Zustand schließt jetzt mit `Weniger anzeigen`.
+- `src/app/page.module.css` ergänzt dafür eine eigene Titelzeile mit Icon-Abstand und leichter Schattenkante, ohne die kompakte eingeklappte Hero-Höhe unnötig aufzublähen.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `http://localhost:3000/` erfolgreich mit Status `200`.

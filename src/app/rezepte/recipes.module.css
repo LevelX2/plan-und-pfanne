@@ -176,7 +176,50 @@
 }
 
 .groupHeader {
-  margin-bottom: 18px;
+  margin-bottom: 0;
+}
+
+.groupCardExpanded {
+  border-color: rgba(20, 76, 57, 0.24);
+}
+
+.groupButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.groupButtonMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.groupAction {
+  color: rgba(19, 38, 29, 0.62);
+  font-size: 0.92rem;
+}
+
+.toggleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
+  background: rgba(20, 76, 57, 0.08);
+  color: #144c39;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
 
 .groupHeader h2,
@@ -188,13 +231,14 @@
 
 .recipeGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 18px;
 }
 
 .recipeCard {
   display: grid;
-  gap: 14px;
+  gap: 0;
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
@@ -213,8 +257,8 @@
 .recipeButton {
   width: 100%;
   display: grid;
-  gap: 14px;
-  padding: 20px;
+  gap: 12px;
+  padding: 18px 20px;
   border: 0;
   background: transparent;
   color: inherit;
@@ -227,11 +271,30 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  align-items: start;
+  align-items: center;
+}
+
+.recipeHeading {
+  display: grid;
+  gap: 10px;
 }
 
 .recipeTop h3 {
   font-size: 1.15rem;
+}
+
+.recipeSummaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.summaryPill {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(20, 76, 57, 0.07);
+  font-size: 0.84rem;
+  color: rgba(19, 38, 29, 0.84);
 }
 
 .description {
@@ -275,11 +338,21 @@
   color: #144c39;
 }
 
+.recipeExpandedContent {
+  display: grid;
+  gap: 18px;
+  padding: 0 20px 20px;
+}
+
+.recipePreview {
+  display: grid;
+  gap: 14px;
+}
+
 .recipeDetails {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
-  padding: 0 20px 20px;
 }
 
 .recipeDetailColumn {
@@ -382,7 +455,6 @@
   .hero,
   .detailHero,
   .detailGrid,
-  .recipeGrid,
   .recipeDetails,
   .installCard {
     grid-template-columns: 1fr;
@@ -397,7 +469,8 @@
   .hero,
   .groupCard,
   .detailHeroText,
-  .macroPanel {
+  .macroPanel,
+  .installCard {
     padding: 22px;
     border-radius: 24px;
   }
@@ -405,6 +478,20 @@
   .hero h1,
   .detailHero h1 {
     font-size: 2.3rem;
+  }
+
+  .groupButton,
+  .recipeTop {
+    align-items: start;
+  }
+
+  .groupButton {
+    flex-direction: column;
+  }
+
+  .groupButtonMeta {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .ingredientList li {

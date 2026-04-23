@@ -92,7 +92,7 @@ export function createShoppingChecksStorageKey(input: {
 
 export function normalizeSelectedMealKeys(weekPlan: WeekPlan, selectedMealKeys: PlannedMealKey[]) {
   const allowedKeys = new Set(listWeekMealKeys(weekPlan));
-  return selectedMealKeys.filter((mealKey) => allowedKeys.has(mealKey));
+  return [...new Set(selectedMealKeys)].filter((mealKey) => allowedKeys.has(mealKey));
 }
 
 export function buildShoppingListGroups(entries: ShoppingIngredientEntry[]): ShoppingGroup[] {
