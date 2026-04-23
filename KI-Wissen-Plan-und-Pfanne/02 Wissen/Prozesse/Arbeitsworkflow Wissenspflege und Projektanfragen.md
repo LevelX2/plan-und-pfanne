@@ -1,9 +1,10 @@
 ---
 typ: prozess
 status: aktiv
-letzte_aktualisierung: 2026-04-22
+letzte_aktualisierung: 2026-04-23
 quellen:
   - ../../00 Steuerung/Regeldatei KI-Wissenspflege.md
+  - ../../01 Rohquellen/2026-04-23 Finito-Sequenz fuer Thread-Abschluss.md
 tags:
   - workflow
   - wissenspflege
@@ -68,11 +69,27 @@ Dieser Workflow beschreibt, wie die Wissensbasis im Alltag genutzt und gepflegt 
 3. Konkrete Korrekturhinweise in [[../../03 Betrieb/Qualitaetspruefung]] dokumentieren.
 4. Wenn sinnvoll, fehlende Verlinkungen oder kleinere Strukturkorrekturen direkt nachziehen.
 
+## Fall 5: Thread mit Finito abschließen
+### Typischer Auslöser
+- Du schreibst sinngemäß: `Finito` oder `Ende`.
+
+### Ablauf
+1. Prüfen, ob für den aktuellen Thread noch fachliche, technische oder organisatorische Punkte offen sind.
+2. Teile mit offenen Fragen oder bewussten Entscheidungsbedarfen klar benennen und noch nicht vorschnell committen.
+3. Alle konsistent abgeschlossenen Änderungen in sinnvolle Commit-Blöcke aufteilen.
+4. Nötige Wissenspflege nach den normalen Regeln nachziehen und als Teil des Abschlussstands mit berücksichtigen.
+5. Alle abgeschlossenen Teile mit jeweils passender Commit-Message committen.
+6. Die gemachten Commits im Abschluss jeweils in einer eigenen Zeile nennen.
+7. Verbleibende offene Fragen, Konflikte oder nicht zu diesem Thread gehörende uncommittete Änderungen kompakt einordnen.
+8. Wenn keine relevanten offenen Punkte für diesen Thread übrig bleiben, den Thread als abgeschlossen und archivierungsreif behandeln.
+
 ## Empfohlene Kurzbefehle für den Alltag
 - `Nimm diese Quelle in die Projekt-Wissensbasis auf.`
 - `Beantworte das wiki-first aus der Projekt-Wissensbasis.`
 - `Führe dieses Ergebnis als Projektwissen in die Wissensbasis zurück.`
 - `Mach einen Lint-Check für die Wissensbasis.`
+- `Finito`
+- `Ende`
 
 ## Verwandte Seiten
 - [[Lokaler Start von Entwicklung und Test]]
