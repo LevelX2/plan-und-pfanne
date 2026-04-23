@@ -1,3 +1,5 @@
+export const LOCAL_PWA_STORAGE_NAMESPACE = "local-pwa";
+
 export function createUserStorageNamespace(userId: number) {
   return `user:${userId}`;
 }

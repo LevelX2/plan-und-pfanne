@@ -15,7 +15,10 @@ import {
   type ShoppingListMode,
   type WeekSelectionSnapshot,
 } from "@/lib/week-plan-selection";
-import { createUserScopedStorageKey } from "@/lib/user-storage";
+import {
+  createUserScopedStorageKey,
+  LOCAL_PWA_STORAGE_NAMESPACE,
+} from "@/lib/user-storage";
 import {
   describeMealPlanMode,
   formatCalories,
@@ -58,8 +61,6 @@ type LocalStatusEntry = {
   value: string;
   hint?: string;
 };
-
-const LOCAL_STORAGE_NAMESPACE = "device:local";
 
 function macroBadgeClass(delta: number) {
   if (Math.abs(delta) <= 5) {
@@ -371,7 +372,7 @@ export function HomeClient() {
   const [selectedMealKeys, setSelectedMealKeys] = useState<string[]>([]);
   const [shoppingMode, setShoppingMode] = useState<ShoppingListMode>("active-only");
   const selectionHydratedRef = useRef(false);
-  const storageNamespace = LOCAL_STORAGE_NAMESPACE;
+  const storageNamespace = LOCAL_PWA_STORAGE_NAMESPACE;
 
   useEffect(() => {
     const updateOnlineState = () => {

@@ -6,6 +6,7 @@ import { AppNav } from "@/app/app-nav";
 import { formatDateRange, formatShoppingListQuantity } from "@/lib/format";
 import { loadOfflineSnapshot, saveOfflineSnapshot } from "@/lib/offline-store";
 import type { WeekPlan } from "@/lib/types";
+import { LOCAL_PWA_STORAGE_NAMESPACE } from "@/lib/user-storage";
 import {
   buildShoppingListGroupsForWeekPlan,
   countShoppingItems,
@@ -18,8 +19,6 @@ import {
   type WeekSelectionSnapshot,
 } from "@/lib/week-plan-selection";
 import styles from "./shopping.module.css";
-
-const LOCAL_UI_NAMESPACE = "local-pwa";
 
 type LocalStoreApi = {
   ensureLocalAppData?: () => Promise<unknown>;
@@ -62,7 +61,7 @@ function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
     group.items.map((item) => itemId(group.category, item.name, item.unit)),
   );
   const checksStorageKey = createShoppingChecksStorageKey({
-    storageNamespace: LOCAL_UI_NAMESPACE,
+    storageNamespace: LOCAL_PWA_STORAGE_NAMESPACE,
     startDate: weekPlan.startDate,
     mode: shoppingMode,
     planSignature,
@@ -74,7 +73,7 @@ function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
     selectionHydratedRef.current = false;
 
     void loadOfflineSnapshot<WeekSelectionSnapshot>(
-      createWeekSelectionStorageKey(LOCAL_UI_NAMESPACE, weekPlan.startDate),
+      createWeekSelectionStorageKey(LOCAL_PWA_STORAGE_NAMESPACE, weekPlan.startDate),
     )
       .then((snapshot) => {
         if (cancelled) {
@@ -119,7 +118,7 @@ function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
     };
 
     void saveOfflineSnapshot(
-      createWeekSelectionStorageKey(LOCAL_UI_NAMESPACE, weekPlan.startDate),
+      createWeekSelectionStorageKey(LOCAL_PWA_STORAGE_NAMESPACE, weekPlan.startDate),
       selectionSnapshot,
     ).catch((error) => {
       console.error("Aktive Gerichte konnten nicht gespeichert werden.", error);
