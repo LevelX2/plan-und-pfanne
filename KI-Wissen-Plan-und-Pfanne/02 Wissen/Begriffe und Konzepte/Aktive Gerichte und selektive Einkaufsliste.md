@@ -5,6 +5,7 @@ letzte_aktualisierung: 2026-04-23
 quellen:
   - ../../../01 Rohquellen/2026-04-23 Aktive Gerichte im Wochenplan und selektive Einkaufsliste.md
   - ../../../src/app/page.tsx
+  - ../../../src/app/home-client.tsx
   - ../../../src/app/einkaufsliste/page.tsx
   - ../../../src/app/einkaufsliste/shopping-list-client.tsx
   - ../../../src/lib/store.ts
@@ -67,6 +68,10 @@ Der erzeugte Wochenplan bleibt vollständig erhalten. Zusätzlich soll der Nutze
 - Die Wochenübersicht soll neben dem Wochentitel oder in einer Statuszeile sichtbar machen:
   - wie viele Mahlzeiten geplant sind
   - wie viele davon aktuell aktiv sind
+- Der sichtbare Tagesstatus soll den Initialzustand ausdrücklich von einer Teilauswahl trennen:
+  - `noch nicht aktiv`, wenn an diesem Tag noch keine Mahlzeit aktiviert ist
+  - `teilweise aktiv`, wenn nur ein Teil der geplanten Mahlzeiten aktiviert ist
+  - `aktiv geplant`, wenn alle geplanten Mahlzeiten dieses Tages aktiviert sind
 
 ### Einkaufsliste
 - Oben ein sichtbarer Modus-Schalter zwischen:

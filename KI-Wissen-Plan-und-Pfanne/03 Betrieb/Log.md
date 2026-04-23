@@ -266,3 +266,12 @@
   `npm run lint` erfolgreich,
   `npm run build` erfolgreich,
   `npm run build` mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` und `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich.
+
+## [2026-04-23] bugfix | Tagesstatus trennt leere Auswahl von teilaktiven Tagen
+- In `src/app/home-client.tsx` unterscheidet der Tagesstatus im Dashboard jetzt drei Fälle:
+  `noch nicht aktiv`, `teilweise aktiv` und `aktiv geplant`.
+- Damit zeigt ein Tag ohne ausgewählte Mahlzeit nicht länger fälschlich `teilweise aktiv`, obwohl der Initialzustand der aktiven Auswahl bewusst leer ist.
+- Die fachliche UI-Regel wurde zusätzlich in `02 Wissen/Begriffe und Konzepte/Aktive Gerichte und selektive Einkaufsliste.md` ergänzt.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.

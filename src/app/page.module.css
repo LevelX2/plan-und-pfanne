@@ -319,6 +319,7 @@
 
 .statusGood,
 .statusWarn,
+.statusIdle,
 .macroBadge {
   display: inline-flex;
   align-items: center;
@@ -329,7 +330,8 @@
 }
 
 .statusGood,
-.statusWarn {
+.statusWarn,
+.statusIdle {
   min-height: 32px;
   padding: 0 12px;
 }
@@ -342,6 +344,11 @@
 .statusWarn {
   background: rgba(208, 110, 47, 0.16);
   color: #9a4717;
+}
+
+.statusIdle {
+  background: rgba(19, 38, 29, 0.08);
+  color: rgba(19, 38, 29, 0.72);
 }
 
 .dayTotals {

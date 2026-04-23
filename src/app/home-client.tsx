@@ -62,6 +62,12 @@ type LocalStatusEntry = {
   hint?: string;
 };
 
+type DayActivationStatus = {
+  className: string;
+  countLabel: string;
+  summaryLabel: string;
+};
+
 function macroBadgeClass(delta: number) {
   if (Math.abs(delta) <= 5) {
     return styles.macroGood;
@@ -72,6 +78,30 @@ function macroBadgeClass(delta: number) {
   }
 
   return styles.macroOff;
+}
+
+function resolveDayActivationStatus(selectedMealCount: number, totalMealCount: number): DayActivationStatus {
+  if (selectedMealCount <= 0) {
+    return {
+      className: styles.statusIdle,
+      countLabel: `0 von ${totalMealCount} aktiv`,
+      summaryLabel: "noch nicht aktiv",
+    };
+  }
+
+  if (selectedMealCount >= totalMealCount) {
+    return {
+      className: styles.statusGood,
+      countLabel: `${selectedMealCount} von ${totalMealCount} aktiv`,
+      summaryLabel: "aktiv geplant",
+    };
+  }
+
+  return {
+    className: styles.statusWarn,
+    countLabel: `${selectedMealCount} von ${totalMealCount} aktiv`,
+    summaryLabel: "teilweise aktiv",
+  };
 }
 
 function formatSavedAt(isoString: string) {
@@ -747,9 +777,13 @@ export function HomeClient() {
                 const carbsDelta = day.macroPercents.carbs - day.targets.macroPercents.carbs;
                 const fatDelta = day.macroPercents.fat - day.targets.macroPercents.fat;
                 const dayMealKeys = day.meals.map((meal) => plannedMealKeyForMeal(day.date, meal));
-                const allDayMealsActive =
-                  dayMealKeys.length > 0 &&
-                  dayMealKeys.every((mealKey) => selectedMealKeySet.has(mealKey));
+                const selectedDayMealCount = dayMealKeys.filter((mealKey) =>
+                  selectedMealKeySet.has(mealKey),
+                ).length;
+                const dayActivationStatus = resolveDayActivationStatus(
+                  selectedDayMealCount,
+                  dayMealKeys.length,
+                );
 
                 return (
                   <article className={styles.dayCard} key={day.date}>
@@ -758,8 +792,8 @@ export function HomeClient() {
                         <h3>{day.weekdayLabel}</h3>
                         <p>{formatDateGerman(day.date)}</p>
                       </div>
-                      <span className={allDayMealsActive ? styles.statusGood : styles.statusWarn}>
-                        {allDayMealsActive ? "aktiv geplant" : "teilweise aktiv"}
+                      <span className={dayActivationStatus.className}>
+                        {dayActivationStatus.summaryLabel}
                       </span>
                     </div>
 
@@ -795,9 +829,8 @@ export function HomeClient() {
                     </div>
 
                     <div className={styles.dayActionRow}>
-                      <span className={allDayMealsActive ? styles.statusGood : styles.statusWarn}>
-                        {dayMealKeys.filter((mealKey) => selectedMealKeySet.has(mealKey)).length} von{" "}
-                        {dayMealKeys.length} aktiv
+                      <span className={dayActivationStatus.className}>
+                        {dayActivationStatus.countLabel}
                       </span>
                       <div className={styles.dayActionButtons}>
                         <button
