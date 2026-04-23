@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./shopping.module.css";
-import { buildShoppingListForWeek, getCurrentWeekPlan } from "@/lib/store";
+import { getCurrentWeekPlan } from "@/lib/store";
 import { formatDateRange } from "@/lib/format";
 import { ShoppingListClient } from "@/app/einkaufsliste/shopping-list-client";
 
@@ -13,8 +13,7 @@ export default function ShoppingListPage() {
     throw new Error("Die Einkaufsliste konnte nicht geladen werden.");
   }
 
-  const shoppingGroups = buildShoppingListForWeek(weekPlan.startDate);
-  const totalItems = shoppingGroups.reduce((sum, group) => sum + group.items.length, 0);
+  const totalMeals = weekPlan.days.reduce((sum, day) => sum + day.meals.length, 0);
 
   return (
     <main className={styles.page}>
@@ -39,15 +38,13 @@ export default function ShoppingListPage() {
           <span>Aktive Woche</span>
           <strong>{formatDateRange(weekPlan.startDate, weekPlan.endDate)}</strong>
           <p>
-            {totalItems} Positionen in {shoppingGroups.length} Kategorien
+            {totalMeals} geplante Gerichte. Wechsle unten zwischen aktivem Kochfokus und kompletter
+            Woche.
           </p>
         </div>
       </section>
 
-      <ShoppingListClient
-        groups={shoppingGroups}
-        storageKey={`shopping-checks:${weekPlan.startDate}`}
-      />
+      <ShoppingListClient weekPlan={weekPlan} />
     </main>
   );
 }

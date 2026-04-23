@@ -108,6 +108,56 @@
   align-items: center;
 }
 
+.modePanel {
+  display: grid;
+  gap: 10px;
+  padding: 20px 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  box-shadow: 0 22px 60px rgba(19, 38, 29, 0.08);
+  background: rgba(255, 252, 247, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.modeButtons,
+.emptyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.modeButton,
+.emptyLink {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  background: rgba(255, 252, 247, 0.8);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modeButtonActive {
+  background: linear-gradient(135deg, #d06e2f, #b7551c);
+  border-color: #b7551c;
+  color: #fffaf5;
+  box-shadow: 0 16px 28px rgba(176, 85, 28, 0.24);
+}
+
+.modeButtonInactive {
+  color: #13261d;
+}
+
+.contextMeta {
+  color: rgba(19, 38, 29, 0.7);
+  line-height: 1.6;
+}
+
 .progressCard {
   display: grid;
   gap: 8px;
@@ -127,6 +177,31 @@
 
 .groupCard {
   padding: 24px;
+}
+
+.emptyState {
+  display: grid;
+  gap: 14px;
+  padding: 28px;
+  border-radius: 28px;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  box-shadow: 0 22px 60px rgba(19, 38, 29, 0.08);
+  background: rgba(255, 252, 247, 0.84);
+}
+
+.emptyState h2 {
+  font-size: 1.9rem;
+  letter-spacing: -0.04em;
+}
+
+.emptyState p {
+  max-width: 44rem;
+  color: rgba(19, 38, 29, 0.75);
+  line-height: 1.7;
+}
+
+.emptyLink {
+  color: #13261d;
 }
 
 .groupHeader {
@@ -230,8 +305,9 @@
 
   .toolbar,
   .groupHeader,
-  .itemText {
-    grid-template-columns: 1fr;
+  .itemText,
+  .modeButtons,
+  .emptyActions {
     flex-direction: column;
     align-items: start;
   }

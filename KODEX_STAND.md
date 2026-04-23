@@ -52,10 +52,11 @@
 ## UI-Stand
 
 - Dashboard zeigt aktuelle Woche, Tageskarten, Makro-Abweichungen und Planungsprofil
+- Dashboard erlaubt zusätzlich das Aktivieren und Deaktivieren einzelner geplanter Mahlzeiten sowie Schnellaktionen pro Tag und fuer die ganze Woche
 - Rezeptbibliothek ist gruppiert und offline lesbar
 - Rezept-Detailseiten sind vorhanden
 - Tagesseiten sind vorhanden und mit dem Dashboard verknuepft
-- Einkaufsliste ist vorhanden und speichert Abhakstatus lokal
+- Einkaufsliste ist vorhanden, unterstuetzt `aktive Gerichte` sowie `alle geplanten Gerichte` und speichert Abhakstatus lokal pro Listenkontext
 - Einstellungsseite ist vorhanden und regeneriert die Woche beim Speichern
 
 ## Scheduler-Stand
@@ -69,7 +70,8 @@
 - `npm run lint` erfolgreich verifiziert
 - `npm run build` erfolgreich verifiziert
 - `next.config.ts` nutzt `output: "standalone"` und `serverExternalPackages: ["better-sqlite3"]`
-- beim Turbopack-Build bleibt aktuell noch eine NFT-Warnung zur Dateinachverfolgung rund um den Datenbankpfad bestehen
+- die fruehere Turbopack-NFT-Warnung zur Dateinachverfolgung rund um den Datenbankpfad tritt nach engerem Pfadscoping in `src/lib/db.ts` nicht mehr auf
+- ein lokal laufender Standalone-Prozess auf `.next/standalone/server.js` kann Builds blockieren, wenn er parallel auf den frischen Build-Output zugreift
 
 ## Wichtige Einordnung
 

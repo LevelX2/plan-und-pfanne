@@ -38,7 +38,7 @@ Stand 2026-04-23:
 
 - `npm run lint` erfolgreich
 - `npm run build` erfolgreich
-- beim Build bleibt aktuell noch eine Turbopack-Warnung zur NFT-Dateinachverfolgung rund um den datenbanknahen Dateisystemzugriff bestehen
+- die frühere Turbopack-Warnung zur NFT-Dateinachverfolgung rund um den datenbanknahen Dateisystemzugriff tritt nach engerem SQLite-Pfadscoping in `src/lib/db.ts` nicht mehr auf
 
 ## Offline-Umfang
 
@@ -47,6 +47,7 @@ Die App ist als PWA vorbereitet und speichert derzeit nach vorherigem Online-Lad
 - Dashboard-Snapshot
 - Rezeptbibliothek
 - Einkaufslistenstatus
+- aktive Gerichtsauswahl pro Woche inklusive Einkaufslistenmodus
 
 Offline ist der Modus aktuell bewusst weitgehend lesend. Dashboard, Rezeptbibliothek und Einkaufsliste bleiben nach vorherigem Laden nutzbar. Schreibende Server-Aktionen wie Speichern der Einstellungen oder Neugenerieren des Wochenplans brauchen weiterhin eine Verbindung.
 
@@ -74,6 +75,16 @@ Der Endpunkt `/api/scheduler/weekly` erzeugt den Wochenplan für die nächste Wo
 - Das Formular unter `/einstellungen` zeigt erwartete Validierungs- und Speicherfehler inline an, statt die Seite mit einem harten Fehler abbrechen zu lassen.
 - Für unerwartete Laufzeitfehler und nicht gefundene Seiten gibt es nutzerfreundliche App-Fallbacks.
 
+## Aktive Gerichte und Einkaufsliste
+
+- Im Dashboard lassen sich geplante Mahlzeiten pro Gericht, pro Tag oder für die ganze Woche aktivieren und deaktivieren.
+- Die aktive Auswahl startet bewusst leer und bleibt lokal pro Woche gespeichert.
+- Die Einkaufsliste unterstützt zwei Modi:
+  - `aktive Gerichte`
+  - `alle geplanten Gerichte`
+- Im Modus `aktive Gerichte` zeigt die Einkaufsliste bei leerer Auswahl einen expliziten Leerzustand statt stillschweigend alle Zutaten an.
+- Der Abhakstatus der Einkaufsliste wird lokal pro Woche und Listenkontext gespeichert.
+
 ## Deployment auf Railway
 
 Das Projekt ist für Railway vorbereitet:
@@ -82,6 +93,7 @@ Das Projekt ist für Railway vorbereitet:
 - `railway.toml`
 - `output: "standalone"` in `next.config.ts`
 - volumenfähiger Datenbankpfad über `DATA_DIR` oder `RAILWAY_VOLUME_MOUNT_PATH`
+- enger auf `planner.sqlite` gescopter SQLite-Pfad in `src/lib/db.ts`, damit der Turbopack-Build den Dateisystemzugriff nicht unnötig breit traced
 
 Aktueller Betriebsstand:
 

@@ -1,9 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { regenerateCurrentWeekAction } from "@/app/actions";
+import {
+  countShoppingItems,
+  createWeekPlanSignature,
+  createWeekSelectionStorageKey,
+  buildShoppingListGroupsForWeekPlan,
+  listWeekMealKeys,
+  normalizeSelectedMealKeys,
+  plannedMealKeyForMeal,
+  type ShoppingListMode,
+  type WeekSelectionSnapshot,
+} from "@/lib/week-plan-selection";
 import {
   describeMealPlanMode,
   formatCalories,
@@ -30,7 +41,6 @@ type HomeSnapshot = {
   settings: UserSettings;
   weekPlan: WeekPlan;
   recipeCounts: RecipeCounts;
-  shoppingItemCount: number;
   savedAt: string;
 };
 
@@ -60,6 +70,9 @@ function formatSavedAt(isoString: string) {
 export function HomeClient({ initialSnapshot }: HomeClientProps) {
   const [offlineSnapshot, setOfflineSnapshot] = useState<HomeSnapshot | null>(null);
   const [isOffline, setIsOffline] = useState(false);
+  const [selectedMealKeys, setSelectedMealKeys] = useState<string[]>([]);
+  const [shoppingMode, setShoppingMode] = useState<ShoppingListMode>("active-only");
+  const selectionHydratedRef = useRef(false);
 
   useEffect(() => {
     const updateOnlineState = () => {
@@ -99,8 +112,98 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
   }, [isOffline]);
 
   const snapshot = isOffline && offlineSnapshot ? offlineSnapshot : initialSnapshot;
-  const { settings, weekPlan, recipeCounts, shoppingItemCount, savedAt } = snapshot;
+  const { settings, weekPlan, recipeCounts, savedAt } = snapshot;
+  const planSignature = createWeekPlanSignature(weekPlan);
+  const allMealKeys = listWeekMealKeys(weekPlan);
+  const allShoppingItemCount = countShoppingItems(
+    buildShoppingListGroupsForWeekPlan(weekPlan, "all-planned", []),
+  );
+  const activeShoppingItemCount = countShoppingItems(
+    buildShoppingListGroupsForWeekPlan(weekPlan, "active-only", selectedMealKeys),
+  );
+  const selectedMealKeySet = new Set(selectedMealKeys);
+  const totalMealCount = allMealKeys.length;
+  const selectedMealCount = selectedMealKeys.length;
   const bestDay = [...weekPlan.days].sort((left, right) => left.score - right.score)[0];
+
+  useEffect(() => {
+    let cancelled = false;
+    selectionHydratedRef.current = false;
+
+    void loadOfflineSnapshot<WeekSelectionSnapshot>(createWeekSelectionStorageKey(weekPlan.startDate))
+      .then((snapshot) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (snapshot?.planSignature === planSignature) {
+          setSelectedMealKeys(normalizeSelectedMealKeys(weekPlan, snapshot.selectedMealKeys));
+          setShoppingMode(snapshot.shoppingMode);
+        } else {
+          setSelectedMealKeys([]);
+          setShoppingMode("active-only");
+        }
+
+        selectionHydratedRef.current = true;
+      })
+      .catch(() => {
+        if (cancelled) {
+          return;
+        }
+
+        setSelectedMealKeys([]);
+        setShoppingMode("active-only");
+        selectionHydratedRef.current = true;
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [planSignature, weekPlan, weekPlan.startDate]);
+
+  useEffect(() => {
+    if (!selectionHydratedRef.current) {
+      return;
+    }
+
+    const selectionSnapshot: WeekSelectionSnapshot = {
+      planSignature,
+      selectedMealKeys,
+      shoppingMode,
+      savedAt: new Date().toISOString(),
+    };
+
+    void saveOfflineSnapshot(createWeekSelectionStorageKey(weekPlan.startDate), selectionSnapshot).catch(
+      (error) => {
+        console.error("Aktive Gerichte konnten nicht gespeichert werden.", error);
+      },
+    );
+  }, [planSignature, selectedMealKeys, shoppingMode, weekPlan.startDate]);
+
+  function toggleMeal(mealKey: string) {
+    setSelectedMealKeys((current) =>
+      current.includes(mealKey)
+        ? current.filter((entry) => entry !== mealKey)
+        : [...current, mealKey],
+    );
+  }
+
+  function selectAllMeals() {
+    setSelectedMealKeys(allMealKeys);
+  }
+
+  function clearAllMeals() {
+    setSelectedMealKeys([]);
+  }
+
+  function selectDayMeals(dayMealKeys: string[]) {
+    setSelectedMealKeys((current) => [...new Set([...current, ...dayMealKeys])]);
+  }
+
+  function clearDayMeals(dayMealKeys: string[]) {
+    const dayKeySet = new Set(dayMealKeys);
+    setSelectedMealKeys((current) => current.filter((mealKey) => !dayKeySet.has(mealKey)));
+  }
 
   return (
     <main className={styles.page}>
@@ -128,6 +231,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
           <p className={styles.panelCopy}>
             {describeMealPlanMode(settings.mealsPerDay)} bei {formatCalories(settings.calorieTarget)}{" "}
             und Makroziel {settings.macroProteinPct}/{settings.macroCarbsPct}/{settings.macroFatPct}.
+            {" "}Mix: {settings.vegetarianSharePct}/{settings.fishSharePct}/{settings.meatSharePct}.
           </p>
 
           <div className={styles.heroActions}>
@@ -143,7 +247,12 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
             </div>
             <div className={styles.inlineMeta}>
               <span>{weekPlan.days.length} Tage geplant</span>
-              <span>{shoppingItemCount} Einkaufspositionen</span>
+              <span>{allShoppingItemCount} Einkaufspositionen gesamt</span>
+              <span>
+                {selectedMealCount === 0
+                  ? "Noch keine aktiven Gerichte"
+                  : `${activeShoppingItemCount} Positionen für aktive Gerichte`}
+              </span>
             </div>
           </div>
         </div>
@@ -201,8 +310,35 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
                 <h2>Alle 7 Tage auf einen Blick</h2>
               </div>
               <p className={styles.sectionHint}>
-                Jede Karte zeigt Tagessumme, Makroabweichung und die geplanten Mahlzeiten.
+                Jede Karte zeigt Tagessumme, Makroabweichung und die geplanten Mahlzeiten. Aktiviere
+                hier die Gerichte, die du wirklich kochen möchtest.
               </p>
+            </div>
+
+            <div className={styles.selectionBar}>
+              <div className={styles.selectionSummary}>
+                <p className={styles.sectionKicker}>Aktive Gerichte</p>
+                <strong>
+                  {selectedMealCount} von {totalMealCount}
+                </strong>
+                <span>
+                  {selectedMealCount === 0
+                    ? "Die Einkaufsliste startet bewusst leer."
+                    : `Die Einkaufsliste kennt aktuell ${activeShoppingItemCount} relevante Positionen.`}
+                </span>
+              </div>
+
+              <div className={styles.selectionActions}>
+                <button className={styles.secondaryChipButton} onClick={selectAllMeals} type="button">
+                  Alle auswählen
+                </button>
+                <button className={styles.secondaryChipButton} onClick={clearAllMeals} type="button">
+                  Alle abwählen
+                </button>
+                <Link className={styles.textLink} href="/einkaufsliste">
+                  Einkaufsliste öffnen
+                </Link>
+              </div>
             </div>
 
             <div className={styles.dayGrid}>
@@ -210,6 +346,10 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
                 const proteinDelta = day.macroPercents.protein - day.targets.macroPercents.protein;
                 const carbsDelta = day.macroPercents.carbs - day.targets.macroPercents.carbs;
                 const fatDelta = day.macroPercents.fat - day.targets.macroPercents.fat;
+                const dayMealKeys = day.meals.map((meal) => plannedMealKeyForMeal(day.date, meal));
+                const allDayMealsActive =
+                  dayMealKeys.length > 0 &&
+                  dayMealKeys.every((mealKey) => selectedMealKeySet.has(mealKey));
 
                 return (
                   <article className={styles.dayCard} key={day.date}>
@@ -254,16 +394,59 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
                       </span>
                     </div>
 
+                    <div className={styles.dayActionRow}>
+                      <span className={allDayMealsActive ? styles.statusGood : styles.statusWarn}>
+                        {dayMealKeys.filter((mealKey) => selectedMealKeySet.has(mealKey)).length} von{" "}
+                        {dayMealKeys.length} aktiv
+                      </span>
+                      <div className={styles.dayActionButtons}>
+                        <button
+                          className={styles.dayMiniButton}
+                          onClick={() => selectDayMeals(dayMealKeys)}
+                          type="button"
+                        >
+                          Tag auswählen
+                        </button>
+                        <button
+                          className={styles.dayMiniButton}
+                          onClick={() => clearDayMeals(dayMealKeys)}
+                          type="button"
+                        >
+                          Tag abwählen
+                        </button>
+                      </div>
+                    </div>
+
                     <ul className={styles.mealList}>
-                      {day.meals.map((meal) => (
-                        <li className={styles.mealRow} key={`${day.date}-${meal.mealType}`}>
-                          <div>
+                      {day.meals.map((meal) => {
+                        const mealKey = plannedMealKeyForMeal(day.date, meal);
+                        const isActive = selectedMealKeySet.has(mealKey);
+
+                        return (
+                        <li
+                          className={`${styles.mealRow} ${
+                            isActive ? styles.mealRowActive : styles.mealRowInactive
+                          }`}
+                          key={mealKey}
+                        >
+                          <div className={styles.mealInfo}>
                             <p>{formatMealType(meal.mealType)}</p>
                             <strong>{meal.recipe.name}</strong>
                           </div>
-                          <span>x{meal.portionFactor.toFixed(2).replace(".", ",")}</span>
+                          <div className={styles.mealActions}>
+                            <span>x{meal.portionFactor.toFixed(2).replace(".", ",")}</span>
+                            <button
+                              className={`${styles.toggleButton} ${
+                                isActive ? styles.toggleButtonActive : styles.toggleButtonInactive
+                              }`}
+                              onClick={() => toggleMeal(mealKey)}
+                              type="button"
+                            >
+                              {isActive ? "Aktiv" : "Nicht aktiv"}
+                            </button>
+                          </div>
                         </li>
-                      ))}
+                      )})}
                     </ul>
 
                     <Link className={styles.textLink} href={`/tage/${day.date}`}>
@@ -286,12 +469,11 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
                 <dd>{settings.mealsPerDay}</dd>
               </div>
               <div>
-                <dt>Vegetarisch</dt>
-                <dd>{settings.vegetarian ? "ja" : "nein"}</dd>
-              </div>
-              <div>
-                <dt>Fleisch reduzieren</dt>
-                <dd>{settings.reduceMeat ? "ja" : "nein"}</dd>
+                <dt>Zielmix</dt>
+                <dd>
+                  {settings.vegetarianSharePct} % vegetarisch, {settings.fishSharePct} % Fisch,{" "}
+                  {settings.meatSharePct} % Fleisch
+                </dd>
               </div>
               <div>
                 <dt>Wiederholungen pro Woche</dt>
@@ -342,6 +524,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
             <h2>Was jetzt offline geht</h2>
             <ul className={styles.todoList}>
               <li>Wochenplan mit Tageskarten und Mahlzeiten</li>
+              <li>Aktive Gerichtsauswahl pro Woche im Gerätespeicher</li>
               <li>Rezeptbibliothek mit Zutaten und Zubereitung</li>
               <li>Einkaufsliste mit lokalem Abhaken</li>
               <li>Neue Synchronisierung, sobald wieder Internet da ist</li>

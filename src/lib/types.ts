@@ -1,5 +1,7 @@
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 
+export type RecipeMixCategory = "vegetarian" | "fish" | "meat";
+
 export type ShoppingCategory =
   | "Gemüse und Obst"
   | "Milchprodukte"
@@ -40,8 +42,9 @@ export type UserSettings = {
   macroProteinPct: number;
   mealsPerDay: number;
   glutenFreeOnly: boolean;
-  vegetarian: boolean;
-  reduceMeat: boolean;
+  vegetarianSharePct: number;
+  fishSharePct: number;
+  meatSharePct: number;
   excludedIngredients: string[];
   maxRecipeRepeatsPerWeek: number;
 };

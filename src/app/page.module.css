@@ -348,6 +348,58 @@
   gap: 8px;
 }
 
+.selectionBar {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 22px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(20, 76, 57, 0.06);
+  border: 1px solid rgba(19, 38, 29, 0.08);
+}
+
+.selectionSummary {
+  display: grid;
+  gap: 6px;
+}
+
+.selectionSummary strong {
+  font-size: 1.45rem;
+  letter-spacing: -0.04em;
+}
+
+.selectionSummary span {
+  color: rgba(19, 38, 29, 0.7);
+  line-height: 1.5;
+}
+
+.selectionActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: end;
+}
+
+.secondaryChipButton,
+.dayMiniButton,
+.toggleButton {
+  appearance: none;
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  background: rgba(255, 252, 247, 0.82);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondaryChipButton,
+.dayMiniButton {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+}
+
 .macroBadge {
   min-height: 34px;
   padding: 0 12px;
@@ -384,14 +436,70 @@
   justify-content: space-between;
   gap: 14px;
   align-items: center;
-  padding-top: 10px;
+  padding: 12px 0 0;
   border-top: 1px solid rgba(19, 38, 29, 0.08);
+}
+
+.mealRowActive,
+.mealRowInactive {
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.mealRowActive {
+  opacity: 1;
+}
+
+.mealRowInactive {
+  opacity: 0.72;
+}
+
+.mealInfo {
+  display: grid;
+  gap: 4px;
+}
+
+.mealActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggleButton {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+}
+
+.toggleButtonActive {
+  background: rgba(20, 140, 86, 0.14);
+  color: #116541;
+  border-color: rgba(17, 101, 65, 0.14);
+}
+
+.toggleButtonInactive {
+  color: rgba(19, 38, 29, 0.76);
 }
 
 .mealRow strong,
 .stackList li strong,
 .detailList dd {
   font-size: 0.98rem;
+}
+
+.dayActionRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.dayActionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 8px;
 }
 
 .detailList,
@@ -446,6 +554,12 @@
     align-items: start;
   }
 
+  .selectionBar,
+  .dayActionRow {
+    flex-direction: column;
+    align-items: start;
+  }
+
   .sectionHint {
     max-width: none;
     text-align: left;
@@ -468,6 +582,18 @@
   .dayGrid,
   .dayTotals {
     grid-template-columns: 1fr;
+  }
+
+  .selectionActions,
+  .dayActionButtons,
+  .mealActions {
+    width: 100%;
+    justify-content: start;
+  }
+
+  .mealRow {
+    flex-direction: column;
+    align-items: start;
   }
 
   .heroText h1 {

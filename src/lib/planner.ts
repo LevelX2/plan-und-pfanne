@@ -1,6 +1,24 @@
 import { getWeekDates } from "@/lib/date";
 import { formatWeekdayLong } from "@/lib/format";
-import type { DailyTargets, MacroTotals, MealType, PlannedMeal, Recipe, UserSettings, WeekPlan } from "@/lib/types";
+import {
+  createEmptyRecipeMixCounts,
+  getRecipeMixCategory,
+  getRecipeMixTargets,
+  recipeMixCategories,
+} from "@/lib/recipe-mix";
+import type {
+  DailyTargets,
+  MacroTotals,
+  MealType,
+  PlannedMeal,
+  Recipe,
+  RecipeMixCategory,
+  UserSettings,
+  WeekPlan,
+} from "@/lib/types";
+
+type RecipePools = ReturnType<typeof buildPools>;
+type RecipeMixCounts = Record<RecipeMixCategory, number>;
 
 function calculateTargets(settings: UserSettings): DailyTargets {
   return {
@@ -81,28 +99,69 @@ function buildPools(recipes: Recipe[]) {
   return pools;
 }
 
+function isMixControlledMealType(mealType: MealType) {
+  return mealType === "lunch" || mealType === "dinner";
+}
+
+function countMixControlledSlots(counts: RecipeMixCounts) {
+  return recipeMixCategories().reduce((sum, category) => sum + counts[category], 0);
+}
+
+function cloneMixCounts(counts: RecipeMixCounts) {
+  return {
+    vegetarian: counts.vegetarian,
+    fish: counts.fish,
+    meat: counts.meat,
+  } satisfies RecipeMixCounts;
+}
+
+function mixProgressPenalty(
+  recipe: Recipe,
+  mealType: MealType,
+  mixCounts: RecipeMixCounts,
+  settings: UserSettings,
+  totalControlledSlots: number,
+) {
+  if (!isMixControlledMealType(mealType)) {
+    return 0;
+  }
+
+  const nextCounts = cloneMixCounts(mixCounts);
+  nextCounts[getRecipeMixCategory(recipe)] += 1;
+  const nextTargets = getRecipeMixTargets(countMixControlledSlots(nextCounts), settings);
+
+  return recipeMixCategories().reduce((sum, category) => {
+    return sum + Math.abs(nextCounts[category] - nextTargets[category]);
+  }, 0) / Math.max(1, totalControlledSlots);
+}
+
 function pickRecipe(
   pool: Recipe[],
   usageCount: Map<string, number>,
   previousDayMeals: Map<MealType, string>,
   mealType: MealType,
+  mixCounts: RecipeMixCounts,
+  settings: UserSettings,
+  totalControlledSlots: number,
 ) {
-  const ranked = [...pool].sort((left, right) => {
-    const leftUsage = usageCount.get(left.id) ?? 0;
-    const rightUsage = usageCount.get(right.id) ?? 0;
-    const leftPenalty = previousDayMeals.get(mealType) === left.id ? 10 : 0;
-    const rightPenalty = previousDayMeals.get(mealType) === right.id ? 10 : 0;
-    return leftUsage + leftPenalty - (rightUsage + rightPenalty);
+  const recipeScores = pool.map((recipe) => {
+    const repeats = usageCount.get(recipe.id) ?? 0;
+    const previousPenalty = previousDayMeals.get(mealType) === recipe.id ? 10 : 0;
+    const mixPenalty = mixProgressPenalty(recipe, mealType, mixCounts, settings, totalControlledSlots) * 14;
+
+    return {
+      recipe,
+      score: repeats + previousPenalty + mixPenalty,
+    };
   });
 
-  const bestBucketScore =
-    (usageCount.get(ranked[0]?.id ?? "") ?? 0) + (previousDayMeals.get(mealType) === ranked[0]?.id ? 10 : 0);
-  const candidates = ranked.filter((recipe) => {
-    const score = (usageCount.get(recipe.id) ?? 0) + (previousDayMeals.get(mealType) === recipe.id ? 10 : 0);
-    return score <= bestBucketScore + 1;
-  });
+  recipeScores.sort((left, right) => left.score - right.score);
+  const bestBucketScore = recipeScores[0]?.score ?? 0;
+  const candidates = recipeScores
+    .filter((item) => item.score <= bestBucketScore + 1.8)
+    .map((item) => item.recipe);
 
-  return randomItem(candidates.length ? candidates : ranked);
+  return randomItem(candidates.length ? candidates : recipeScores.map((item) => item.recipe));
 }
 
 function scoreDay(
@@ -143,14 +202,6 @@ function scoreDay(
     score += 10;
   }
 
-  if (settings.reduceMeat) {
-    for (const meal of meals) {
-      if (["Huhn", "Pute", "Rind"].includes(meal.recipe.proteinSource)) {
-        score += 5;
-      }
-    }
-  }
-
   return {
     totals,
     macroPercents,
@@ -161,18 +212,35 @@ function scoreDay(
 
 function buildCandidateDay(
   date: string,
-  pools: ReturnType<typeof buildPools>,
+  pools: RecipePools,
   usageCount: Map<string, number>,
   previousDayMeals: Map<MealType, string>,
+  recipeMixCounts: RecipeMixCounts,
   settings: UserSettings,
+  totalControlledSlots: number,
 ) {
   const targets = calculateTargets(settings);
   const mealTypes: MealType[] = settings.mealsPerDay >= 4
     ? ["breakfast", "lunch", "dinner", "snack"]
     : ["breakfast", "lunch", "dinner"];
 
+  const candidateMixCounts = cloneMixCounts(recipeMixCounts);
+
   const meals: PlannedMeal[] = mealTypes.map((mealType) => {
-    const recipe = pickRecipe(pools[mealType], usageCount, previousDayMeals, mealType);
+    const recipe = pickRecipe(
+      pools[mealType],
+      usageCount,
+      previousDayMeals,
+      mealType,
+      candidateMixCounts,
+      settings,
+      totalControlledSlots,
+    );
+
+    if (isMixControlledMealType(mealType)) {
+      candidateMixCounts[getRecipeMixCategory(recipe)] += 1;
+    }
+
     const portionFactor = choosePortionFactor(mealType);
 
     return {
@@ -197,22 +265,68 @@ function buildCandidateDay(
   };
 }
 
+function getWeekMixPenalty(days: WeekPlan["days"], settings: UserSettings) {
+  const counts = createEmptyRecipeMixCounts();
+
+  for (const day of days) {
+    for (const meal of day.meals) {
+      if (!isMixControlledMealType(meal.mealType)) {
+        continue;
+      }
+
+      counts[getRecipeMixCategory(meal.recipe)] += 1;
+    }
+  }
+
+  const totalControlledSlots = countMixControlledSlots(counts);
+  if (totalControlledSlots === 0) {
+    return 0;
+  }
+
+  const targets = getRecipeMixTargets(totalControlledSlots, settings);
+  const deviation = recipeMixCategories().reduce(
+    (sum, category) => sum + Math.abs(counts[category] - targets[category]),
+    0,
+  );
+
+  return Number((deviation * 8).toFixed(2));
+}
+
 export function buildWeeklyPlan(startDate: string, recipes: Recipe[], settings: UserSettings): WeekPlan {
   const pools = buildPools(recipes);
   const weekDates = getWeekDates(startDate);
+  const totalControlledSlots = weekDates.length * 2;
   let bestWeek: WeekPlan | null = null;
+  let bestSelectionScore = Number.POSITIVE_INFINITY;
 
   for (let attempt = 0; attempt < 60; attempt += 1) {
     const usageCount = new Map<string, number>();
     const previousDayMeals = new Map<MealType, string>();
+    const recipeMixCounts = createEmptyRecipeMixCounts();
     const days = [];
     let totalScore = 0;
 
     for (const date of weekDates) {
-      let bestDay = buildCandidateDay(date, pools, usageCount, previousDayMeals, settings);
+      let bestDay = buildCandidateDay(
+        date,
+        pools,
+        usageCount,
+        previousDayMeals,
+        recipeMixCounts,
+        settings,
+        totalControlledSlots,
+      );
 
       for (let candidateIndex = 0; candidateIndex < 160; candidateIndex += 1) {
-        const candidate = buildCandidateDay(date, pools, usageCount, previousDayMeals, settings);
+        const candidate = buildCandidateDay(
+          date,
+          pools,
+          usageCount,
+          previousDayMeals,
+          recipeMixCounts,
+          settings,
+          totalControlledSlots,
+        );
         if (candidate.score < bestDay.score) {
           bestDay = candidate;
         }
@@ -224,6 +338,10 @@ export function buildWeeklyPlan(startDate: string, recipes: Recipe[], settings: 
       for (const meal of bestDay.meals) {
         usageCount.set(meal.recipe.id, (usageCount.get(meal.recipe.id) ?? 0) + 1);
         previousDayMeals.set(meal.mealType, meal.recipe.id);
+
+        if (isMixControlledMealType(meal.mealType)) {
+          recipeMixCounts[getRecipeMixCategory(meal.recipe)] += 1;
+        }
       }
     }
 
@@ -248,8 +366,11 @@ export function buildWeeklyPlan(startDate: string, recipes: Recipe[], settings: 
       days,
     };
 
-    if (!bestWeek || candidateWeek.averageScore < bestWeek.averageScore) {
+    const selectionScore = averageScore + getWeekMixPenalty(candidateWeek.days, settings);
+
+    if (selectionScore < bestSelectionScore) {
       bestWeek = candidateWeek;
+      bestSelectionScore = selectionScore;
     }
   }
 

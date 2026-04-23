@@ -9,6 +9,8 @@
 ## Kernwissen
 - [[Projektueberblick]]: verdichteter Überblick über Produktziel, Nutzen und Projektgrenzen.
 - [[../Begriffe und Konzepte/Produktbild und Kernlogik]]: fachliche Grundstruktur für Rezepte, Tagesplanung, Wochenplanung und Einkaufslogik.
+- [[../Begriffe und Konzepte/Aktive Gerichte und selektive Einkaufsliste]]: konkretes Fachmodell für nutzerseitige Aktivierung geplanter Mahlzeiten und die davon abhängige Einkaufslisten-Sicht.
+- [[../Begriffe und Konzepte/Benutzerkonzept und Verifikation]]: Zielbild für verpflichtende Anmeldung, passwortlose Verifikation und benutzerscharfe Planungsdaten.
 - [[../Begriffe und Konzepte/Systembild und technischer Zuschnitt]]: aktueller technischer Aufbau mit Next.js, SQLite, PWA-Ansatz und Deployment-Zuschnitt.
 - [[../Risiken und offene Punkte/Offene Fragen und Prüfbedarf]]: bestätigte Lücken, Widersprüche, konzeptionelle Prüfstellen und technische Nacharbeiten.
 

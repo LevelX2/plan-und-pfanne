@@ -57,3 +57,63 @@
 - Die Scheduler-Route ist in Production ohne `SCHEDULER_SECRET` absichtlich deaktiviert und nicht mehr stillschweigend offen erreichbar.
 - Verifikation:
   `npm run lint` erfolgreich, `npm run build` erfolgreich, Turbopack-NFT-Warnung bleibt als nicht blockierender Restpunkt bestehen.
+
+## [2026-04-23] wissensbasis | Benutzerkonzept für Verifikation und benutzerscharfen Zugriff ergänzt
+- Die Chat-Anforderung zu verpflichtender Anmeldung, sinnvoller Verifikation und benutzerscharfem Einkaufssystem wurde als Rohquelle erfasst.
+- Neue Wissensseite `02 Wissen/Begriffe und Konzepte/Benutzerkonzept und Verifikation.md` angelegt.
+- Das Konzept legt passwortlose E-Mail-Verifikation, Session-Cookies, echte `user_id`-Trennung und geschützte App-Routen als Zielbild für öffentlichen Betrieb fest.
+- `Index.md`, `Aktueller Projektstatus.md`, `Offene Fragen und Prüfbedarf.md`, `MVP-Leitentscheidungen.md` und `Generische Entwicklungsvorgaben.md` wurden darauf abgestimmt.
+- Der aktuelle Workspace-Stand bleibt dabei bewusst getrennt markiert:
+  aktuell Single-User ohne Login, Zielbild künftig benutzerscharf mit Verifikation.
+
+## [2026-04-23] wissensbasis | Aktive Gerichtsauswahl als Erweiterung von Wochenplan und Einkaufsliste ergänzt
+- Die neue Chat-Anforderung zur selektiven Aktivierung geplanter Gerichte wurde als Rohquelle erfasst.
+- `Produktbild und Kernlogik.md` beschreibt jetzt eine geplante Erweiterung, bei der einzelne geplante Mahlzeiten als aktive Gerichte markiert werden können.
+- Die Logik ist bewusst als zusätzlicher Auswahlzustand innerhalb derselben Woche dokumentiert, nicht als zweiter Wochenplan.
+- `Offene Fragen und Prüfbedarf.md` hält als verbleibenden Produktentscheid fest, welche Standardsicht die Einkaufsliste bei leerer aktiver Auswahl priorisieren soll.
+
+## [2026-04-23] wissensbasis | Konkretes Fachmodell für aktive Gerichte und Einkaufslistenmodus ergänzt
+- Eine neue Konzeptseite `02 Wissen/Begriffe und Konzepte/Aktive Gerichte und selektive Einkaufsliste.md` bündelt jetzt Zustandsmodell, UI-Verhalten, Persistenzregeln und Reset-Verhalten.
+- Das Modell trennt ausdrücklich zwischen vollständigem Basis-Wochenplan, aktiver Mahlzeitenauswahl und Sichtmodus der Einkaufsliste.
+- Als bevorzugter Produktmodus ist dokumentiert:
+  Einkaufsliste standardmäßig auf `aktive Gerichte`, bei leerer Auswahl mit explizitem Leerzustand.
+- Der Index wurde um die neue Konzeptseite ergänzt, damit die spätere Implementierung wiki-first auf diese Spezifikation aufbauen kann.
+
+## [2026-04-23] wissensbasis | Zielmix vegetarisch Fisch Fleisch als neue Planungsanforderung eingeordnet
+- Die neue Chat-Anforderung zu einem gekoppelten Dreiregler für `vegetarisch`, `Fisch` und `Fleisch` wurde als Rohquelle erfasst.
+- `Produktbild und Kernlogik.md` beschreibt den Zielmix jetzt als geplante Erweiterung der Planungslogik.
+- `Offene Fragen und Prüfbedarf.md` hält fest, dass der Mix wegen unausgewogenem Rezeptpool voraussichtlich als weiches Ziel und eher für Mittag- und Abendessen statt für alle Mahlzeiten modelliert werden sollte.
+- Die bestehende Überlappung mit `Vegetarisch` und `Fleisch reduzieren` ist als bewusster Prüfpunkt dokumentiert.
+
+## [2026-04-23] umsetzung | Aktive Gerichte und selektive Einkaufsliste im Workspace umgesetzt
+- Das Dashboard erlaubt jetzt das Aktivieren und Deaktivieren einzelner geplanter Mahlzeiten sowie Schnellaktionen pro Tag und für die ganze Woche.
+- Die aktive Auswahl wird lokal pro Woche gespeichert und bei geänderter Wochenstruktur bewusst zurückgesetzt.
+- Die Einkaufsliste unterstützt jetzt die Modi `aktive Gerichte` und `alle geplanten Gerichte`; bei leerer Auswahl zeigt der Fokusmodus einen expliziten Leerzustand.
+- Der Abhakstatus der Einkaufsliste wird nicht mehr nur an die Woche, sondern an Woche plus Listenkontext gebunden.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich, Turbopack-NFT-Warnung bleibt als nicht blockierender Restpunkt bestehen.
+
+## [2026-04-23] umsetzung | Zielmix vegetarisch Fisch Fleisch im Workspace umgesetzt
+- Die bisherigen Schalter `Vegetarisch` und `Fleisch reduzieren` wurden im Einstellungsformular durch einen gekoppelten Dreiregler für `vegetarisch`, `Fisch` und `Fleisch` ersetzt.
+- Der Regler speichert drei Prozentwerte, die zusammen immer `100 %` ergeben; bestehende SQLite-Datenbanken werden beim Start automatisch um die neuen Spalten migriert.
+- Die Planungsheuristik nutzt den Mix jetzt als weiches Ziel für Mittagessen und Abendessen, während Frühstück und Snack wegen des Rezeptpools fachlich außen vor bleiben.
+- Dashboard und Einstellungsseite zeigen den aktiven Mix im Planungsprofil sichtbar an; zusätzlich blendet die Einstellungsseite die aktuelle Verfügbarkeit passender Mittags- und Abendgerichte ein.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich.
+
+## [2026-04-23] umsetzung | Turbopack-Dateitracing für SQLite-Pfad bereinigt
+- Der SQLite-Pfad in `src/lib/db.ts` wurde enger auf die konkrete Datei `data/planner.sqlite` zugeschnitten, statt den Datenordner breit dynamisch zu modellieren.
+- Dynamische Laufzeitpfade über `DATA_DIR` oder `RAILWAY_VOLUME_MOUNT_PATH` bleiben möglich, sind aber gezielter vom Defaultpfad getrennt.
+- Nach dem Pfadzuschnitt trat die frühere Turbopack-Warnung zur unerwartet breiten NFT-Dateinachverfolgung im `next build` nicht mehr auf.
+- Während der Verifikation zeigte sich zusätzlich ein separater Build-Blocker durch einen laufenden lokalen Prozess auf `.next/standalone/server.js`; nach dem Stoppen dieses Prozesses lief der Build wieder sauber durch.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich, keine Turbopack-NFT-Warnung mehr in der Build-Ausgabe.
+
+## [2026-04-23] umsetzung | Rezeptpool aus externen glutenfreien Quellen erweitert
+- Acht neue glutenfreie Rezepte aus dokumentierten BBC-Good-Food-Quellen wurden als kuratierte Seed-Datensätze angelegt.
+- Die neuen Rezepte liegen separat in `src/lib/data/imported-recipes.ts`; `src/lib/data/seed-recipes.ts` bündelt sie mit dem bisherigen Demo-Bestand.
+- `src/lib/db.ts` seeded jetzt den zusammengeführten Bestand, sodass neue Rezept-IDs beim Start auch in bestehende SQLite-Datenbanken eingefügt werden.
+- Der lokale Datenbankstand `data/planner.sqlite` wurde zusätzlich direkt synchronisiert und enthält jetzt 50 Rezepte:
+  12 Frühstücke, 14 Mittagessen, 14 Abendessen und 10 Snacks.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich.

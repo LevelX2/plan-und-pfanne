@@ -5,7 +5,19 @@ import { addDays, getCurrentWeekStart, getNextWeekStartFromSunday, getWeekStartF
 import { getDb } from "@/lib/db";
 import { formatWeekdayLong } from "@/lib/format";
 import { buildWeeklyPlan } from "@/lib/planner";
-import type { DayPlan, Ingredient, MealType, PlannedMeal, Recipe, ShoppingCategory, ShoppingGroup, UserSettings, WeekPlan } from "@/lib/types";
+import { createEmptyRecipeMixCounts, getRecipeMixCategory, isRecipeMixControlledMeal } from "@/lib/recipe-mix";
+import type {
+  DayPlan,
+  Ingredient,
+  MealType,
+  PlannedMeal,
+  Recipe,
+  RecipeMixCategory,
+  ShoppingGroup,
+  UserSettings,
+  WeekPlan,
+} from "@/lib/types";
+import { buildShoppingListGroupsForWeekPlan } from "@/lib/week-plan-selection";
 
 type RecipeRow = {
   id: string;
@@ -34,6 +46,9 @@ type SettingsRow = {
   gluten_free_only: number;
   vegetarian: number;
   reduce_meat: number;
+  vegetarian_share_pct: number;
+  fish_share_pct: number;
+  meat_share_pct: number;
   excluded_ingredients_json: string;
   max_recipe_repeats_per_week: number;
 };
@@ -89,8 +104,9 @@ function parseSettings(row: SettingsRow): UserSettings {
     macroProteinPct: row.macro_protein_pct,
     mealsPerDay: row.meals_per_day,
     glutenFreeOnly: Boolean(row.gluten_free_only),
-    vegetarian: Boolean(row.vegetarian),
-    reduceMeat: Boolean(row.reduce_meat),
+    vegetarianSharePct: row.vegetarian_share_pct,
+    fishSharePct: row.fish_share_pct,
+    meatSharePct: row.meat_share_pct,
     excludedIngredients: JSON.parse(row.excluded_ingredients_json) as string[],
     maxRecipeRepeatsPerWeek: row.max_recipe_repeats_per_week,
   };
@@ -145,8 +161,9 @@ export function saveSettings(settings: UserSettings) {
       macro_protein_pct = @macroProteinPct,
       meals_per_day = @mealsPerDay,
       gluten_free_only = @glutenFreeOnly,
-      vegetarian = @vegetarian,
-      reduce_meat = @reduceMeat,
+      vegetarian_share_pct = @vegetarianSharePct,
+      fish_share_pct = @fishSharePct,
+      meat_share_pct = @meatSharePct,
       excluded_ingredients_json = @excludedIngredients,
       max_recipe_repeats_per_week = @maxRecipeRepeatsPerWeek,
       updated_at = @updatedAt
@@ -158,8 +175,9 @@ export function saveSettings(settings: UserSettings) {
     macroProteinPct: settings.macroProteinPct,
     mealsPerDay: settings.mealsPerDay,
     glutenFreeOnly: settings.glutenFreeOnly ? 1 : 0,
-    vegetarian: settings.vegetarian ? 1 : 0,
-    reduceMeat: settings.reduceMeat ? 1 : 0,
+    vegetarianSharePct: settings.vegetarianSharePct,
+    fishSharePct: settings.fishSharePct,
+    meatSharePct: settings.meatSharePct,
     excludedIngredients: JSON.stringify(settings.excludedIngredients),
     maxRecipeRepeatsPerWeek: settings.maxRecipeRepeatsPerWeek,
     updatedAt: new Date().toISOString(),
@@ -177,7 +195,6 @@ function filterRecipes(recipes: Recipe[], settings: UserSettings) {
 
   return recipes
     .filter((recipe) => !settings.glutenFreeOnly || recipe.glutenFree)
-    .filter((recipe) => !settings.vegetarian || recipe.vegetarian)
     .filter((recipe) => {
       if (excluded.length === 0) {
         return true;
@@ -189,6 +206,23 @@ function filterRecipes(recipes: Recipe[], settings: UserSettings) {
 
 export function listRecipes() {
   return filterRecipes(listAllRecipes(), getSettings());
+}
+
+export function getRecipeMixPoolStats() {
+  const recipes = listRecipes().filter(isRecipeMixControlledMeal);
+  const counts = createEmptyRecipeMixCounts();
+
+  for (const recipe of recipes) {
+    counts[getRecipeMixCategory(recipe)] += 1;
+  }
+
+  return {
+    total: recipes.length,
+    counts,
+  } satisfies {
+    total: number;
+    counts: Record<RecipeMixCategory, number>;
+  };
 }
 
 export function getRecipeById(id: string) {
@@ -410,41 +444,7 @@ export function buildShoppingListForWeek(startDate: string): ShoppingGroup[] {
     return [];
   }
 
-  const grouped = new Map<ShoppingCategory, Map<string, { unit: string; totalAmount: number }>>();
-
-  for (const day of plan.days) {
-    for (const meal of day.meals) {
-      for (const ingredient of meal.recipe.ingredients) {
-        const categoryMap = grouped.get(ingredient.category) ?? new Map<string, { unit: string; totalAmount: number }>();
-        const current = categoryMap.get(ingredient.name);
-        const amount = Number((ingredient.amount * meal.portionFactor).toFixed(1));
-
-        if (current && current.unit === ingredient.unit) {
-          current.totalAmount = Number((current.totalAmount + amount).toFixed(1));
-        } else {
-          categoryMap.set(ingredient.name, {
-            unit: ingredient.unit,
-            totalAmount: amount,
-          });
-        }
-
-        grouped.set(ingredient.category, categoryMap);
-      }
-    }
-  }
-
-  return [...grouped.entries()]
-    .map(([category, items]) => ({
-      category,
-      items: [...items.entries()]
-        .map(([name, item]) => ({
-          name,
-          unit: item.unit,
-          totalAmount: item.totalAmount,
-        }))
-        .sort((left, right) => left.name.localeCompare(right.name, "de")),
-    }))
-    .sort((left, right) => left.category.localeCompare(right.category, "de"));
+  return buildShoppingListGroupsForWeekPlan(plan, "all-planned", []);
 }
 
 export function generateScheduledWeekPlan(force = false) {

@@ -3,14 +3,37 @@ import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 import Database from "better-sqlite3";
-import { demoRecipes } from "@/lib/data/demo-recipes";
+import { seedRecipes } from "@/lib/data/seed-recipes";
 
-const DEFAULT_DATA_DIR = path.join(/*turbopackIgnore: true*/ process.cwd(), "data");
-const DATA_DIR =
-  process.env.DATA_DIR ??
-  process.env.RAILWAY_VOLUME_MOUNT_PATH ??
-  DEFAULT_DATA_DIR;
-const DB_PATH = path.join(DATA_DIR, "planner.sqlite");
+const DEFAULT_RECIPE_MIX = {
+  vegetarianSharePct: 40,
+  fishSharePct: 20,
+  meatSharePct: 40,
+} as const;
+
+const DEFAULT_DB_PATH = path.join(
+  /*turbopackIgnore: true*/ process.cwd(),
+  "data",
+  "planner.sqlite",
+);
+
+function resolveDbPath() {
+  if (process.env.DATA_DIR) {
+    return path.join(/*turbopackIgnore: true*/ process.env.DATA_DIR, "planner.sqlite");
+  }
+
+  if (process.env.RAILWAY_VOLUME_MOUNT_PATH) {
+    return path.join(
+      /*turbopackIgnore: true*/ process.env.RAILWAY_VOLUME_MOUNT_PATH,
+      "planner.sqlite",
+    );
+  }
+
+  return DEFAULT_DB_PATH;
+}
+
+const DB_PATH = resolveDbPath();
+const DATA_DIR = path.dirname(DB_PATH);
 
 let dbInstance: Database.Database | null = null;
 
@@ -38,6 +61,9 @@ function createTables(db: Database.Database) {
       gluten_free_only INTEGER NOT NULL DEFAULT 1,
       vegetarian INTEGER NOT NULL DEFAULT 0,
       reduce_meat INTEGER NOT NULL DEFAULT 0,
+      vegetarian_share_pct REAL NOT NULL DEFAULT 40,
+      fish_share_pct REAL NOT NULL DEFAULT 20,
+      meat_share_pct REAL NOT NULL DEFAULT 40,
       excluded_ingredients_json TEXT NOT NULL DEFAULT '[]',
       max_recipe_repeats_per_week INTEGER NOT NULL DEFAULT 2,
       created_at TEXT NOT NULL,
@@ -97,6 +123,62 @@ function createTables(db: Database.Database) {
   `);
 }
 
+function hasColumn(db: Database.Database, tableName: string, columnName: string) {
+  const rows = db.prepare(`PRAGMA table_info(${tableName})`).all() as { name: string }[];
+  return rows.some((row) => row.name === columnName);
+}
+
+function addUserSettingsColumn(
+  db: Database.Database,
+  columnName: string,
+  defaultValue: number,
+) {
+  if (hasColumn(db, "user_settings", columnName)) {
+    return false;
+  }
+
+  db.exec(
+    `ALTER TABLE user_settings ADD COLUMN ${columnName} REAL NOT NULL DEFAULT ${defaultValue}`,
+  );
+
+  return true;
+}
+
+function migrateUserSettingsRecipeMix(db: Database.Database) {
+  const addedVegetarian = addUserSettingsColumn(
+    db,
+    "vegetarian_share_pct",
+    DEFAULT_RECIPE_MIX.vegetarianSharePct,
+  );
+  const addedFish = addUserSettingsColumn(db, "fish_share_pct", DEFAULT_RECIPE_MIX.fishSharePct);
+  const addedMeat = addUserSettingsColumn(db, "meat_share_pct", DEFAULT_RECIPE_MIX.meatSharePct);
+
+  if (!addedVegetarian && !addedFish && !addedMeat) {
+    return;
+  }
+
+  db.exec(`
+    UPDATE user_settings
+    SET
+      vegetarian_share_pct = CASE
+        WHEN vegetarian = 1 THEN 100
+        WHEN reduce_meat = 1 THEN 45
+        ELSE ${DEFAULT_RECIPE_MIX.vegetarianSharePct}
+      END,
+      fish_share_pct = CASE
+        WHEN vegetarian = 1 THEN 0
+        WHEN reduce_meat = 1 THEN 20
+        ELSE ${DEFAULT_RECIPE_MIX.fishSharePct}
+      END,
+      meat_share_pct = CASE
+        WHEN vegetarian = 1 THEN 0
+        WHEN reduce_meat = 1 THEN 35
+        ELSE ${DEFAULT_RECIPE_MIX.meatSharePct}
+      END
+    WHERE id = 1
+  `);
+}
+
 function seedDefaults(db: Database.Database) {
   db.prepare(`
     INSERT OR IGNORE INTO user_settings (
@@ -109,6 +191,9 @@ function seedDefaults(db: Database.Database) {
       gluten_free_only,
       vegetarian,
       reduce_meat,
+      vegetarian_share_pct,
+      fish_share_pct,
+      meat_share_pct,
       excluded_ingredients_json,
       max_recipe_repeats_per_week,
       created_at,
@@ -123,6 +208,9 @@ function seedDefaults(db: Database.Database) {
       1,
       0,
       0,
+      40,
+      20,
+      40,
       '[]',
       2,
       @createdAt,
@@ -174,7 +262,7 @@ function seedDefaults(db: Database.Database) {
   `);
 
   const seedTransaction = db.transaction(() => {
-    for (const recipe of demoRecipes) {
+    for (const recipe of seedRecipes) {
       insertRecipe.run({
         id: recipe.id,
         name: recipe.name,
@@ -205,6 +293,7 @@ export function getDb() {
     ensureDataDir();
     dbInstance = new Database(DB_PATH);
     createTables(dbInstance);
+    migrateUserSettingsRecipeMix(dbInstance);
     seedDefaults(dbInstance);
   }
 

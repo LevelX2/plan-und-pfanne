@@ -1,0 +1,159 @@
+import type { MealType, PlannedMeal, Recipe, ShoppingCategory, ShoppingGroup, WeekPlan } from "@/lib/types";
+
+export type PlannedMealKey = string;
+export type ShoppingListMode = "active-only" | "all-planned";
+
+export type WeekSelectionSnapshot = {
+  planSignature: string;
+  selectedMealKeys: PlannedMealKey[];
+  shoppingMode: ShoppingListMode;
+  savedAt: string;
+};
+
+type ShoppingIngredientEntry = {
+  category: ShoppingCategory;
+  name: string;
+  unit: string;
+  amount: number;
+};
+
+type WeekMealEntry = {
+  date: string;
+  meal: PlannedMeal;
+};
+
+function ingredientEntriesForMeal(meal: PlannedMeal): ShoppingIngredientEntry[] {
+  return meal.recipe.ingredients.map((ingredient) => ({
+    category: ingredient.category,
+    name: ingredient.name,
+    unit: ingredient.unit,
+    amount: Number((ingredient.amount * meal.portionFactor).toFixed(1)),
+  }));
+}
+
+function shoppingEntriesFromMeals(meals: PlannedMeal[]): ShoppingIngredientEntry[] {
+  return meals.flatMap(ingredientEntriesForMeal);
+}
+
+export function buildPlannedMealKey(input: {
+  date: string;
+  mealType: MealType;
+  recipeId: string;
+}) {
+  return `${input.date}::${input.mealType}::${input.recipeId}`;
+}
+
+export function plannedMealKeyForMeal(date: string, meal: Pick<PlannedMeal, "mealType" | "recipe">) {
+  return buildPlannedMealKey({
+    date,
+    mealType: meal.mealType,
+    recipeId: meal.recipe.id,
+  });
+}
+
+export function listWeekMealEntries(weekPlan: WeekPlan): WeekMealEntry[] {
+  return weekPlan.days.flatMap((day) =>
+    day.meals.map((meal) => ({
+      date: day.date,
+      meal,
+    })),
+  );
+}
+
+export function listWeekMealKeys(weekPlan: WeekPlan): PlannedMealKey[] {
+  return listWeekMealEntries(weekPlan).map(({ date, meal }) => plannedMealKeyForMeal(date, meal));
+}
+
+export function createWeekPlanSignature(weekPlan: WeekPlan) {
+  return listWeekMealKeys(weekPlan).join("|");
+}
+
+export function createWeekSelectionStorageKey(startDate: string) {
+  return `week-selection:${startDate}`;
+}
+
+export function createShoppingChecksStorageKey(input: {
+  startDate: string;
+  mode: ShoppingListMode;
+  planSignature: string;
+  selectedMealKeys: PlannedMealKey[];
+}) {
+  const selectionSignature =
+    input.mode === "active-only"
+      ? [...input.selectedMealKeys].sort().join("|") || "none"
+      : "all-planned";
+
+  return `shopping-checks:${input.startDate}:${input.mode}:${input.planSignature}:${selectionSignature}`;
+}
+
+export function normalizeSelectedMealKeys(weekPlan: WeekPlan, selectedMealKeys: PlannedMealKey[]) {
+  const allowedKeys = new Set(listWeekMealKeys(weekPlan));
+  return selectedMealKeys.filter((mealKey) => allowedKeys.has(mealKey));
+}
+
+export function buildShoppingListGroups(entries: ShoppingIngredientEntry[]): ShoppingGroup[] {
+  const grouped = new Map<ShoppingCategory, Map<string, { unit: string; totalAmount: number }>>();
+
+  for (const ingredient of entries) {
+    const categoryMap =
+      grouped.get(ingredient.category) ?? new Map<string, { unit: string; totalAmount: number }>();
+    const current = categoryMap.get(ingredient.name);
+
+    if (current && current.unit === ingredient.unit) {
+      current.totalAmount = Number((current.totalAmount + ingredient.amount).toFixed(1));
+    } else {
+      categoryMap.set(ingredient.name, {
+        unit: ingredient.unit,
+        totalAmount: ingredient.amount,
+      });
+    }
+
+    grouped.set(ingredient.category, categoryMap);
+  }
+
+  return [...grouped.entries()]
+    .map(([category, items]) => ({
+      category,
+      items: [...items.entries()]
+        .map(([name, item]) => ({
+          name,
+          unit: item.unit,
+          totalAmount: item.totalAmount,
+        }))
+        .sort((left, right) => left.name.localeCompare(right.name, "de")),
+    }))
+    .sort((left, right) => left.category.localeCompare(right.category, "de"));
+}
+
+export function buildShoppingListGroupsForRecipes(recipes: Recipe[]): ShoppingGroup[] {
+  const entries = recipes.flatMap((recipe) =>
+    recipe.ingredients.map((ingredient) => ({
+      category: ingredient.category,
+      name: ingredient.name,
+      unit: ingredient.unit,
+      amount: ingredient.amount,
+    })),
+  );
+
+  return buildShoppingListGroups(entries);
+}
+
+export function buildShoppingListGroupsForWeekPlan(
+  weekPlan: WeekPlan,
+  mode: ShoppingListMode,
+  selectedMealKeys: PlannedMealKey[],
+) {
+  const selectedSet = new Set(selectedMealKeys);
+  const meals =
+    mode === "all-planned"
+      ? listWeekMealEntries(weekPlan).map(({ meal }) => meal)
+      : listWeekMealEntries(weekPlan)
+          .filter(({ date, meal }) => selectedSet.has(plannedMealKeyForMeal(date, meal)))
+          .map(({ meal }) => meal);
+
+  return buildShoppingListGroups(shoppingEntriesFromMeals(meals));
+}
+
+export function countShoppingItems(groups: ShoppingGroup[]) {
+  return groups.reduce((sum, group) => sum + group.items.length, 0);
+}

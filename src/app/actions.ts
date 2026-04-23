@@ -10,8 +10,9 @@ const settingsSchema = z.object({
   macroFatPct: z.coerce.number().min(10).max(50),
   macroProteinPct: z.coerce.number().min(20).max(60),
   mealsPerDay: z.coerce.number().int().min(3).max(4),
-  vegetarian: z.boolean(),
-  reduceMeat: z.boolean(),
+  vegetarianSharePct: z.coerce.number().int().min(0).max(100),
+  fishSharePct: z.coerce.number().int().min(0).max(100),
+  meatSharePct: z.coerce.number().int().min(0).max(100),
   excludedIngredients: z.array(z.string()),
   maxRecipeRepeatsPerWeek: z.coerce.number().int().min(1).max(4),
 });
@@ -23,6 +24,9 @@ type SettingsFieldErrors = Partial<
     | "macroFatPct"
     | "macroProteinPct"
     | "mealsPerDay"
+    | "vegetarianSharePct"
+    | "fishSharePct"
+    | "meatSharePct"
     | "excludedIngredients"
     | "maxRecipeRepeatsPerWeek",
     string[]
@@ -49,8 +53,9 @@ export async function saveSettingsAction(
     macroFatPct: formData.get("macroFatPct"),
     macroProteinPct: formData.get("macroProteinPct"),
     mealsPerDay: formData.get("mealsPerDay"),
-    vegetarian: formData.get("vegetarian") === "on",
-    reduceMeat: formData.get("reduceMeat") === "on",
+    vegetarianSharePct: formData.get("vegetarianSharePct"),
+    fishSharePct: formData.get("fishSharePct"),
+    meatSharePct: formData.get("meatSharePct"),
     excludedIngredients: String(formData.get("excludedIngredients") ?? "")
       .split(",")
       .map((item) => item.trim())
@@ -79,6 +84,20 @@ export async function saveSettingsAction(
     };
   }
 
+  const recipeMixSum =
+    parsed.data.vegetarianSharePct + parsed.data.fishSharePct + parsed.data.meatSharePct;
+  if (recipeMixSum !== 100) {
+    return {
+      status: "error",
+      message: "Der Zielmix für vegetarisch, Fisch und Fleisch muss zusammen genau 100 % ergeben.",
+      fieldErrors: {
+        vegetarianSharePct: ["Zusammen mit Fisch und Fleisch müssen es 100 % sein."],
+        fishSharePct: ["Zusammen mit vegetarisch und Fleisch müssen es 100 % sein."],
+        meatSharePct: ["Zusammen mit vegetarisch und Fisch müssen es 100 % sein."],
+      },
+    };
+  }
+
   try {
     saveSettings({
       calorieTarget: parsed.data.calorieTarget,
@@ -87,8 +106,9 @@ export async function saveSettingsAction(
       macroProteinPct: parsed.data.macroProteinPct,
       mealsPerDay: parsed.data.mealsPerDay,
       glutenFreeOnly: true,
-      vegetarian: parsed.data.vegetarian,
-      reduceMeat: parsed.data.reduceMeat,
+      vegetarianSharePct: parsed.data.vegetarianSharePct,
+      fishSharePct: parsed.data.fishSharePct,
+      meatSharePct: parsed.data.meatSharePct,
       excludedIngredients: parsed.data.excludedIngredients,
       maxRecipeRepeatsPerWeek: parsed.data.maxRecipeRepeatsPerWeek,
     });

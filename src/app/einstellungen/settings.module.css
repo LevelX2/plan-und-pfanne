@@ -187,6 +187,103 @@
   gap: 14px;
 }
 
+.mixCard {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(19, 38, 29, 0.1);
+  background: linear-gradient(180deg, rgba(20, 76, 57, 0.08), rgba(255, 252, 247, 0.92));
+}
+
+.mixHeader,
+.mixSliderTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
+.mixEyebrow,
+.mixLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+.mixHeader h3 {
+  margin-top: 8px;
+  font-size: 1.35rem;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.mixHint,
+.mixCopy {
+  color: rgba(19, 38, 29, 0.72);
+  line-height: 1.6;
+}
+
+.mixBadgeValid,
+.mixBadgeInvalid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.mixBadgeValid {
+  background: rgba(20, 140, 86, 0.14);
+  color: #116541;
+}
+
+.mixBadgeInvalid {
+  background: rgba(180, 71, 39, 0.14);
+  color: #9e3518;
+}
+
+.mixSliderList {
+  display: grid;
+  gap: 14px;
+}
+
+.mixSliderCard {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(255, 252, 247, 0.78);
+  border: 1px solid rgba(19, 38, 29, 0.08);
+}
+
+.mixSliderTop strong {
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+}
+
+.mixSlider {
+  width: 100%;
+  accent-color: #b7551c;
+}
+
+.mixInlineValues {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.mixInlineValues span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(20, 76, 57, 0.08);
+  color: rgba(19, 38, 29, 0.76);
+  font-size: 0.94rem;
+}
+
 .checkboxLabel {
   display: flex;
   gap: 12px;
@@ -349,5 +446,10 @@
 
   .formGrid {
     grid-template-columns: 1fr;
+  }
+
+  .mixHeader,
+  .mixSliderTop {
+    flex-direction: column;
   }
 }
