@@ -1,11 +1,22 @@
 import "server-only";
 
 import { revalidatePath } from "next/cache";
-import { addDays, getCurrentWeekStart, getNextWeekStartFromSunday, getWeekStartForDate, isSunday, todayInBerlinIso } from "@/lib/date";
+import {
+  addDays,
+  getCurrentWeekStart,
+  getNextWeekStartFromSunday,
+  getWeekStartForDate,
+  isSunday,
+  todayInBerlinIso,
+} from "@/lib/date";
 import { getDb } from "@/lib/db";
 import { formatWeekdayLong } from "@/lib/format";
 import { buildWeeklyPlan } from "@/lib/planner";
-import { createEmptyRecipeMixCounts, getRecipeMixCategory, isRecipeMixControlledMeal } from "@/lib/recipe-mix";
+import {
+  createEmptyRecipeMixCounts,
+  getRecipeMixCategory,
+  isRecipeMixControlledMeal,
+} from "@/lib/recipe-mix";
 import type {
   DayPlan,
   Ingredient,
@@ -18,6 +29,20 @@ import type {
   WeekPlan,
 } from "@/lib/types";
 import { buildShoppingListGroupsForWeekPlan } from "@/lib/week-plan-selection";
+
+const DEFAULT_SETTINGS: UserSettings = {
+  calorieTarget: 2000,
+  macroCarbsPct: 30,
+  macroFatPct: 30,
+  macroProteinPct: 40,
+  mealsPerDay: 4,
+  glutenFreeOnly: true,
+  vegetarianSharePct: 40,
+  fishSharePct: 20,
+  meatSharePct: 40,
+  excludedIngredients: [],
+  maxRecipeRepeatsPerWeek: 2,
+};
 
 type RecipeRow = {
   id: string;
@@ -44,8 +69,6 @@ type SettingsRow = {
   macro_protein_pct: number;
   meals_per_day: number;
   gluten_free_only: number;
-  vegetarian: number;
-  reduce_meat: number;
   vegetarian_share_pct: number;
   fish_share_pct: number;
   meat_share_pct: number;
@@ -57,6 +80,7 @@ type WeeklyPlanRow = {
   id: number;
   start_date: string;
   end_date: string;
+  created_at: string;
 };
 
 type DailyPlanRow = {
@@ -139,9 +163,70 @@ function macroPercents(protein: number, carbs: number, fat: number) {
   };
 }
 
-export function getSettings() {
+function ensureUserSettings(userId: number) {
   const db = getDb();
-  const row = db.prepare("SELECT * FROM user_settings WHERE id = 1").get() as SettingsRow | undefined;
+  const now = new Date().toISOString();
+
+  db.prepare(`
+    INSERT OR IGNORE INTO user_settings (
+      user_id,
+      calorie_target,
+      macro_carbs_pct,
+      macro_fat_pct,
+      macro_protein_pct,
+      meals_per_day,
+      gluten_free_only,
+      vegetarian,
+      reduce_meat,
+      vegetarian_share_pct,
+      fish_share_pct,
+      meat_share_pct,
+      excluded_ingredients_json,
+      max_recipe_repeats_per_week,
+      created_at,
+      updated_at
+    ) VALUES (
+      @userId,
+      @calorieTarget,
+      @macroCarbsPct,
+      @macroFatPct,
+      @macroProteinPct,
+      @mealsPerDay,
+      @glutenFreeOnly,
+      0,
+      0,
+      @vegetarianSharePct,
+      @fishSharePct,
+      @meatSharePct,
+      @excludedIngredients,
+      @maxRecipeRepeatsPerWeek,
+      @createdAt,
+      @updatedAt
+    )
+  `).run({
+    userId,
+    calorieTarget: DEFAULT_SETTINGS.calorieTarget,
+    macroCarbsPct: DEFAULT_SETTINGS.macroCarbsPct,
+    macroFatPct: DEFAULT_SETTINGS.macroFatPct,
+    macroProteinPct: DEFAULT_SETTINGS.macroProteinPct,
+    mealsPerDay: DEFAULT_SETTINGS.mealsPerDay,
+    glutenFreeOnly: DEFAULT_SETTINGS.glutenFreeOnly ? 1 : 0,
+    vegetarianSharePct: DEFAULT_SETTINGS.vegetarianSharePct,
+    fishSharePct: DEFAULT_SETTINGS.fishSharePct,
+    meatSharePct: DEFAULT_SETTINGS.meatSharePct,
+    excludedIngredients: JSON.stringify(DEFAULT_SETTINGS.excludedIngredients),
+    maxRecipeRepeatsPerWeek: DEFAULT_SETTINGS.maxRecipeRepeatsPerWeek,
+    createdAt: now,
+    updatedAt: now,
+  });
+}
+
+export function getSettings(userId: number) {
+  ensureUserSettings(userId);
+  const db = getDb();
+  const row = db.prepare("SELECT * FROM user_settings WHERE user_id = ?").get(userId) as
+    | SettingsRow
+    | undefined;
 
   if (!row) {
     throw new Error("Einstellungen konnten nicht geladen werden.");
@@ -150,7 +235,8 @@ export function getSettings() {
   return parseSettings(row);
 }
 
-export function saveSettings(settings: UserSettings) {
+export function saveSettings(userId: number, settings: UserSettings) {
+  ensureUserSettings(userId);
   const db = getDb();
   db.prepare(`
     UPDATE user_settings
@@ -167,8 +253,9 @@ export function saveSettings(settings: UserSettings) {
       excluded_ingredients_json = @excludedIngredients,
       max_recipe_repeats_per_week = @maxRecipeRepeatsPerWeek,
       updated_at = @updatedAt
-    WHERE id = 1
+    WHERE user_id = @userId
   `).run({
+    userId,
     calorieTarget: settings.calorieTarget,
     macroCarbsPct: settings.macroCarbsPct,
     macroFatPct: settings.macroFatPct,
@@ -204,12 +291,12 @@ function filterRecipes(recipes: Recipe[], settings: UserSettings) {
     });
 }
 
-export function listRecipes() {
-  return filterRecipes(listAllRecipes(), getSettings());
+export function listRecipes(userId: number) {
+  return filterRecipes(listAllRecipes(), getSettings(userId));
 }
 
-export function getRecipeMixPoolStats() {
-  const recipes = listRecipes().filter(isRecipeMixControlledMeal);
+export function getRecipeMixPoolStats(userId: number) {
+  const recipes = listRecipes(userId).filter(isRecipeMixControlledMeal);
   const counts = createEmptyRecipeMixCounts();
 
   for (const recipe of recipes) {
@@ -225,15 +312,15 @@ export function getRecipeMixPoolStats() {
   };
 }
 
-export function getRecipeById(id: string) {
+export function getRecipeById(_userId: number, id: string) {
   return listAllRecipes().find((recipe) => recipe.id === id) ?? null;
 }
 
-function deleteStoredWeek(startDate: string) {
+function deleteStoredWeek(userId: number, startDate: string) {
   const db = getDb();
-  const plan = db.prepare("SELECT id FROM weekly_plans WHERE start_date = ?").get(startDate) as
-    | { id: number }
-    | undefined;
+  const plan = db
+    .prepare("SELECT id FROM weekly_plans WHERE user_id = ? AND start_date = ?")
+    .get(userId, startDate) as { id: number } | undefined;
 
   if (!plan) {
     return;
@@ -256,18 +343,19 @@ function deleteStoredWeek(startDate: string) {
   transaction();
 }
 
-function storeWeekPlan(plan: WeekPlan, generatedBy: string) {
+function storeWeekPlan(userId: number, plan: WeekPlan, generatedBy: string) {
   const db = getDb();
-  deleteStoredWeek(plan.startDate);
+  deleteStoredWeek(userId, plan.startDate);
 
   const transaction = db.transaction(() => {
     const weeklyPlanInsert = db.prepare(`
       INSERT INTO weekly_plans (user_id, start_date, end_date, created_at, generated_by)
-      VALUES (1, @startDate, @endDate, @createdAt, @generatedBy)
+      VALUES (@userId, @startDate, @endDate, @createdAt, @generatedBy)
     `).run({
+      userId,
       startDate: plan.startDate,
       endDate: plan.endDate,
-      createdAt: new Date().toISOString(),
+      createdAt: plan.generatedAt,
       generatedBy,
     });
 
@@ -325,22 +413,26 @@ function storeWeekPlan(plan: WeekPlan, generatedBy: string) {
   transaction();
 }
 
-function hydrateStoredWeek(startDate: string) {
+function hydrateStoredWeek(userId: number, startDate: string) {
   const db = getDb();
-  const weeklyPlan = db.prepare("SELECT * FROM weekly_plans WHERE start_date = ?").get(startDate) as WeeklyPlanRow | undefined;
+  const weeklyPlan = db
+    .prepare("SELECT * FROM weekly_plans WHERE user_id = ? AND start_date = ?")
+    .get(userId, startDate) as WeeklyPlanRow | undefined;
 
   if (!weeklyPlan) {
     return null;
   }
 
-  const settings = getSettings();
+  const settings = getSettings(userId);
   const targets = targetsFromSettings(settings);
   const recipesById = new Map(listAllRecipes().map((recipe) => [recipe.id, recipe]));
   const dayRows = db
     .prepare("SELECT * FROM daily_plans WHERE weekly_plan_id = ? ORDER BY date")
     .all(weeklyPlan.id) as DailyPlanRow[];
   const mealRows = db
-    .prepare("SELECT * FROM meals WHERE daily_plan_id IN (SELECT id FROM daily_plans WHERE weekly_plan_id = ?) ORDER BY id")
+    .prepare(
+      "SELECT * FROM meals WHERE daily_plan_id IN (SELECT id FROM daily_plans WHERE weekly_plan_id = ?) ORDER BY id",
+    )
     .all(weeklyPlan.id) as MealRow[];
 
   const mealsByDay = new Map<number, PlannedMeal[]>();
@@ -390,34 +482,41 @@ function hydrateStoredWeek(startDate: string) {
   return {
     startDate: weeklyPlan.start_date,
     endDate: weeklyPlan.end_date,
+    generatedAt: weeklyPlan.created_at,
     averageScore: Number((days.reduce((sum, day) => sum + day.score, 0) / days.length).toFixed(2)),
-    averageProteinPct: Number((days.reduce((sum, day) => sum + day.macroPercents.protein, 0) / days.length).toFixed(1)),
-    averageCarbsPct: Number((days.reduce((sum, day) => sum + day.macroPercents.carbs, 0) / days.length).toFixed(1)),
-    averageFatPct: Number((days.reduce((sum, day) => sum + day.macroPercents.fat, 0) / days.length).toFixed(1)),
+    averageProteinPct: Number(
+      (days.reduce((sum, day) => sum + day.macroPercents.protein, 0) / days.length).toFixed(1),
+    ),
+    averageCarbsPct: Number(
+      (days.reduce((sum, day) => sum + day.macroPercents.carbs, 0) / days.length).toFixed(1),
+    ),
+    averageFatPct: Number(
+      (days.reduce((sum, day) => sum + day.macroPercents.fat, 0) / days.length).toFixed(1),
+    ),
     days,
   } satisfies WeekPlan;
 }
 
-export function generateWeekPlan(startDate: string, generatedBy = "manual") {
-  const settings = getSettings();
+export function generateWeekPlan(userId: number, startDate: string, generatedBy = "manual") {
+  const settings = getSettings(userId);
   const recipes = filterRecipes(listAllRecipes(), settings);
   const plan = buildWeeklyPlan(startDate, recipes, settings);
-  storeWeekPlan(plan, generatedBy);
-  return hydrateStoredWeek(startDate);
+  storeWeekPlan(userId, plan, generatedBy);
+  return hydrateStoredWeek(userId, startDate);
 }
 
-export function getWeekPlan(startDate: string) {
-  return hydrateStoredWeek(startDate);
+export function getWeekPlan(userId: number, startDate: string) {
+  return hydrateStoredWeek(userId, startDate);
 }
 
-export function getCurrentWeekPlan() {
+export function getCurrentWeekPlan(userId: number) {
   const startDate = getCurrentWeekStart();
-  return getWeekPlan(startDate) ?? generateWeekPlan(startDate, "bootstrap");
+  return getWeekPlan(userId, startDate) ?? generateWeekPlan(userId, startDate, "bootstrap");
 }
 
-export function regenerateCurrentWeekPlan() {
+export function regenerateCurrentWeekPlan(userId: number) {
   const startDate = getCurrentWeekStart();
-  const plan = generateWeekPlan(startDate, "manual");
+  const plan = generateWeekPlan(userId, startDate, "manual");
 
   revalidatePath("/");
   revalidatePath("/rezepte");
@@ -432,19 +531,28 @@ export function regenerateCurrentWeekPlan() {
   return plan;
 }
 
-export function getDayPlan(date: string) {
+export function getDayPlan(userId: number, date: string) {
   const weekStart = getWeekStartForDate(date);
-  const weekPlan = getWeekPlan(weekStart) ?? generateWeekPlan(weekStart, "day-bootstrap");
+  const weekPlan = getWeekPlan(userId, weekStart) ?? generateWeekPlan(userId, weekStart, "day-bootstrap");
   return weekPlan?.days.find((day) => day.date === date) ?? null;
 }
 
-export function buildShoppingListForWeek(startDate: string): ShoppingGroup[] {
-  const plan = getWeekPlan(startDate) ?? generateWeekPlan(startDate, "shopping-bootstrap");
+export function buildShoppingListForWeek(userId: number, startDate: string): ShoppingGroup[] {
+  const plan = getWeekPlan(userId, startDate) ?? generateWeekPlan(userId, startDate, "shopping-bootstrap");
   if (!plan) {
     return [];
   }
 
   return buildShoppingListGroupsForWeekPlan(plan, "all-planned", []);
+}
+
+function listVerifiedUserIds() {
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT id FROM users WHERE email IS NOT NULL AND verified_at IS NOT NULL ORDER BY id")
+    .all() as { id: number }[];
+
+  return rows.map((row) => row.id);
 }
 
 export function generateScheduledWeekPlan(force = false) {
@@ -460,13 +568,16 @@ export function generateScheduledWeekPlan(force = false) {
   }
 
   const targetWeekStart = getNextWeekStartFromSunday(today);
-  const plan = generateWeekPlan(targetWeekStart, "scheduler");
+  const generatedUserIds = listVerifiedUserIds().filter((userId) =>
+    Boolean(generateWeekPlan(userId, targetWeekStart, "scheduler")),
+  );
 
   return {
     skipped: false,
     today,
     targetWeekStart,
-    plan,
+    generatedUsers: generatedUserIds.length,
+    userIds: generatedUserIds,
   } as const;
 }
 

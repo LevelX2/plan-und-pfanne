@@ -19,6 +19,7 @@ import {
 } from "@/lib/week-plan-selection";
 
 type ShoppingListClientProps = {
+  storageNamespace: string;
   weekPlan: WeekPlan;
 };
 
@@ -31,7 +32,7 @@ function itemId(category: string, name: string, unit: string) {
   return `${category}::${name}::${unit}`;
 }
 
-export function ShoppingListClient({ weekPlan }: ShoppingListClientProps) {
+export function ShoppingListClient({ storageNamespace, weekPlan }: ShoppingListClientProps) {
   const [selectedMealKeys, setSelectedMealKeys] = useState<string[]>([]);
   const [shoppingMode, setShoppingMode] = useState<ShoppingListMode>("active-only");
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
@@ -44,6 +45,7 @@ export function ShoppingListClient({ weekPlan }: ShoppingListClientProps) {
     group.items.map((item) => itemId(group.category, item.name, item.unit)),
   );
   const checksStorageKey = createShoppingChecksStorageKey({
+    storageNamespace,
     startDate: weekPlan.startDate,
     mode: shoppingMode,
     planSignature,
@@ -54,7 +56,9 @@ export function ShoppingListClient({ weekPlan }: ShoppingListClientProps) {
     let cancelled = false;
     selectionHydratedRef.current = false;
 
-    void loadOfflineSnapshot<WeekSelectionSnapshot>(createWeekSelectionStorageKey(weekPlan.startDate))
+    void loadOfflineSnapshot<WeekSelectionSnapshot>(
+      createWeekSelectionStorageKey(storageNamespace, weekPlan.startDate),
+    )
       .then((snapshot) => {
         if (cancelled) {
           return;
@@ -83,7 +87,7 @@ export function ShoppingListClient({ weekPlan }: ShoppingListClientProps) {
     return () => {
       cancelled = true;
     };
-  }, [planSignature, weekPlan, weekPlan.startDate]);
+  }, [planSignature, storageNamespace, weekPlan, weekPlan.startDate]);
 
   useEffect(() => {
     if (!selectionHydratedRef.current) {
@@ -97,12 +101,13 @@ export function ShoppingListClient({ weekPlan }: ShoppingListClientProps) {
       savedAt: new Date().toISOString(),
     };
 
-    void saveOfflineSnapshot(createWeekSelectionStorageKey(weekPlan.startDate), selectionSnapshot).catch(
-      (error) => {
-        console.error("Aktive Gerichte konnten nicht gespeichert werden.", error);
-      },
-    );
-  }, [planSignature, selectedMealKeys, shoppingMode, weekPlan.startDate]);
+    void saveOfflineSnapshot(
+      createWeekSelectionStorageKey(storageNamespace, weekPlan.startDate),
+      selectionSnapshot,
+    ).catch((error) => {
+      console.error("Aktive Gerichte konnten nicht gespeichert werden.", error);
+    });
+  }, [planSignature, selectedMealKeys, shoppingMode, storageNamespace, weekPlan.startDate]);
 
   useEffect(() => {
     let cancelled = false;

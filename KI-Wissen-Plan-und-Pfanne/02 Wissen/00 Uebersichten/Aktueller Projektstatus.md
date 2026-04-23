@@ -7,6 +7,9 @@ quellen:
   - ../../01 Rohquellen/2026-04-23 Benutzerkonzept und nutzerscharfer Zugriff.md
   - ../../01 Rohquellen/externe-quellen/2026-04-23 Glutenfreie Rezeptquellen BBC Good Food.md
   - ../../../README.md
+  - ../../../src/app/anmelden/page.tsx
+  - ../../../src/app/auth-actions.ts
+  - ../../../src/lib/auth.ts
   - ../../../src/app/page.tsx
   - ../../../src/app/home-client.tsx
   - ../../../src/app/einkaufsliste/shopping-list-client.tsx
@@ -23,7 +26,10 @@ tags:
 # Aktueller Projektstatus
 
 ## Umgesetzt
-- Produktnahe App-Routen sind vorhanden: `/`, `/rezepte`, `/rezepte/[id]`, `/tage/[date]`, `/einkaufsliste`, `/einstellungen`, `/api/health` und `/api/scheduler/weekly`.
+- Produktnahe App-Routen sind vorhanden: `/`, `/anmelden`, `/abmelden`, `/rezepte`, `/rezepte/[id]`, `/tage/[date]`, `/einkaufsliste`, `/einstellungen`, `/api/health`, `/api/auth/logout` und `/api/scheduler/weekly`.
+- Passwortlose Anmeldung per E-Mail-Code, Session-Cookie und benutzerscharfer Datenzugriff sind im Workspace umgesetzt.
+- Dashboard, Rezepte, Tagesansichten, Einkaufsliste und Einstellungen sind serverseitig geschützt und laden nur noch Daten des angemeldeten Nutzers.
+- SQLite enthält jetzt neben Rezept- und Planungsdaten auch `users`, `auth_challenges` und `sessions`; Einstellungen und Wochenpläne sind auf echte `user_id`-Trennung umgestellt.
 - Das Dashboard zeigt die aktuelle Woche, Tageskarten, Makroabweichungen, Planungsprofil, Rezeptanzahlen und Einkaufsumfang.
 - Das Dashboard erlaubt jetzt zusätzlich pro geplanter Mahlzeit eine aktive Auswahl; die Auswahl startet leer, lässt sich pro Tag oder komplett schalten und bleibt lokal pro Woche gespeichert.
 - Die Tagesansicht pro Datum ist vorhanden und verknüpft die Tagesplanung direkt mit den Rezeptdetails.
@@ -31,6 +37,7 @@ tags:
 - Die Einkaufsliste unterstützt jetzt zwei Modi:
   `aktive Gerichte` und `alle geplanten Gerichte`.
   Im Modus `aktive Gerichte` erscheint bei leerer Auswahl ein expliziter Leerzustand; Abhakstatus bleibt lokal pro Woche und Listenkontext gespeichert.
+- Offline-Snapshots, aktive Gerichtsauswahl und Einkaufs-Häkchen sind jetzt zusätzlich pro Nutzer auf dem Gerät getrennt; Logout bereinigt diese lokalen Daten.
 - Die Einstellungslogik ist jetzt über eine reale Seite erreichbar; Speichern regeneriert die aktuelle Woche und führt zurück nach `/einstellungen`.
 - Das Einstellungsformular behandelt erwartete Validierungs- und Speicherfehler jetzt inline statt über harte Laufzeitfehler.
 - Das Einstellungsformular enthält jetzt zusätzlich einen gekoppelten Dreiregler für `vegetarisch`, `Fisch` und `Fleisch`; die Werte ergeben zusammen immer `100 %`.
@@ -47,20 +54,23 @@ tags:
 - Die Scheduler-Route ist in Production nicht mehr stillschweigend offen: Ohne `SCHEDULER_SECRET` antwortet sie bewusst mit `503`.
 
 ## Teilweise umgesetzt
-- Der reale Offlinescope ist jetzt in Produkttexten klarer benannt: Dashboard, Rezeptbibliothek und Einkaufsliste werden lokal abgesichert. Zusätzlich funktionieren aktive Gerichtsauswahl und Einkaufs-Häkchen als lokale Gerätezustände offline; serverseitige Änderungen funktionieren weiterhin nicht offline.
+- Der reale Offlinescope ist jetzt in Produkttexten klarer benannt: Dashboard, Rezeptbibliothek und Einkaufsliste werden lokal abgesichert. Zusätzlich funktionieren aktive Gerichtsauswahl und Einkaufs-Häkchen als lokale Gerätezustände offline und nutzergetrennt; serverseitige Änderungen funktionieren weiterhin nicht offline.
 - Railway-Deployment ist nicht mehr nur vorbereitet; eine produktive URL ist bekannt: `https://plan-und-pfanne-production.up.railway.app`. Der produktive Stand wurde zuletzt manuell per Railway-CLI ausgerollt; ein GitHub-Push allein ist aktuell nicht als sicher ausreichender Deploy-Mechanismus dokumentiert.
 - Neue Rezept-IDs werden über den bestehenden Seed-Mechanismus beim Start in SQLite eingefügt; nach einem neuen Railway-Deploy kommen zusätzliche Seed-Rezepte damit auch in den produktiven Datenbestand.
 - Der lokale SQLite-Stand `data/planner.sqlite` wurde am 2026-04-23 direkt auf 70 Rezepte synchronisiert:
   17 Frühstücke, 19 Mittagessen, 20 Abendessen und 14 Snacks.
-- Die Scheduler-Route ist lokal und live funktionsfähig, aber noch nicht an einen echten externen Cron- oder Hosting-Trigger angebunden.
+- Die Scheduler-Route ist lokal und live funktionsfähig und erzeugt Pläne jetzt pro verifiziertem Nutzer, ist aber noch nicht an einen echten externen Cron- oder Hosting-Trigger angebunden.
+- Der Login funktioniert technisch vollständig; für Production fehlt jedoch noch die betriebliche Konfiguration des realen E-Mail-Versands für Anmeldecodes.
 
 ## Offen
 - Der Offlinescope, die Nutzungsgrenzen und das Synchronisationsversprechen sollten produktseitig noch expliziter geklärt werden.
-- Authentifizierung und benutzerscharfer Datenzugriff sind noch nicht umgesetzt; der aktuelle öffentliche App-Zugriff zeigt weiterhin globalen Single-User-Stand.
+- Der produktive E-Mail-Versand für Anmeldecodes muss mit den benötigten Umgebungsvariablen und einer verifizierten Absenderadresse eingerichtet werden.
+- Der Einkaufsfortschritt ist noch nicht serverseitig zwischen mehreren Geräten desselben Nutzers synchronisiert.
 - Der alte Ordner `C:\Users\Lui\OneDrive\Projekte\gluten freie Rezepte` ist noch als OneDrive-Reparse-Restzustand sichtbar und sollte kontrolliert entfernt oder bewusst als technischer Rest dokumentiert werden.
 
 ## Wichtige Grenzen
 - Der Wochenplan wird heuristisch und zufallsbasiert erzeugt; identische Einstellungen führen daher nicht zwingend zu reproduzierbaren Ergebnissen.
 - Der Zielmix `vegetarisch / Fisch / Fleisch` ist bewusst eine Näherung und keine starre Garantie; die tatsächlich erreichte Verteilung hängt weiterhin vom verfügbaren Rezeptpool ab.
-- Einstellungen, Wochenplan und Einkaufsliste sind im aktuellen Workspace noch nicht an verifizierte Benutzerkonten gebunden. Für öffentlichen Betrieb ist das eine fachliche und datenschutznahe Grenze.
+- Ohne konfigurierten E-Mail-Versand ist der passwortlose Login in Production nicht betriebsfähig; lokal bleibt nur der Entwicklungsmodus mit eingeblendetem Testcode.
+- Einkaufs-Häkchen und Offline-Snapshots sind zwar pro Nutzer getrennt, aber weiterhin nur lokal auf dem jeweiligen Gerät gespeichert.
 - In Production bleibt die Scheduler-Route ohne `SCHEDULER_SECRET` absichtlich deaktiviert; der produktive Aufrufweg muss daher zusammen mit Secret, Trigger und Monitoring vervollständigt werden.

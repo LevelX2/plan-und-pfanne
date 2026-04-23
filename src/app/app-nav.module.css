@@ -1,0 +1,82 @@
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(20, 76, 57, 0.12);
+  box-shadow: 0 16px 34px rgba(20, 76, 57, 0.08);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.links a,
+.logoutLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #144c39;
+  background: rgba(20, 76, 57, 0.08);
+}
+
+.links a[aria-current="page"] {
+  background: #144c39;
+  color: #fff;
+}
+
+.account {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.accountMeta {
+  display: grid;
+  gap: 2px;
+  text-align: right;
+}
+
+.accountMeta strong {
+  font-size: 0.95rem;
+  color: #133b2d;
+}
+
+.accountMeta span {
+  font-size: 0.82rem;
+  color: #4d6c62;
+}
+
+.logoutLink {
+  background: rgba(154, 71, 23, 0.08);
+  color: #9a4717;
+}
+
+@media (max-width: 720px) {
+  .nav {
+    align-items: flex-start;
+  }
+
+  .account {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .accountMeta {
+    text-align: left;
+  }
+}

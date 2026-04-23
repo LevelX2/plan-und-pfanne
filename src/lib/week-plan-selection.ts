@@ -68,11 +68,12 @@ export function createWeekPlanSignature(weekPlan: WeekPlan) {
   return listWeekMealKeys(weekPlan).join("|");
 }
 
-export function createWeekSelectionStorageKey(startDate: string) {
-  return `week-selection:${startDate}`;
+export function createWeekSelectionStorageKey(storageNamespace: string, startDate: string) {
+  return `${storageNamespace}:week-selection:${startDate}`;
 }
 
 export function createShoppingChecksStorageKey(input: {
+  storageNamespace: string;
   startDate: string;
   mode: ShoppingListMode;
   planSignature: string;
@@ -83,7 +84,10 @@ export function createShoppingChecksStorageKey(input: {
       ? [...input.selectedMealKeys].sort().join("|") || "none"
       : "all-planned";
 
-  return `shopping-checks:${input.startDate}:${input.mode}:${input.planSignature}:${selectionSignature}`;
+  return (
+    `${input.storageNamespace}:shopping-checks:${input.startDate}:` +
+    `${input.mode}:${input.planSignature}:${selectionSignature}`
+  );
 }
 
 export function normalizeSelectedMealKeys(weekPlan: WeekPlan, selectedMealKeys: PlannedMealKey[]) {

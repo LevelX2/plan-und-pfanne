@@ -278,7 +278,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
                   max={100}
                   min={0}
                   onChange={(event) => {
-                    setMix((current) => rebalanceMix(current, key, Number(event.currentTarget.value)));
+                    const nextValue = Number(event.currentTarget.value);
+                    setMix((current) => rebalanceMix(current, key, nextValue));
                   }}
                   step={1}
                   type="range"

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AppNav } from "@/app/app-nav";
 import styles from "./day.module.css";
+import { requireUser } from "@/lib/auth";
 import { addDays, getWeekStartForDate } from "@/lib/date";
 import {
   formatCalories,
@@ -26,12 +28,13 @@ function isIsoDate(value: string) {
 
 export default async function DayPage({ params }: DayPageProps) {
   const { date } = await params;
+  const user = await requireUser(`/tage/${date}`);
 
   if (!isIsoDate(date)) {
     notFound();
   }
 
-  const day = getDayPlan(date);
+  const day = getDayPlan(user.id, date);
 
   if (!day) {
     notFound();
@@ -45,12 +48,13 @@ export default async function DayPage({ params }: DayPageProps) {
 
   return (
     <main className={styles.page}>
-      <nav className={styles.topNav}>
-        <Link href="/">Dashboard</Link>
-        <Link href="/rezepte">Rezepte</Link>
-        <Link href="/einkaufsliste">Einkaufsliste</Link>
-        <Link href="/einstellungen">Einstellungen</Link>
-      </nav>
+      <AppNav
+        currentPath="/"
+        user={{
+          email: user.email,
+          displayName: user.displayName,
+        }}
+      />
 
       <section className={styles.hero}>
         <div className={styles.heroText}>

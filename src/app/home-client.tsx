@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AppNav, type AppNavUser } from "@/app/app-nav";
 import styles from "./page.module.css";
 import { RegenerateWeekForm } from "@/app/regenerate-week-form";
 import {
@@ -15,6 +16,7 @@ import {
   type ShoppingListMode,
   type WeekSelectionSnapshot,
 } from "@/lib/week-plan-selection";
+import { createUserScopedStorageKey } from "@/lib/user-storage";
 import {
   describeMealPlanMode,
   formatCalories,
@@ -27,8 +29,6 @@ import {
 } from "@/lib/format";
 import { loadOfflineSnapshot, saveOfflineSnapshot } from "@/lib/offline-store";
 import type { UserSettings, WeekPlan } from "@/lib/types";
-
-const HOME_SNAPSHOT_KEY = "home-snapshot-v1";
 
 type RecipeCounts = {
   breakfast: number;
@@ -46,6 +46,8 @@ type HomeSnapshot = {
 
 type HomeClientProps = {
   initialSnapshot: HomeSnapshot;
+  storageNamespace: string;
+  user: AppNavUser;
 };
 
 function macroBadgeClass(delta: number) {
@@ -67,12 +69,13 @@ function formatSavedAt(isoString: string) {
   }).format(new Date(isoString));
 }
 
-export function HomeClient({ initialSnapshot }: HomeClientProps) {
+export function HomeClient({ initialSnapshot, storageNamespace, user }: HomeClientProps) {
   const [offlineSnapshot, setOfflineSnapshot] = useState<HomeSnapshot | null>(null);
   const [isOffline, setIsOffline] = useState(false);
   const [selectedMealKeys, setSelectedMealKeys] = useState<string[]>([]);
   const [shoppingMode, setShoppingMode] = useState<ShoppingListMode>("active-only");
   const selectionHydratedRef = useRef(false);
+  const homeSnapshotKey = createUserScopedStorageKey(storageNamespace, "home-snapshot-v1");
 
   useEffect(() => {
     const updateOnlineState = () => {
@@ -90,17 +93,17 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
   }, []);
 
   useEffect(() => {
-    void saveOfflineSnapshot(HOME_SNAPSHOT_KEY, initialSnapshot).catch((error) => {
+    void saveOfflineSnapshot(homeSnapshotKey, initialSnapshot).catch((error) => {
       console.error("Wochenplan konnte nicht offline gespeichert werden.", error);
     });
-  }, [initialSnapshot]);
+  }, [homeSnapshotKey, initialSnapshot]);
 
   useEffect(() => {
     if (!isOffline) {
       return;
     }
 
-    void loadOfflineSnapshot<HomeSnapshot>(HOME_SNAPSHOT_KEY)
+    void loadOfflineSnapshot<HomeSnapshot>(homeSnapshotKey)
       .then((offlineSnapshot) => {
         if (offlineSnapshot) {
           setOfflineSnapshot(offlineSnapshot);
@@ -109,7 +112,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
       .catch((error) => {
         console.error("Offline-Wochenplan konnte nicht geladen werden.", error);
       });
-  }, [isOffline]);
+  }, [homeSnapshotKey, isOffline]);
 
   const snapshot = isOffline && offlineSnapshot ? offlineSnapshot : initialSnapshot;
   const { settings, weekPlan, recipeCounts, savedAt } = snapshot;
@@ -130,7 +133,9 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
     let cancelled = false;
     selectionHydratedRef.current = false;
 
-    void loadOfflineSnapshot<WeekSelectionSnapshot>(createWeekSelectionStorageKey(weekPlan.startDate))
+    void loadOfflineSnapshot<WeekSelectionSnapshot>(
+      createWeekSelectionStorageKey(storageNamespace, weekPlan.startDate),
+    )
       .then((snapshot) => {
         if (cancelled) {
           return;
@@ -159,7 +164,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
     return () => {
       cancelled = true;
     };
-  }, [planSignature, weekPlan, weekPlan.startDate]);
+  }, [planSignature, storageNamespace, weekPlan, weekPlan.startDate]);
 
   useEffect(() => {
     if (!selectionHydratedRef.current) {
@@ -173,12 +178,13 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
       savedAt: new Date().toISOString(),
     };
 
-    void saveOfflineSnapshot(createWeekSelectionStorageKey(weekPlan.startDate), selectionSnapshot).catch(
-      (error) => {
-        console.error("Aktive Gerichte konnten nicht gespeichert werden.", error);
-      },
-    );
-  }, [planSignature, selectedMealKeys, shoppingMode, weekPlan.startDate]);
+    void saveOfflineSnapshot(
+      createWeekSelectionStorageKey(storageNamespace, weekPlan.startDate),
+      selectionSnapshot,
+    ).catch((error) => {
+      console.error("Aktive Gerichte konnten nicht gespeichert werden.", error);
+    });
+  }, [planSignature, selectedMealKeys, shoppingMode, storageNamespace, weekPlan.startDate]);
 
   function toggleMeal(mealKey: string) {
     setSelectedMealKeys((current) =>
@@ -207,12 +213,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
 
   return (
     <main className={styles.page}>
-      <nav className={styles.topNav}>
-        <Link href="/">Dashboard</Link>
-        <Link href="/rezepte">Rezepte</Link>
-        <Link href="/einkaufsliste">Einkaufsliste</Link>
-        <Link href="/einstellungen">Einstellungen</Link>
-      </nav>
+      <AppNav currentPath="/" user={user} />
 
       <section className={styles.hero}>
         <div className={styles.heroText}>
@@ -233,6 +234,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
             und Makroziel {settings.macroProteinPct}/{settings.macroCarbsPct}/{settings.macroFatPct}.
             {" "}Mix: {settings.vegetarianSharePct}/{settings.fishSharePct}/{settings.meatSharePct}.
           </p>
+          <p className={styles.panelLabel}>Zuletzt neu generiert: {formatSavedAt(weekPlan.generatedAt)}</p>
 
           <div className={styles.heroActions}>
             <div className={styles.actionRow}>
@@ -281,6 +283,7 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
           <span className={isOffline ? styles.statusWarn : styles.statusGood}>
             {isOffline ? "offline aktiv" : "offline bereit"}
           </span>
+          <p>Zuletzt neu generiert: {formatSavedAt(weekPlan.generatedAt)}</p>
           <p>Zuletzt gespeichert: {formatSavedAt(savedAt)}</p>
         </div>
       </section>
@@ -523,9 +526,9 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
             <Link className={styles.textLink} href="/rezepte">
               Alle Rezepte mit Zutaten und Zubereitung ansehen
             </Link>
-            <Link className={styles.textLink} href="/einstellungen">
+            <a className={styles.textLink} href="/einstellungen">
               Planungsprofil anpassen
-            </Link>
+            </a>
           </article>
 
           <article className={styles.sectionCard}>

@@ -1,12 +1,15 @@
 import { HomeClient } from "./home-client";
+import { requireUser } from "@/lib/auth";
 import { getCurrentWeekPlan, getSettings, listRecipes } from "@/lib/store";
+import { createUserStorageNamespace } from "@/lib/user-storage";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const settings = getSettings();
-  const weekPlan = getCurrentWeekPlan();
-  const recipes = listRecipes();
+export default async function Home() {
+  const user = await requireUser("/");
+  const settings = getSettings(user.id);
+  const weekPlan = getCurrentWeekPlan(user.id);
+  const recipes = listRecipes(user.id);
 
   if (!weekPlan) {
     throw new Error("Der aktuelle Wochenplan konnte nicht geladen werden.");
@@ -26,6 +29,11 @@ export default function Home() {
         weekPlan,
         recipeCounts,
         savedAt: new Date().toISOString(),
+      }}
+      storageNamespace={createUserStorageNamespace(user.id)}
+      user={{
+        email: user.email,
+        displayName: user.displayName,
       }}
     />
   );

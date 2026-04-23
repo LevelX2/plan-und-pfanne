@@ -85,6 +85,35 @@
 - `Offene Fragen und Prüfbedarf.md` hält fest, dass der Mix wegen unausgewogenem Rezeptpool voraussichtlich als weiches Ziel und eher für Mittag- und Abendessen statt für alle Mahlzeiten modelliert werden sollte.
 - Die bestehende Überlappung mit `Vegetarisch` und `Fleisch reduzieren` ist als bewusster Prüfpunkt dokumentiert.
 
+## [2026-04-23] bugfix | Geschützte Seiten nach Nutzerkonzept wieder erreichbar
+- Nach dem Nutzerkonzept kam es auf geschützten Seiten wie Dashboard, Einstellungen, Rezepten und Einkaufsliste lokal zu `500`-Fehlern mit `SqliteError: no such column: id`.
+- Ursache war ein unvollständig abgesicherter Migrationspfad rund um die neue `users`-Tabelle: Für `user_settings` und Planungsdaten existierten bereits Schema-Migrationen, für ältere `users`-Strukturen und deren abhängige Tabellen aber noch kein gleichwertiger Fallback.
+- `src/lib/db.ts` enthält jetzt eine zusätzliche Selbstheilungs-Migration für ältere `users`-Schemas ohne `id`, inklusive Neuaufbau und Rückübernahme der direkt abhängigen Tabellen `sessions`, `user_settings`, `weekly_plans`, `daily_plans` und `meals`.
+- Nach frischem Build und Neustart antworteten geschützte Routen lokal wieder korrekt; ohne Session liefern `/` und `/einstellungen` jetzt wieder reguläre Redirects zur Anmeldung statt `500`.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich, lokaler Serverstart erfolgreich, HTTP-Checks für geschützte Routen ohne SQL-Fehler.
+
+## [2026-04-23] umsetzung | Dashboard zeigt letzten Generierungszeitpunkt des Wochenplans
+- Der gespeicherte Wochenplan trägt jetzt einen eigenen Zeitstempel `generatedAt`, der aus `weekly_plans.created_at` hydratisiert wird und den tatsächlichen Zeitpunkt der letzten Generierung repräsentiert.
+- Das Dashboard zeigt diesen Zeitpunkt sichtbar als `Zuletzt neu generiert`, getrennt vom bisherigen Offline-Speicherzeitpunkt, damit beide Bedeutungen nicht vermischt werden.
+- Beim Nachziehen des Build-Checks wurde zusätzlich ein vorhandener Typfehler in der Einkaufsliste bereinigt: die userbezogenen Storage-Keys für Wochenauswahl und Einkaufs-Häkchen werden jetzt wieder mit dem erforderlichen `storageNamespace` erzeugt.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich.
+
+## [2026-04-23] betrieb | Lokale Browser-Vorschau wieder auf next start zurückgestellt
+- Der zuvor getestete Standalone-Start über `node .next/standalone/server.js` lieferte im lokalen Vorschau-Setup HTML aus, aber keine CSS-Assets unter `/_next/static/...`; die Oberfläche erschien dadurch als ungestylte Textansicht.
+- Für die lokale Browser-Vorschau wurde der Start deshalb wieder auf `next start` zurückgestellt; ergänzend gibt es jetzt ein separates Skript `start:standalone` für gezielte Standalone-Tests.
+- Der reguläre lokale Produktionsserver rendert die Einstellungsseite weiterhin vollständig und lieferte die referenzierte CSS-Datei beim Prüflauf mit Status `200` aus.
+- Verifikation:
+  `http://localhost:3000/einstellungen` erfolgreich geladen, referenzierte CSS-Datei unter `/_next/static/...css` erfolgreich mit Status `200` geladen.
+
+## [2026-04-23] betrieb | Lokalen Browser-Test auf Standalone-Server umgestellt
+- Für den lokalen Prüfstand wurde der Start von `next start` auf `node .next/standalone/server.js` umgestellt, weil das Projekt mit `output: standalone` läuft und der bisherige Startmodus dazu eine direkte Warnung ausgab.
+- Der Dev-Start bleibt weiterhin auf `next dev --webpack`, damit der frühere Turbopack-Fehler mit `better-sqlite3` im Windows-OneDrive-Setup für die lokale Entwicklung umgangen wird.
+- Nach frischem `npm run build` lieferte der Standalone-Server `http://localhost:3000/` und `http://localhost:3000/einstellungen` lokal wieder mit Status `200` aus.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich, Standalone-Server lokal gestartet und per HTTP geprüft.
+
 ## [2026-04-23] umsetzung | Aktive Gerichte und selektive Einkaufsliste im Workspace umgesetzt
 - Das Dashboard erlaubt jetzt das Aktivieren und Deaktivieren einzelner geplanter Mahlzeiten sowie Schnellaktionen pro Tag und für die ganze Woche.
 - Die aktive Auswahl wird lokal pro Woche gespeichert und bei geänderter Wochenstruktur bewusst zurückgesetzt.
@@ -133,3 +162,23 @@
   In `"use server"`-Dateien dürfen in Next.js 16 nur `async`-Funktionen exportiert werden; Initialzustände für `useActionState` müssen außerhalb solcher Dateien liegen.
 - Verifikation:
   `npm run lint` erfolgreich, `npm run build` erfolgreich, Regenerierungs-POST gegen den lokalen Dev-Server auf `http://localhost:3001/` erzeugt einen neuen Wochenplan in `data/planner.sqlite`.
+
+## [2026-04-23] umsetzung | Passwortlose Anmeldung und nutzerscharfer Datenzugriff im Workspace umgesetzt
+- Eine öffentliche Login-Seite unter `/anmelden` sowie ein Logout-Pfad unter `/abmelden` wurden ergänzt.
+- Die Anmeldung läuft jetzt passwortlos über einen einmaligen E-Mail-Code mit `auth_challenges`, verifizierten `users` und gerätespezifischen `sessions`.
+- `src/lib/auth.ts` bündelt Session-Cookie, Code-Verifikation, Nutzerermittlung und Redirect-Logik; produktnahe Seiten und Server Actions prüfen den Nutzer jetzt serverseitig.
+- `user_settings`, `weekly_plans` und `daily_plans` wurden auf echte Nutzertrennung migriert; vorhandene lokale Single-User-Daten werden dabei in einen Legacy-Bestand überführt statt stillschweigend verworfen.
+- Dashboard, Rezeptbereich, Tagesseiten, Einkaufsliste und Einstellungen laden jetzt nur noch die Daten des angemeldeten Nutzers.
+- Offline-Snapshots, aktive Gerichte und Einkaufs-Häkchen verwenden jetzt einen nutzerbezogenen Storage-Namespace; der Logout räumt diese lokalen Gerätedaten auf.
+- Die Scheduler-Route erzeugt Wochenpläne nicht länger global, sondern für alle verifizierten Nutzerkonten.
+- Für den Entwicklungsmodus ohne Mail-Konfiguration wird der Testcode sichtbar eingeblendet; für Production bleibt echter E-Mail-Versand als Betriebsaufgabe offen.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich.
+
+## [2026-04-23] umsetzung | Login-Formular für Next-16-Server-Actions stabilisiert
+- Der Anmeldefluss `Code anfordern` lief zunächst auf einen Laufzeitfehler, weil Initialzustände für `useActionState` noch direkt aus einer `"use server"`-Datei exportiert wurden.
+- Die Formularzustände für Login und Code-Bestätigung liegen jetzt in einer separaten Shared-Datei `src/app/auth-form-state.ts`, während `src/app/auth-actions.ts` nur noch die eigentlichen Server Actions exportiert.
+- Damit folgt der Login derselben technischen Leitplanke, die bereits zuvor beim Regenerieren-Flow dokumentiert wurde:
+  In Next.js 16 sollen für `useActionState` keine nicht-async Exporte aus `"use server"`-Dateien als Client-Importquelle verwendet werden.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich.

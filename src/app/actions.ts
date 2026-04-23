@@ -3,6 +3,7 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { requireUser } from "@/lib/auth";
 import { regenerateCurrentWeekPlan, saveSettings } from "@/lib/store";
 
 const settingsSchema = z.object({
@@ -47,7 +48,8 @@ export type RegenerateWeekFormState = {
 
 export async function regenerateCurrentWeekAction(): Promise<RegenerateWeekFormState> {
   try {
-    regenerateCurrentWeekPlan();
+    const user = await requireUser("/");
+    regenerateCurrentWeekPlan(user.id);
     refresh();
 
     return {
@@ -66,6 +68,7 @@ export async function saveSettingsAction(
   _prevState: SettingsFormState,
   formData: FormData,
 ): Promise<SettingsFormState> {
+  const user = await requireUser("/einstellungen");
   const parsed = settingsSchema.safeParse({
     calorieTarget: formData.get("calorieTarget"),
     macroCarbsPct: formData.get("macroCarbsPct"),
@@ -118,7 +121,7 @@ export async function saveSettingsAction(
   }
 
   try {
-    saveSettings({
+    saveSettings(user.id, {
       calorieTarget: parsed.data.calorieTarget,
       macroCarbsPct: parsed.data.macroCarbsPct,
       macroFatPct: parsed.data.macroFatPct,
@@ -132,7 +135,7 @@ export async function saveSettingsAction(
       maxRecipeRepeatsPerWeek: parsed.data.maxRecipeRepeatsPerWeek,
     });
 
-    regenerateCurrentWeekPlan();
+    regenerateCurrentWeekPlan(user.id);
   } catch {
     return {
       status: "error",

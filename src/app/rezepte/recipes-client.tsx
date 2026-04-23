@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AppNav, type AppNavUser } from "@/app/app-nav";
 import styles from "./recipes.module.css";
 import { formatCalories, formatGrams, formatMealType, formatShoppingQuantity } from "@/lib/format";
 import { saveOfflineSnapshot } from "@/lib/offline-store";
+import { createUserScopedStorageKey } from "@/lib/user-storage";
 import type { MealType, Recipe } from "@/lib/types";
-
-const STORAGE_KEY = "recipes-snapshot-v2";
 
 const mealTypeLabels: Record<MealType, string> = {
   breakfast: "Frühstück",
@@ -23,11 +23,14 @@ type RecipeSnapshot = {
 
 type RecipesClientProps = {
   initialRecipes: Recipe[];
+  storageNamespace: string;
+  user: AppNavUser;
 };
 
-export function RecipesClient({ initialRecipes }: RecipesClientProps) {
+export function RecipesClient({ initialRecipes, storageNamespace, user }: RecipesClientProps) {
   const [isOffline, setIsOffline] = useState(false);
   const [activeRecipeId, setActiveRecipeId] = useState<string | null>(initialRecipes[0]?.id ?? null);
+  const storageKey = createUserScopedStorageKey(storageNamespace, "recipes-snapshot-v2");
 
   useEffect(() => {
     const updateOnlineState = () => {
@@ -54,10 +57,10 @@ export function RecipesClient({ initialRecipes }: RecipesClientProps) {
       savedAt: new Date().toISOString(),
     };
 
-    void saveOfflineSnapshot(STORAGE_KEY, snapshot).catch((error) => {
+    void saveOfflineSnapshot(storageKey, snapshot).catch((error) => {
       console.error("Lokaler Rezeptspeicher konnte nicht aktualisiert werden.", error);
     });
-  }, [initialRecipes]);
+  }, [initialRecipes, storageKey]);
 
   const groups = (["breakfast", "lunch", "dinner", "snack"] as MealType[]).map((mealType) => ({
     mealType,
@@ -67,12 +70,7 @@ export function RecipesClient({ initialRecipes }: RecipesClientProps) {
 
   return (
     <main className={styles.page}>
-      <nav className={styles.topNav}>
-        <Link href="/">Dashboard</Link>
-        <Link href="/rezepte">Rezepte</Link>
-        <Link href="/einkaufsliste">Einkaufsliste</Link>
-        <Link href="/einstellungen">Einstellungen</Link>
-      </nav>
+      <AppNav currentPath="/rezepte" user={user} />
 
       <section className={styles.hero}>
         <div>

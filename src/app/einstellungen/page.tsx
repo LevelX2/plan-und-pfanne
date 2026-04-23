@@ -1,7 +1,8 @@
-import Link from "next/link";
+import { AppNav } from "@/app/app-nav";
 import styles from "./settings.module.css";
 import { RegenerateWeekForm } from "@/app/regenerate-week-form";
 import { SettingsForm } from "./settings-form";
+import { requireUser } from "@/lib/auth";
 import { formatCalories, formatGrams } from "@/lib/format";
 import { getRecipeMixPoolStats, getSettings } from "@/lib/store";
 
@@ -22,8 +23,9 @@ function macroTargets(calorieTarget: number, proteinPct: number, carbsPct: numbe
 }
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
-  const settings = getSettings();
-  const recipeMixPool = getRecipeMixPoolStats();
+  const user = await requireUser("/einstellungen");
+  const settings = getSettings(user.id);
+  const recipeMixPool = getRecipeMixPoolStats(user.id);
   const query = await searchParams;
   const targets = macroTargets(
     settings.calorieTarget,
@@ -35,12 +37,13 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
   return (
     <main className={styles.page}>
-      <nav className={styles.topNav}>
-        <Link href="/">Dashboard</Link>
-        <Link href="/rezepte">Rezepte</Link>
-        <Link href="/einkaufsliste">Einkaufsliste</Link>
-        <Link href="/einstellungen">Einstellungen</Link>
-      </nav>
+      <AppNav
+        currentPath="/einstellungen"
+        user={{
+          email: user.email,
+          displayName: user.displayName,
+        }}
+      />
 
       <section className={styles.hero}>
         <div className={styles.heroText}>

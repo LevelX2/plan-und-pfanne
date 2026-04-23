@@ -1,13 +1,16 @@
-import Link from "next/link";
+import { AppNav } from "@/app/app-nav";
 import styles from "./shopping.module.css";
-import { getCurrentWeekPlan } from "@/lib/store";
+import { requireUser } from "@/lib/auth";
 import { formatDateRange } from "@/lib/format";
 import { ShoppingListClient } from "@/app/einkaufsliste/shopping-list-client";
+import { getCurrentWeekPlan } from "@/lib/store";
+import { createUserStorageNamespace } from "@/lib/user-storage";
 
 export const dynamic = "force-dynamic";
 
-export default function ShoppingListPage() {
-  const weekPlan = getCurrentWeekPlan();
+export default async function ShoppingListPage() {
+  const user = await requireUser("/einkaufsliste");
+  const weekPlan = getCurrentWeekPlan(user.id);
 
   if (!weekPlan) {
     throw new Error("Die Einkaufsliste konnte nicht geladen werden.");
@@ -17,12 +20,13 @@ export default function ShoppingListPage() {
 
   return (
     <main className={styles.page}>
-      <nav className={styles.topNav}>
-        <Link href="/">Dashboard</Link>
-        <Link href="/rezepte">Rezepte</Link>
-        <Link href="/einkaufsliste">Einkaufsliste</Link>
-        <Link href="/einstellungen">Einstellungen</Link>
-      </nav>
+      <AppNav
+        currentPath="/einkaufsliste"
+        user={{
+          email: user.email,
+          displayName: user.displayName,
+        }}
+      />
 
       <section className={styles.hero}>
         <div>
@@ -44,7 +48,10 @@ export default function ShoppingListPage() {
         </div>
       </section>
 
-      <ShoppingListClient weekPlan={weekPlan} />
+      <ShoppingListClient
+        storageNamespace={createUserStorageNamespace(user.id)}
+        weekPlan={weekPlan}
+      />
     </main>
   );
 }

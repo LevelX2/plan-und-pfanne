@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AppNav } from "@/app/app-nav";
 import styles from "../recipes.module.css";
+import { requireUser } from "@/lib/auth";
 import { formatCalories, formatGrams, formatMealType, formatShoppingQuantity } from "@/lib/format";
 import { getRecipeById } from "@/lib/store";
 
@@ -14,7 +15,8 @@ type RecipeDetailPageProps = {
 
 export default async function RecipeDetailPage({ params }: RecipeDetailPageProps) {
   const { id } = await params;
-  const recipe = getRecipeById(id);
+  const user = await requireUser(`/rezepte/${id}`);
+  const recipe = getRecipeById(user.id, id);
 
   if (!recipe) {
     notFound();
@@ -22,12 +24,13 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
 
   return (
     <main className={styles.page}>
-      <nav className={styles.topNav}>
-        <Link href="/">Dashboard</Link>
-        <Link href="/rezepte">Rezepte</Link>
-        <Link href="/einkaufsliste">Einkaufsliste</Link>
-        <Link href="/einstellungen">Einstellungen</Link>
-      </nav>
+      <AppNav
+        currentPath="/rezepte"
+        user={{
+          email: user.email,
+          displayName: user.displayName,
+        }}
+      />
 
       <section className={styles.detailHero}>
         <div className={styles.detailHeroText}>

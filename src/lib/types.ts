@@ -89,6 +89,7 @@ export type DayPlan = {
 export type WeekPlan = {
   startDate: string;
   endDate: string;
+  generatedAt: string;
   averageScore: number;
   averageProteinPct: number;
   averageCarbsPct: number;

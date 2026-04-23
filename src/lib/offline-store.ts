@@ -78,6 +78,50 @@ export function saveOfflineSnapshot<T>(key: string, value: T): Promise<void> {
   );
 }
 
+export function clearOfflineSnapshotsByPrefixes(prefixes: string[]): Promise<void> {
+  if (prefixes.length === 0) {
+    return Promise.resolve();
+  }
+
+  return openOfflineDb().then(
+    (database) =>
+      new Promise<void>((resolve, reject) => {
+        const transaction = database.transaction(SNAPSHOT_STORE, "readwrite");
+        const store = transaction.objectStore(SNAPSHOT_STORE);
+        const request = store.openCursor();
+
+        request.onerror = () => {
+          reject(request.error ?? new Error("Offline-Daten konnten nicht bereinigt werden."));
+        };
+
+        request.onsuccess = () => {
+          const cursor = request.result;
+
+          if (!cursor) {
+            return;
+          }
+
+          const key = String(cursor.key);
+          if (prefixes.some((prefix) => key.startsWith(prefix))) {
+            cursor.delete();
+          }
+
+          cursor.continue();
+        };
+
+        transaction.oncomplete = () => {
+          database.close();
+          resolve();
+        };
+
+        transaction.onerror = () => {
+          database.close();
+          reject(transaction.error ?? new Error("Offline-Daten konnten nicht bereinigt werden."));
+        };
+      }),
+  );
+}
+
 export async function requestPersistentStorage() {
   if (!window.isSecureContext || !navigator.storage?.persist) {
     return false;

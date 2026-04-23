@@ -296,6 +296,7 @@ export function buildWeeklyPlan(startDate: string, recipes: Recipe[], settings: 
   const pools = buildPools(recipes);
   const weekDates = getWeekDates(startDate);
   const totalControlledSlots = weekDates.length * 2;
+  const generatedAt = new Date().toISOString();
   let bestWeek: WeekPlan | null = null;
   let bestSelectionScore = Number.POSITIVE_INFINITY;
 
@@ -359,6 +360,7 @@ export function buildWeeklyPlan(startDate: string, recipes: Recipe[], settings: 
     const candidateWeek: WeekPlan = {
       startDate,
       endDate: weekDates.at(-1) ?? startDate,
+      generatedAt,
       averageScore,
       averageProteinPct,
       averageCarbsPct,
