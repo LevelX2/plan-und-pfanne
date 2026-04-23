@@ -1,6 +1,5 @@
 import "server-only";
 
-import { revalidatePath } from "next/cache";
 import {
   addDays,
   getCurrentWeekStart,
@@ -516,19 +515,7 @@ export function getCurrentWeekPlan(userId: number) {
 
 export function regenerateCurrentWeekPlan(userId: number) {
   const startDate = getCurrentWeekStart();
-  const plan = generateWeekPlan(userId, startDate, "manual");
-
-  revalidatePath("/");
-  revalidatePath("/rezepte");
-  revalidatePath("/einstellungen");
-  revalidatePath("/einkaufsliste");
-  if (plan) {
-    for (const day of plan.days) {
-      revalidatePath(`/tage/${day.date}`);
-    }
-  }
-
-  return plan;
+  return generateWeekPlan(userId, startDate, "manual");
 }
 
 export function getDayPlan(userId: number, date: string) {

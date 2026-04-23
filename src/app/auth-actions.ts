@@ -1,12 +1,9 @@
-"use server";
-
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import type {
   RequestLoginCodeState,
   VerifyLoginCodeState,
 } from "@/app/auth-form-state";
-import { getSafeNextPath, requestLoginCode, verifyLoginCode } from "@/lib/auth";
+import { getSafeNextPath } from "@/lib/auth";
 
 const requestCodeSchema = z.object({
   email: z.string().trim().email("Bitte gib eine gültige E-Mail-Adresse ein."),
@@ -56,37 +53,17 @@ export async function requestLoginCodeAction(
   }
 
   const nextPath = getSafeNextPath(parsed.data.nextPath);
+  const safeDisplayName = parsed.data.displayName ?? "";
 
-  try {
-    const result = await requestLoginCode({
-      email: parsed.data.email,
-      displayName: parsed.data.displayName,
-    });
-
-    return {
-      status: "code-sent",
-      message:
-        result.deliveryMode === "email"
-          ? `Wir haben Dir einen Anmeldecode an ${result.email} geschickt.`
-          : `Der Entwicklungsmodus ist aktiv. Nutze den unten eingeblendeten Testcode.`,
-      email: result.email,
-      displayName: parsed.data.displayName ?? "",
-      nextPath,
-      debugCode: result.debugCode,
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      message:
-        error instanceof Error
-          ? error.message
-          : "Der Anmeldecode konnte gerade nicht verschickt werden.",
-      email: parsed.data.email,
-      displayName: parsed.data.displayName ?? "",
-      nextPath,
-      debugCode: null,
-    };
-  }
+  return {
+    status: "code-sent",
+    message:
+      "Für die lokale PWA ist keine Anmeldung mehr nötig. Nutze den Hinweis unten und öffne anschließend direkt das Dashboard.",
+    email: parsed.data.email,
+    displayName: safeDisplayName,
+    nextPath,
+    debugCode: "OHNE-LOGIN",
+  };
 }
 
 export async function verifyLoginCodeAction(
@@ -107,19 +84,9 @@ export async function verifyLoginCodeAction(
     };
   }
 
-  try {
-    await verifyLoginCode({
-      email: parsed.data.email,
-      code: parsed.data.code,
-      displayName: parsed.data.displayName,
-    });
-  } catch (error) {
-    return {
-      status: "error",
-      message:
-        error instanceof Error ? error.message : "Die Anmeldung konnte nicht bestätigt werden.",
-    };
-  }
-
-  redirect(getSafeNextPath(parsed.data.nextPath));
+  return {
+    status: "error",
+    message:
+      "Die frühere Code-Bestätigung wurde für GitHub Pages abgeschaltet. Öffne stattdessen direkt das Dashboard im lokalen Modus.",
+  };
 }

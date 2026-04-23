@@ -6,8 +6,8 @@
     "dev": "next dev --webpack",
     "dev:handy": "next dev --webpack --hostname 0.0.0.0 --port 3000",
     "build": "next build",
-    "start": "next start",
-    "start:standalone": "node .next/standalone/server.js",
+    "start": "npx serve out",
+    "preview": "npx serve out",
     "lint": "eslint"
   },
   "dependencies": {

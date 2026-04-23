@@ -1,6 +1,51 @@
-const CACHE_NAME = "plan-und-pfanne-offline-v2";
-const APP_SHELL = ["/", "/rezepte", "/einkaufsliste", "/manifest.webmanifest", "/icon", "/apple-icon"];
-const OFFLINE_FALLBACKS = ["/", "/rezepte"];
+const CACHE_NAME = "plan-und-pfanne-offline-v3";
+
+function getScopePath() {
+  try {
+    const scopeUrl = self.registration?.scope ?? `${self.location.origin}/`;
+    const pathname = new URL(scopeUrl).pathname.replace(/\/+$/, "");
+    return pathname === "/" ? "" : pathname;
+  } catch {
+    return "";
+  }
+}
+
+function toAppPath(pathname) {
+  if (!pathname || pathname === "/") {
+    return `${getScopePath()}/` || "/";
+  }
+
+  const normalized = pathname.startsWith("/") ? pathname.slice(1) : pathname;
+  const scopePath = getScopePath();
+
+  return scopePath ? `${scopePath}/${normalized}` : `/${normalized}`;
+}
+
+function isWithinAppScope(url) {
+  const scopePath = getScopePath();
+
+  if (!scopePath) {
+    return true;
+  }
+
+  return url.pathname === scopePath || url.pathname.startsWith(`${scopePath}/`);
+}
+
+function getAppShell() {
+  return [
+    toAppPath("/"),
+    toAppPath("/rezepte/"),
+    toAppPath("/einkaufsliste/"),
+    toAppPath("/manifest.webmanifest"),
+    toAppPath("/icon-192.png"),
+    toAppPath("/icon-512.png"),
+    toAppPath("/apple-icon"),
+  ];
+}
+
+function getOfflineFallbacks() {
+  return [toAppPath("/"), toAppPath("/rezepte/")];
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -8,7 +53,7 @@ self.addEventListener("install", (event) => {
       .open(CACHE_NAME)
       .then((cache) =>
         Promise.all(
-          APP_SHELL.map((url) => cache.add(new Request(url, { cache: "reload" }))),
+          getAppShell().map((url) => cache.add(new Request(url, { cache: "reload" }))),
         ),
       )
       .catch(() => undefined)
@@ -35,7 +80,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) {
+  if (url.origin !== self.location.origin || !isWithinAppScope(url)) {
     return;
   }
 
@@ -51,12 +96,12 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(async () => {
-          const cachedPage = await caches.match(request);
+          const cachedPage = await caches.match(request, { ignoreSearch: true });
           if (cachedPage) {
             return cachedPage;
           }
 
-          for (const fallback of OFFLINE_FALLBACKS) {
+          for (const fallback of getOfflineFallbacks()) {
             const fallbackResponse = await caches.match(fallback);
             if (fallbackResponse) {
               return fallbackResponse;

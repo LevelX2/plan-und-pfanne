@@ -1,39 +1,28 @@
+import Link from "next/link";
 import styles from "./login.module.css";
 import { LoginForm } from "./login-form";
-import { getSafeNextPath, redirectIfAuthenticated } from "@/lib/auth";
 
-export const dynamic = "force-dynamic";
-
-type LoginPageProps = {
-  searchParams: Promise<{
-    next?: string;
-    status?: string;
-  }>;
-};
-
-export default async function LoginPage({ searchParams }: LoginPageProps) {
-  await redirectIfAuthenticated();
-
-  const query = await searchParams;
-  const nextPath = getSafeNextPath(query.next);
-  const wasLoggedOut = query.status === "abgemeldet";
-
+export default function LoginPage() {
   return (
     <main className={styles.page}>
       <div className={styles.shell}>
         <section className={styles.hero}>
           <p className={styles.eyebrow}>Plan und Pfanne</p>
-          <h1>Dein persönlicher Wochenplan gehört nur Dir.</h1>
+          <h1>Die lokale PWA braucht keine Anmeldung mehr.</h1>
           <p className={styles.lead}>
-            Melde Dich mit einem E-Mail-Code an. Danach siehst Du nur Deine eigenen Einstellungen,
-            Wochenpläne, aktiven Gerichte und Einkaufslisten.
+            GitHub Pages liefert die App jetzt als statische, lokale Web-App aus. Benutzerkonten,
+            Sessions und E-Mail-Codes sind in diesem Modus bewusst abgeschaltet.
           </p>
-          {wasLoggedOut ? (
-            <p className={styles.statusSuccess}>Du bist auf diesem Gerät abgemeldet.</p>
-          ) : null}
+          <p className={styles.statusSuccess}>
+            Öffne direkt das Dashboard. Die lokale Datenhaltung wird schrittweise auf dem Gerät
+            ausgebaut.
+          </p>
+          <p>
+            <Link href="/">Zum Dashboard</Link>
+          </p>
         </section>
 
-        <LoginForm nextPath={nextPath} />
+        <LoginForm nextPath="/" />
       </div>
     </main>
   );

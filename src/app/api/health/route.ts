@@ -1,8 +1,11 @@
-export const dynamic = "force-dynamic";
+const buildTimestamp = new Date().toISOString();
+
+export const dynamic = "force-static";
 
 export async function GET() {
   return Response.json({
     ok: true,
-    timestamp: new Date().toISOString(),
+    mode: "static-export",
+    timestamp: buildTimestamp,
   });
 }

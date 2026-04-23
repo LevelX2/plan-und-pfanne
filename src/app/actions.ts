@@ -1,10 +1,4 @@
-"use server";
-
-import { refresh } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
-import { regenerateCurrentWeekPlan, saveSettings } from "@/lib/store";
 
 const settingsSchema = z.object({
   calorieTarget: z.coerce.number().int().min(1200).max(5000),
@@ -47,28 +41,17 @@ export type RegenerateWeekFormState = {
 };
 
 export async function regenerateCurrentWeekAction(): Promise<RegenerateWeekFormState> {
-  try {
-    const user = await requireUser("/");
-    regenerateCurrentWeekPlan(user.id);
-    refresh();
-
-    return {
-      status: "success",
-      message: "Diese Woche wurde neu generiert. Dashboard, Tagesseiten und Einkaufsliste sind aktualisiert.",
-    };
-  } catch {
-    return {
-      status: "error",
-      message: "Die Woche konnte gerade nicht neu generiert werden. Bitte versuche es noch einmal.",
-    };
-  }
+  return {
+    status: "success",
+    message:
+      "Die GitHub-Pages-Version nutzt aktuell einen statisch exportierten Stand. Die direkte lokale Neugenerierung folgt mit dem clientseitigen Datenmodell.",
+  };
 }
 
 export async function saveSettingsAction(
   _prevState: SettingsFormState,
   formData: FormData,
 ): Promise<SettingsFormState> {
-  const user = await requireUser("/einstellungen");
   const parsed = settingsSchema.safeParse({
     calorieTarget: formData.get("calorieTarget"),
     macroCarbsPct: formData.get("macroCarbsPct"),
@@ -120,30 +103,10 @@ export async function saveSettingsAction(
     };
   }
 
-  try {
-    saveSettings(user.id, {
-      calorieTarget: parsed.data.calorieTarget,
-      macroCarbsPct: parsed.data.macroCarbsPct,
-      macroFatPct: parsed.data.macroFatPct,
-      macroProteinPct: parsed.data.macroProteinPct,
-      mealsPerDay: parsed.data.mealsPerDay,
-      glutenFreeOnly: true,
-      vegetarianSharePct: parsed.data.vegetarianSharePct,
-      fishSharePct: parsed.data.fishSharePct,
-      meatSharePct: parsed.data.meatSharePct,
-      excludedIngredients: parsed.data.excludedIngredients,
-      maxRecipeRepeatsPerWeek: parsed.data.maxRecipeRepeatsPerWeek,
-    });
-
-    regenerateCurrentWeekPlan(user.id);
-  } catch {
-    return {
-      status: "error",
-      message:
-        "Deine Einstellungen konnten gerade nicht gespeichert werden. Bitte versuche es noch einmal.",
-      fieldErrors: {},
-    };
-  }
-
-  redirect("/einstellungen?status=gespeichert");
+  return {
+    status: "error",
+    message:
+      "Die lokale dauerhafte Speicherung für Einstellungen wird im nächsten Migrationsschritt direkt auf dem Gerät umgesetzt. Der aktuelle GitHub-Pages-Stand zeigt hier noch einen statischen Legacy-Hinweis.",
+    fieldErrors: {},
+  };
 }

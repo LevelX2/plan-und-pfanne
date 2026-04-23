@@ -1,18 +1,31 @@
 # Plan und Pfanne
 
-Glutenfreie Wochenplan-App mit Rezeptbibliothek, Tagesansichten, Einkaufsliste, Einstellungen und lokalem SQLite-Store.
+`Plan und Pfanne` wird aktuell auf eine lokale, statisch exportierbare PWA für GitHub Pages umgestellt.
 
-## Aktueller Produktstand
+Der Zielpfad ist:
 
-- Dashboard unter `/` mit aktueller Woche, Tageskarten und Makro-Abweichungen
-- Rezeptbibliothek unter `/rezepte` und Detailseiten unter `/rezepte/[id]`
-- Tagesseiten unter `/tage/[date]`
-- Einkaufsliste unter `/einkaufsliste`
-- Einstellungsseite unter `/einstellungen`
-- Healthcheck unter `/api/health`
-- Scheduler-Endpunkt unter `/api/scheduler/weekly`
+- Auslieferung als installierbare PWA über GitHub Pages
+- stabile App-Origin unter `https://<owner>.github.io/<repo>/`
+- lokale Nutzung auf dem Handy
+- keine Pflicht zu Benutzerkonten, Sessions oder serverseitigen APIs im Pages-Zielpfad
 
-## Lokaler Start
+## Aktueller Zuschnitt des Pages-Zielpfads
+
+Der GitHub-Pages-Build ist jetzt auf `Next.js static export` zugeschnitten:
+
+- `output: "export"` in `next.config.ts`
+- `trailingSlash: true` für statische Verzeichnisrouten
+- `basePath` über `NEXT_PUBLIC_BASE_PATH`, damit die App sauber unter `/<repo>/` läuft
+- PWA-Manifest, Service Worker und Registrierung berücksichtigen diesen Unterpfad
+- GitHub Actions baut und deployt nach `out/`
+
+Wichtig:
+
+- Der frühere servergebundene Login ist im Pages-Zielpfad bewusst entschärft.
+- Die früheren API-Routen liefern dort nur noch statische Legacy-Hinweise.
+- Die vollständige lokale Datenhaltung wird in weiteren Schritten clientseitig ausgebaut.
+
+## Lokale Entwicklung
 
 ```bash
 npm install
@@ -27,92 +40,72 @@ npm run dev:handy
 
 Dann die lokale IPv4-Adresse im Browser des Handys öffnen, zum Beispiel `http://192.168.178.23:3000`.
 
-## Build und Qualität
+## Statischen Build lokal prüfen
 
 ```bash
 npm run lint
 npm run build
+npm run preview
 ```
 
-Stand 2026-04-23:
+`npm run preview` serviert den Inhalt aus `out/` und entspricht damit dem GitHub-Pages-Zielpfad deutlich besser als ein klassischer Next-Server.
 
-- `npm run lint` erfolgreich
-- `npm run build` erfolgreich
-- die frühere Turbopack-Warnung zur NFT-Dateinachverfolgung rund um den datenbanknahen Dateisystemzugriff tritt nach engerem SQLite-Pfadscoping in `src/lib/db.ts` nicht mehr auf
+## GitHub Pages aktivieren
 
-## Offline-Umfang
+In GitHub:
 
-Die App ist als PWA vorbereitet und speichert derzeit nach vorherigem Online-Laden lokal:
+1. Repository öffnen
+2. `Settings`
+3. `Pages`
+4. `Build and deployment`
+5. `Source = GitHub Actions`
 
-- Dashboard-Snapshot
-- Rezeptbibliothek
-- Einkaufslistenstatus
-- aktive Gerichtsauswahl pro Woche inklusive Einkaufslistenmodus
+Der Workflow liegt unter [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml).
 
-Offline ist der Modus aktuell bewusst weitgehend lesend. Dashboard, Rezeptbibliothek und Einkaufsliste bleiben nach vorherigem Laden nutzbar. Schreibende Server-Aktionen wie Speichern der Einstellungen oder Neugenerieren des Wochenplans brauchen weiterhin eine Verbindung.
+## Basis-Pfad und URL
 
-Bei Offline-Navigation versucht der Service Worker zuerst die bereits gecachte Zielseite. Wenn diese nicht vorhanden ist, fällt er auf `/` und danach auf `/rezepte` zurück.
+Standardmäßig baut der Workflow für eine GitHub-Projektseite:
 
-## Datenhaltung
+- `NEXT_PUBLIC_BASE_PATH=/<repo>`
+- `NEXT_PUBLIC_SITE_URL=https://<owner>.github.io/<repo>`
 
-- SQLite-Datei: `data/planner.sqlite`
-- `data/*.sqlite` ist per `.gitignore` ausgeschlossen
-- Die Datenbank ist damit als lokaler Laufzeit- und Entwicklungszustand gedacht, nicht als versioniertes Demo-Artefakt
-- Wenn keine Datenbank vorhanden ist, werden Standard-Einstellungen und Demo-Rezepte automatisch angelegt
+Für dieses Repository ist die erwartete App-URL also:
 
-## Scheduler-Endpunkt
+- `https://levelx2.github.io/plan-und-pfanne/`
 
-Der Endpunkt `/api/scheduler/weekly` erzeugt den Wochenplan für die nächste Woche.
+Optional können später Repository-Variablen gesetzt werden:
 
-- `GET /api/scheduler/weekly` führt die Standardlogik aus
-- `GET /api/scheduler/weekly?force=1` erzwingt die Generierung auch außerhalb des Sonntags
-- `POST /api/scheduler/weekly` ist ebenfalls verfügbar
-- In Production ist `SCHEDULER_SECRET` aktuell Pflicht. Ohne gesetztes Secret antwortet die Route bewusst mit `503`, statt offen erreichbar zu sein.
-- Wenn `SCHEDULER_SECRET` gesetzt ist, erwartet die Route entweder `Authorization: Bearer <secret>` oder `?token=<secret>`
+- `PAGES_BASE_PATH`
+- `PAGES_SITE_URL`
 
-## Fehlerbehandlung
+Damit lässt sich ein späterer Wechsel auf eine eigene Domain vorbereiten, ohne den Workflow neu zu schreiben.
 
-- Das Formular unter `/einstellungen` zeigt erwartete Validierungs- und Speicherfehler inline an, statt die Seite mit einem harten Fehler abbrechen zu lassen.
-- Für unerwartete Laufzeitfehler und nicht gefundene Seiten gibt es nutzerfreundliche App-Fallbacks.
+## PWA-Verhalten unter GitHub Pages
 
-## Aktive Gerichte und Einkaufsliste
+Die PWA ist auf den GitHub-Pages-Unterpfad zugeschnitten:
 
-- Im Dashboard lassen sich geplante Mahlzeiten pro Gericht, pro Tag oder für die ganze Woche aktivieren und deaktivieren.
-- Die aktive Auswahl startet bewusst leer und bleibt lokal pro Woche gespeichert.
-- Die Einkaufsliste unterstützt zwei Modi:
-  - `aktive Gerichte`
-  - `alle geplanten Gerichte`
-- Im Modus `aktive Gerichte` zeigt die Einkaufsliste bei leerer Auswahl einen expliziten Leerzustand statt stillschweigend alle Zutaten an.
-- Der Abhakstatus der Einkaufsliste wird lokal pro Woche und Listenkontext gespeichert.
+- `manifest.ts` prefixiert `start_url`, `scope` und Icon-Pfade mit dem aktiven `basePath`
+- `pwa-register.tsx` registriert den Service Worker unter `${basePath}/service-worker.js`
+- `public/service-worker.js` leitet Cache-Scope und Offline-Fallbacks dynamisch aus `self.registration.scope` ab
 
-## Deployment auf Railway
+Dadurch bleiben Manifest, Service Worker und Offline-Fallbacks auch unter `/<repo>/` konsistent.
 
-Das Projekt ist für Railway vorbereitet:
+## Bekannte Grenzen des aktuellen Migrationsstands
 
-- `Dockerfile`
-- `railway.toml`
-- `output: "standalone"` in `next.config.ts`
-- volumenfähiger Datenbankpfad über `DATA_DIR` oder `RAILWAY_VOLUME_MOUNT_PATH`
-- enger auf `planner.sqlite` gescopter SQLite-Pfad in `src/lib/db.ts`, damit der Turbopack-Build den Dateisystemzugriff nicht unnötig breit traced
+- Die Seiten für Einstellungen und Wochen-Neugenerierung zeigen im Pages-Zielpfad derzeit noch transparente Legacy-Hinweise statt echter lokaler Persistenz.
+- Die früheren Routen `/anmelden`, `/abmelden` und `/api/*` bleiben als kompatible Hinweisrouten erhalten, übernehmen aber keine echte Serverfunktion mehr.
+- Für den vollständigen Static-Export müssen dynamische Seiten außerhalb dieses Plattformbereichs weiterhin auf statische Parameter oder andere exportfähige Pfade zugeschnitten werden.
 
-Aktueller Betriebsstand:
+## Relevante Dateien für diesen Plattformpfad
 
-- Ein GitHub-Push allein führt derzeit offenbar nicht verlässlich zu einem Live-Deploy.
-- Der produktive Stand wurde zuletzt manuell per Railway-CLI aus dem Projektverzeichnis ausgerollt.
-- Verwendeter Weg:
+- [next.config.ts](next.config.ts)
+- [public/service-worker.js](public/service-worker.js)
+- [src/app/layout.tsx](src/app/layout.tsx)
+- [src/app/manifest.ts](src/app/manifest.ts)
+- [src/app/pwa-register.tsx](src/app/pwa-register.tsx)
+- [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml)
 
-```bash
-railway up -s plan-und-pfanne
-```
+## Referenzen
 
-Voraussetzung dafür:
-
-- Railway-CLI ist eingeloggt
-- das lokale Verzeichnis ist mit dem Projekt `plan-und-pfanne` verknüpft
-- Zielservice ist `plan-und-pfanne`
-
-Empfehlung für persistente Daten:
-
-- Volume mounten
-- Mount Path auf `/data` oder `/app/data` setzen
-- die SQLite-Datei nicht ins Repository aufnehmen
+- [Next.js: Static Exports](https://nextjs.org/docs/app/building-your-application/deploying/static-exports)
+- [GitHub Docs: Using custom workflows with GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)
