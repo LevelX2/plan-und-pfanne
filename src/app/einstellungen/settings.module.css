@@ -324,6 +324,12 @@
   margin-top: 24px;
 }
 
+.actionStack {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
 .formMessage,
 .fieldError {
   border-radius: 18px;
@@ -371,6 +377,26 @@
   border: 1px solid rgba(19, 38, 29, 0.12);
   background: rgba(255, 252, 247, 0.82);
   color: #13261d;
+}
+
+.actionFeedbackSuccess,
+.actionFeedbackError {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 18px;
+  line-height: 1.6;
+}
+
+.actionFeedbackSuccess {
+  border: 1px solid rgba(20, 140, 86, 0.18);
+  background: rgba(20, 140, 86, 0.08);
+  color: #116541;
+}
+
+.actionFeedbackError {
+  border: 1px solid rgba(180, 71, 39, 0.18);
+  background: rgba(180, 71, 39, 0.08);
+  color: #8f2e17;
 }
 
 .summaryList,

@@ -1,5 +1,6 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { regenerateCurrentWeekPlan, saveSettings } from "@/lib/store";
@@ -39,8 +40,26 @@ export type SettingsFormState = {
   fieldErrors: SettingsFieldErrors;
 };
 
-export async function regenerateCurrentWeekAction() {
-  regenerateCurrentWeekPlan();
+export type RegenerateWeekFormState = {
+  status: "idle" | "success" | "error";
+  message: string;
+};
+
+export async function regenerateCurrentWeekAction(): Promise<RegenerateWeekFormState> {
+  try {
+    regenerateCurrentWeekPlan();
+    refresh();
+
+    return {
+      status: "success",
+      message: "Diese Woche wurde neu generiert. Dashboard, Tagesseiten und Einkaufsliste sind aktualisiert.",
+    };
+  } catch {
+    return {
+      status: "error",
+      message: "Die Woche konnte gerade nicht neu generiert werden. Bitte versuche es noch einmal.",
+    };
+  }
 }
 
 export async function saveSettingsAction(

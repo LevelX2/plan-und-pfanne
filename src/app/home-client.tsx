@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
-import { regenerateCurrentWeekAction } from "@/app/actions";
+import { RegenerateWeekForm } from "@/app/regenerate-week-form";
 import {
   countShoppingItems,
   createWeekPlanSignature,
@@ -236,11 +236,20 @@ export function HomeClient({ initialSnapshot }: HomeClientProps) {
 
           <div className={styles.heroActions}>
             <div className={styles.actionRow}>
-              <form action={regenerateCurrentWeekAction}>
-                <button className={styles.primaryButton} disabled={isOffline} type="submit">
-                  {isOffline ? "Offline nicht verfügbar" : "Woche neu generieren"}
+              {isOffline ? (
+                <button className={styles.primaryButton} disabled type="button">
+                  Offline nicht verfügbar
                 </button>
-              </form>
+              ) : (
+                <RegenerateWeekForm
+                  buttonClassName={styles.primaryButton}
+                  errorMessageClassName={styles.actionFeedbackError}
+                  idleLabel="Woche neu generieren"
+                  layoutClassName={styles.regenerateAction}
+                  pendingLabel="Wird neu generiert ..."
+                  successMessageClassName={styles.actionFeedbackSuccess}
+                />
+              )}
               <Link className={styles.secondaryButton} href="/rezepte">
                 Rezeptdatenbank öffnen
               </Link>

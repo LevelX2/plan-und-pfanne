@@ -125,3 +125,11 @@
 - `data/planner.sqlite` wurde erneut direkt synchronisiert, damit der lokale Datenstand sofort zum Seed-Code passt und beim nächsten Railway-Deploy konsistent ausgerollt werden kann.
 - Verifikation:
   `npm run lint` erfolgreich, `npm run build` erfolgreich.
+
+## [2026-04-23] umsetzung | Regenerieren-Buttons geben jetzt sichtbares Feedback
+- Die Server Action für `Woche neu generieren` liefert jetzt ein explizites Erfolgs- oder Fehlersignal zurück und stößt zusätzlich ein `refresh()` für den aktuellen Screen an.
+- Dashboard und Einstellungsseite nutzen dafür jetzt eine gemeinsame Client-Komponente mit Pending-Zustand und sichtbarer Rückmeldung nach Abschluss.
+- Bei der Reparatur wurde zusätzlich als technische Leitplanke verifiziert:
+  In `"use server"`-Dateien dürfen in Next.js 16 nur `async`-Funktionen exportiert werden; Initialzustände für `useActionState` müssen außerhalb solcher Dateien liegen.
+- Verifikation:
+  `npm run lint` erfolgreich, `npm run build` erfolgreich, Regenerierungs-POST gegen den lokalen Dev-Server auf `http://localhost:3001/` erzeugt einen neuen Wochenplan in `data/planner.sqlite`.

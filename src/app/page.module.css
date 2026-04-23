@@ -111,6 +111,11 @@
   align-items: center;
 }
 
+.regenerateAction {
+  display: grid;
+  gap: 10px;
+}
+
 .primaryButton {
   appearance: none;
   border: 0;
@@ -158,6 +163,21 @@
   padding: 8px 12px;
   border-radius: 999px;
   background: rgba(20, 76, 57, 0.08);
+}
+
+.actionFeedbackSuccess,
+.actionFeedbackError {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.actionFeedbackSuccess {
+  color: #116541;
+}
+
+.actionFeedbackError {
+  color: #9a4717;
 }
 
 .metricsGrid {

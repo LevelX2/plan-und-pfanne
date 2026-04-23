@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./settings.module.css";
-import { regenerateCurrentWeekAction } from "@/app/actions";
+import { RegenerateWeekForm } from "@/app/regenerate-week-form";
 import { SettingsForm } from "./settings-form";
 import { formatCalories, formatGrams } from "@/lib/format";
 import { getRecipeMixPoolStats, getSettings } from "@/lib/store";
@@ -139,11 +139,14 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               Wenn du nur einen frischen Wochenvorschlag möchtest, kannst du die aktuelle Woche
               hier direkt neu generieren.
             </p>
-            <form className={styles.actionRow} action={regenerateCurrentWeekAction}>
-              <button className={styles.secondaryButton} type="submit">
-                Woche neu generieren
-              </button>
-            </form>
+            <RegenerateWeekForm
+              buttonClassName={styles.secondaryButton}
+              errorMessageClassName={styles.actionFeedbackError}
+              idleLabel="Woche neu generieren"
+              layoutClassName={styles.actionStack}
+              pendingLabel="Wird neu generiert ..."
+              successMessageClassName={styles.actionFeedbackSuccess}
+            />
           </article>
 
           <article className={styles.infoCard}>
