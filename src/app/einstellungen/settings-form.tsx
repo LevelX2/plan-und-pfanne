@@ -1,21 +1,43 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { saveSettingsAction, type SettingsFormState } from "@/app/actions";
+import { useState } from "react";
+import { z } from "zod";
 import styles from "./settings.module.css";
+import { saveLocalSettings } from "@/lib/local-store";
 import type { UserSettings } from "@/lib/types";
 
 type SettingsFormProps = {
+  onSaved?: (message: string) => Promise<void> | void;
   settings: UserSettings;
 };
 
 type MixKey = "vegetarianSharePct" | "fishSharePct" | "meatSharePct";
 type MixState = Record<MixKey, number>;
 
+type SettingsFieldKey =
+  | "calorieTarget"
+  | "mealsPerDay"
+  | "macroProteinPct"
+  | "macroCarbsPct"
+  | "macroFatPct"
+  | "maxRecipeRepeatsPerWeek"
+  | "vegetarianSharePct"
+  | "fishSharePct"
+  | "meatSharePct"
+  | "excludedIngredients";
+
+type SettingsFieldErrors = Partial<Record<SettingsFieldKey, string>>;
+
+type SettingsFormState = {
+  fieldErrors: SettingsFieldErrors;
+  message: string;
+  status: "idle" | "success" | "error";
+};
+
 const initialSettingsFormState: SettingsFormState = {
-  status: "idle",
-  message: "",
   fieldErrors: {},
+  message: "",
+  status: "idle",
 };
 
 const mixKeys: MixKey[] = ["vegetarianSharePct", "fishSharePct", "meatSharePct"];
@@ -35,8 +57,69 @@ const mixContent: Record<MixKey, { title: string; copy: string }> = {
   },
 };
 
-function fieldError(state: SettingsFormState, key: keyof SettingsFormState["fieldErrors"]) {
-  return state.fieldErrors[key]?.[0];
+function parseExcludedIngredients(value: string) {
+  const seen = new Set<string>();
+
+  return value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .filter((entry) => {
+      const normalized = entry.toLocaleLowerCase("de-DE");
+      if (seen.has(normalized)) {
+        return false;
+      }
+
+      seen.add(normalized);
+      return true;
+    });
+}
+
+const settingsInputSchema = z
+  .object({
+    calorieTarget: z.coerce.number().int().min(1200, "Bitte mindestens 1200 kcal wählen.").max(5000, "Bitte höchstens 5000 kcal wählen."),
+    mealsPerDay: z.coerce
+      .number()
+      .int()
+      .refine((value) => value === 3 || value === 4, "Bitte 3 oder 4 Mahlzeiten wählen."),
+    macroProteinPct: z.coerce.number().int().min(20, "Bitte mindestens 20 % Protein wählen.").max(60, "Bitte höchstens 60 % Protein wählen."),
+    macroCarbsPct: z.coerce.number().int().min(10, "Bitte mindestens 10 % Kohlenhydrate wählen.").max(60, "Bitte höchstens 60 % Kohlenhydrate wählen."),
+    macroFatPct: z.coerce.number().int().min(10, "Bitte mindestens 10 % Fett wählen.").max(50, "Bitte höchstens 50 % Fett wählen."),
+    maxRecipeRepeatsPerWeek: z.coerce.number().int().min(1, "Bitte mindestens 1 Wiederholung zulassen.").max(4, "Bitte höchstens 4 Wiederholungen zulassen."),
+    vegetarianSharePct: z.coerce.number().int().min(0, "Nicht unter 0 % möglich.").max(100, "Nicht über 100 % möglich."),
+    fishSharePct: z.coerce.number().int().min(0, "Nicht unter 0 % möglich.").max(100, "Nicht über 100 % möglich."),
+    meatSharePct: z.coerce.number().int().min(0, "Nicht unter 0 % möglich.").max(100, "Nicht über 100 % möglich."),
+    excludedIngredients: z
+      .string()
+      .max(500, "Bitte die Liste der Ausschlüsse kürzer halten.")
+      .transform(parseExcludedIngredients),
+  })
+  .superRefine((value, context) => {
+    const macroSum = value.macroProteinPct + value.macroCarbsPct + value.macroFatPct;
+    if (macroSum !== 100) {
+      for (const key of ["macroProteinPct", "macroCarbsPct", "macroFatPct"] as const) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Protein, Kohlenhydrate und Fett müssen zusammen 100 % ergeben.",
+          path: [key],
+        });
+      }
+    }
+
+    const mixSum = value.vegetarianSharePct + value.fishSharePct + value.meatSharePct;
+    if (mixSum !== 100) {
+      for (const key of mixKeys) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Vegetarisch, Fisch und Fleisch müssen zusammen 100 % ergeben.",
+          path: [key],
+        });
+      }
+    }
+  });
+
+function fieldError(state: SettingsFormState, key: SettingsFieldKey) {
+  return state.fieldErrors[key];
 }
 
 function clampPercent(value: number) {
@@ -92,8 +175,62 @@ function rebalanceMix(current: MixState, changedKey: MixKey, nextValue: number):
   };
 }
 
-export function SettingsForm({ settings }: SettingsFormProps) {
-  const [state, formAction, pending] = useActionState(saveSettingsAction, initialSettingsFormState);
+function toFieldErrors(error: z.ZodError): SettingsFieldErrors {
+  const nextErrors: SettingsFieldErrors = {};
+
+  for (const issue of error.issues) {
+    const [field] = issue.path;
+    if (typeof field === "string" && !(field in nextErrors)) {
+      nextErrors[field as SettingsFieldKey] = issue.message;
+    }
+  }
+
+  return nextErrors;
+}
+
+function buildSettingsPayload(formData: FormData, fallbackSettings: UserSettings) {
+  const parsed = settingsInputSchema.safeParse({
+    calorieTarget: formData.get("calorieTarget"),
+    mealsPerDay: formData.get("mealsPerDay"),
+    macroProteinPct: formData.get("macroProteinPct"),
+    macroCarbsPct: formData.get("macroCarbsPct"),
+    macroFatPct: formData.get("macroFatPct"),
+    maxRecipeRepeatsPerWeek: formData.get("maxRecipeRepeatsPerWeek"),
+    vegetarianSharePct: formData.get("vegetarianSharePct"),
+    fishSharePct: formData.get("fishSharePct"),
+    meatSharePct: formData.get("meatSharePct"),
+    excludedIngredients: String(formData.get("excludedIngredients") ?? ""),
+  });
+
+  if (!parsed.success) {
+    return parsed;
+  }
+
+  return {
+    success: true as const,
+    data: {
+      ...fallbackSettings,
+      ...parsed.data,
+      glutenFreeOnly: true,
+    } satisfies UserSettings,
+  };
+}
+
+function feedbackClassName(state: SettingsFormState) {
+  if (state.status === "success") {
+    return styles.actionFeedbackSuccess;
+  }
+
+  if (state.status === "error") {
+    return styles.formMessage;
+  }
+
+  return null;
+}
+
+export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
+  const [state, setState] = useState(initialSettingsFormState);
+  const [isPending, setIsPending] = useState(false);
   const [mix, setMix] = useState<MixState>({
     vegetarianSharePct: settings.vegetarianSharePct,
     fishSharePct: settings.fishSharePct,
@@ -105,11 +242,58 @@ export function SettingsForm({ settings }: SettingsFormProps) {
     fieldError(state, "fishSharePct") ??
     fieldError(state, "meatSharePct");
   const mixSum = mix.vegetarianSharePct + mix.fishSharePct + mix.meatSharePct;
+  const feedbackClass = feedbackClassName(state);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setState(initialSettingsFormState);
+
+    const formData = new FormData(event.currentTarget);
+    const payload = buildSettingsPayload(formData, settings);
+
+    if (!payload.success) {
+      setState({
+        fieldErrors: toFieldErrors(payload.error),
+        message: "Bitte prüfe die markierten Felder.",
+        status: "error",
+      });
+      return;
+    }
+
+    setIsPending(true);
+
+    try {
+      await saveLocalSettings(payload.data, {
+        reason: "settings-change",
+        regenerateCurrentWeekPlan: true,
+      });
+
+      const successMessage = "Einstellungen lokal gespeichert und Woche neu geplant.";
+      await onSaved?.(successMessage);
+
+      setState({
+        fieldErrors: {},
+        message: successMessage,
+        status: "success",
+      });
+    } catch (error) {
+      setState({
+        fieldErrors: {},
+        message:
+          error instanceof Error
+            ? error.message
+            : "Die Einstellungen konnten lokal nicht gespeichert werden.",
+        status: "error",
+      });
+    } finally {
+      setIsPending(false);
+    }
+  }
 
   return (
-    <form action={formAction}>
-      {state.status === "error" ? (
-        <p aria-live="polite" className={styles.formMessage}>
+    <form onSubmit={handleSubmit}>
+      {state.status !== "idle" && feedbackClass ? (
+        <p aria-live="polite" className={feedbackClass}>
           {state.message}
         </p>
       ) : null}
@@ -255,8 +439,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
           </div>
 
           <p className={styles.mixHint}>
-            Der Planer nutzt diese Verteilung als Zielmix für Mittagessen und Abendessen. Frühstück
-            und Snack laufen weiterhin über den allgemeinen Rezeptpool.
+            Der lokale Planer nutzt diese Verteilung als Zielmix für Mittagessen und Abendessen.
+            Frühstück und Snack laufen weiterhin über den allgemeinen Rezeptpool.
           </p>
 
           <div className={styles.mixSliderList}>
@@ -327,8 +511,8 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       </div>
 
       <div className={styles.actionRow}>
-        <button className={styles.primaryButton} disabled={pending} type="submit">
-          {pending ? "Speichert und plant neu ..." : "Änderungen speichern und Woche neu planen"}
+        <button className={styles.primaryButton} disabled={isPending} type="submit">
+          {isPending ? "Speichert lokal und plant neu ..." : "Änderungen speichern und Woche neu planen"}
         </button>
       </div>
     </form>

@@ -1,15 +1,21 @@
 "use client";
 
-import { useActionState } from "react";
-import { regenerateCurrentWeekAction, type RegenerateWeekFormState } from "@/app/actions";
+import { useState } from "react";
+import * as localStore from "@/lib/local-store";
 
 type RegenerateWeekFormProps = {
   buttonClassName: string;
   errorMessageClassName: string;
   idleLabel: string;
   layoutClassName?: string;
+  onSuccess?: () => Promise<void> | void;
   pendingLabel: string;
   successMessageClassName: string;
+};
+
+type RegenerateWeekFormState = {
+  status: "idle" | "success" | "error";
+  message: string;
 };
 
 const initialRegenerateWeekFormState: RegenerateWeekFormState = {
@@ -17,18 +23,61 @@ const initialRegenerateWeekFormState: RegenerateWeekFormState = {
   message: "",
 };
 
+function resolveLocalStoreFunction<TArgs extends unknown[], TResult>(names: string[]) {
+  const record = localStore as Record<string, unknown>;
+
+  for (const name of names) {
+    const candidate = record[name];
+    if (typeof candidate === "function") {
+      return candidate as (...args: TArgs) => Promise<TResult>;
+    }
+  }
+
+  throw new Error(`Lokaler Store unterstützt ${names.join(" / ")} noch nicht.`);
+}
+
+function ensureLocalAppData() {
+  return resolveLocalStoreFunction<[], unknown>(["ensureLocalAppData", "initLocalAppData"])();
+}
+
+function regenerateCurrentLocalWeekPlan() {
+  return resolveLocalStoreFunction<[], unknown>([
+    "regenerateCurrentLocalWeekPlan",
+    "regenerateLocalWeekPlan",
+  ])();
+}
+
+function successMessageFromResult(result: unknown) {
+  if (typeof result === "string" && result.trim()) {
+    return result;
+  }
+
+  if (typeof result === "object" && result !== null) {
+    const record = result as Record<string, unknown>;
+    const directMessage = record.message ?? record.statusMessage ?? record.summary;
+    if (typeof directMessage === "string" && directMessage.trim()) {
+      return directMessage;
+    }
+  }
+
+  return "Die aktuelle Woche wurde lokal neu geplant.";
+}
+
+function errorMessageFromError(error: unknown) {
+  return error instanceof Error ? error.message : "Die Woche konnte lokal nicht neu geplant werden.";
+}
+
 export function RegenerateWeekForm({
   buttonClassName,
   errorMessageClassName,
   idleLabel,
   layoutClassName,
+  onSuccess,
   pendingLabel,
   successMessageClassName,
 }: RegenerateWeekFormProps) {
-  const [state, formAction, pending] = useActionState(
-    regenerateCurrentWeekAction,
-    initialRegenerateWeekFormState,
-  );
+  const [state, setState] = useState(initialRegenerateWeekFormState);
+  const [isPending, setIsPending] = useState(false);
 
   const feedbackClassName =
     state.status === "success"
@@ -37,15 +86,38 @@ export function RegenerateWeekForm({
         ? errorMessageClassName
         : null;
 
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsPending(true);
+    setState(initialRegenerateWeekFormState);
+
+    try {
+      await ensureLocalAppData();
+      const result = await regenerateCurrentLocalWeekPlan();
+      await onSuccess?.();
+      setState({
+        status: "success",
+        message: successMessageFromResult(result),
+      });
+    } catch (error) {
+      setState({
+        status: "error",
+        message: errorMessageFromError(error),
+      });
+    } finally {
+      setIsPending(false);
+    }
+  }
+
   return (
     <div className={layoutClassName}>
-      <form action={formAction}>
-        <button className={buttonClassName} disabled={pending} type="submit">
-          {pending ? pendingLabel : idleLabel}
+      <form onSubmit={handleSubmit}>
+        <button className={buttonClassName} disabled={isPending} type="submit">
+          {isPending ? pendingLabel : idleLabel}
         </button>
       </form>
 
-      {!pending && state.status !== "idle" && feedbackClassName ? (
+      {!isPending && state.status !== "idle" && feedbackClassName ? (
         <p aria-live="polite" className={feedbackClassName}>
           {state.message}
         </p>

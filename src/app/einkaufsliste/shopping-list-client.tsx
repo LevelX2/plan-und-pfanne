@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import styles from "./shopping.module.css";
-import { formatShoppingListQuantity } from "@/lib/format";
+import { AppNav } from "@/app/app-nav";
+import { formatDateRange, formatShoppingListQuantity } from "@/lib/format";
 import { loadOfflineSnapshot, saveOfflineSnapshot } from "@/lib/offline-store";
 import type { WeekPlan } from "@/lib/types";
 import {
@@ -17,10 +17,13 @@ import {
   type ShoppingListMode,
   type WeekSelectionSnapshot,
 } from "@/lib/week-plan-selection";
+import styles from "./shopping.module.css";
 
-type ShoppingListClientProps = {
-  storageNamespace: string;
-  weekPlan: WeekPlan;
+const LOCAL_UI_NAMESPACE = "local-pwa";
+
+type LocalStoreApi = {
+  ensureLocalAppData?: () => Promise<unknown>;
+  getCurrentLocalWeekPlan?: () => Promise<WeekPlan | null>;
 };
 
 type ShoppingSnapshot = {
@@ -32,7 +35,21 @@ function itemId(category: string, name: string, unit: string) {
   return `${category}::${name}::${unit}`;
 }
 
-export function ShoppingListClient({ storageNamespace, weekPlan }: ShoppingListClientProps) {
+async function loadCurrentWeekPlanFromLocalStore() {
+  const api = (await import("@/lib/local-store")) as LocalStoreApi;
+
+  if (typeof api.ensureLocalAppData === "function") {
+    await api.ensureLocalAppData();
+  }
+
+  if (typeof api.getCurrentLocalWeekPlan !== "function") {
+    throw new Error("Der lokale Wochenplan ist noch nicht verfügbar.");
+  }
+
+  return api.getCurrentLocalWeekPlan();
+}
+
+function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
   const [selectedMealKeys, setSelectedMealKeys] = useState<string[]>([]);
   const [shoppingMode, setShoppingMode] = useState<ShoppingListMode>("active-only");
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
@@ -45,7 +62,7 @@ export function ShoppingListClient({ storageNamespace, weekPlan }: ShoppingListC
     group.items.map((item) => itemId(group.category, item.name, item.unit)),
   );
   const checksStorageKey = createShoppingChecksStorageKey({
-    storageNamespace,
+    storageNamespace: LOCAL_UI_NAMESPACE,
     startDate: weekPlan.startDate,
     mode: shoppingMode,
     planSignature,
@@ -57,7 +74,7 @@ export function ShoppingListClient({ storageNamespace, weekPlan }: ShoppingListC
     selectionHydratedRef.current = false;
 
     void loadOfflineSnapshot<WeekSelectionSnapshot>(
-      createWeekSelectionStorageKey(storageNamespace, weekPlan.startDate),
+      createWeekSelectionStorageKey(LOCAL_UI_NAMESPACE, weekPlan.startDate),
     )
       .then((snapshot) => {
         if (cancelled) {
@@ -87,7 +104,7 @@ export function ShoppingListClient({ storageNamespace, weekPlan }: ShoppingListC
     return () => {
       cancelled = true;
     };
-  }, [planSignature, storageNamespace, weekPlan, weekPlan.startDate]);
+  }, [planSignature, weekPlan, weekPlan.startDate]);
 
   useEffect(() => {
     if (!selectionHydratedRef.current) {
@@ -102,12 +119,12 @@ export function ShoppingListClient({ storageNamespace, weekPlan }: ShoppingListC
     };
 
     void saveOfflineSnapshot(
-      createWeekSelectionStorageKey(storageNamespace, weekPlan.startDate),
+      createWeekSelectionStorageKey(LOCAL_UI_NAMESPACE, weekPlan.startDate),
       selectionSnapshot,
     ).catch((error) => {
       console.error("Aktive Gerichte konnten nicht gespeichert werden.", error);
     });
-  }, [planSignature, selectedMealKeys, shoppingMode, storageNamespace, weekPlan.startDate]);
+  }, [planSignature, selectedMealKeys, shoppingMode, weekPlan.startDate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -293,5 +310,120 @@ export function ShoppingListClient({ storageNamespace, weekPlan }: ShoppingListC
         </div>
       ) : null}
     </section>
+  );
+}
+
+export function ShoppingListClient() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [weekPlan, setWeekPlan] = useState<WeekPlan | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWeekPlan() {
+      try {
+        setIsLoading(true);
+        setLoadError(null);
+
+        const nextWeekPlan = await loadCurrentWeekPlanFromLocalStore();
+
+        if (cancelled) {
+          return;
+        }
+
+        setWeekPlan(nextWeekPlan);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : "Die lokale Einkaufsliste konnte nicht geladen werden.",
+        );
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadWeekPlan();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const totalMeals = weekPlan?.days.reduce((sum, day) => sum + day.meals.length, 0) ?? 0;
+
+  return (
+    <main className={styles.page}>
+      <AppNav currentPath="/einkaufsliste" />
+
+      <section className={styles.hero}>
+        <div>
+          <p className={styles.eyebrow}>Mobile Einkaufsliste</p>
+          <h1>Deine Woche ist lokal als Einkaufsliste bereit.</h1>
+          <p className={styles.lead}>
+            Öffne diese Seite auf dem Handy und hake die Zutaten direkt beim Einkaufen ab. Der
+            Fortschritt bleibt zusammen mit deiner aktiven Auswahl nur auf diesem Gerät gespeichert.
+          </p>
+        </div>
+
+        <div className={styles.heroStat}>
+          <span>
+            {isLoading ? "Lokale Datenbank wird vorbereitet" : weekPlan ? "Aktive Woche" : "Noch kein Plan"}
+          </span>
+          <strong>
+            {weekPlan ? formatDateRange(weekPlan.startDate, weekPlan.endDate) : "Lokal"}
+          </strong>
+          <p>
+            {weekPlan
+              ? `${totalMeals} geplante Gerichte. Wechsle unten zwischen aktivem Kochfokus und kompletter Woche.`
+              : "Sobald ein lokaler Wochenplan vorhanden ist, erscheint hier automatisch deine Einkaufsliste."}
+          </p>
+        </div>
+      </section>
+
+      {isLoading ? (
+        <section className={styles.listSection}>
+          <section className={styles.emptyState}>
+            <p className={styles.sectionKicker}>Lokale Initialisierung</p>
+            <h2>Die Einkaufsliste wird vorbereitet.</h2>
+            <p>
+              Beim ersten Start kann die lokale Datenbank kurz befüllt oder auf eine neue Version
+              migriert werden.
+            </p>
+          </section>
+        </section>
+      ) : null}
+
+      {loadError ? (
+        <section className={styles.listSection}>
+          <section className={styles.emptyState}>
+            <p className={styles.sectionKicker}>Fehler</p>
+            <h2>Die Einkaufsliste konnte nicht geladen werden.</h2>
+            <p>{loadError}</p>
+          </section>
+        </section>
+      ) : null}
+
+      {!isLoading && !loadError && !weekPlan ? (
+        <section className={styles.listSection}>
+          <section className={styles.emptyState}>
+            <p className={styles.sectionKicker}>Noch kein Wochenplan</p>
+            <h2>Es ist noch keine lokale Woche hinterlegt.</h2>
+            <p>
+              Öffne zuerst das Dashboard oder lass den lokalen Seed-Lauf einen Wochenplan anlegen.
+            </p>
+          </section>
+        </section>
+      ) : null}
+
+      {!isLoading && !loadError && weekPlan ? <ShoppingListContent weekPlan={weekPlan} /> : null}
+    </main>
   );
 }

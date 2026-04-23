@@ -9,15 +9,21 @@ export type AppNavUser = {
 };
 
 type AppNavProps = {
-  currentPath: "/" | "/rezepte" | "/einkaufsliste" | "/einstellungen";
-  user: AppNavUser;
+  currentPath: string;
+  user?: AppNavUser | null;
 };
 
-function labelForUser(user: AppNavUser) {
+function labelForUser(user?: AppNavUser | null) {
+  if (!user) {
+    return "Lokale PWA";
+  }
+
   return user.displayName?.trim() || user.email;
 }
 
 export function AppNav({ currentPath, user }: AppNavProps) {
+  const hasUser = Boolean(user?.email);
+
   return (
     <nav className={styles.nav}>
       <div className={styles.links}>
@@ -44,12 +50,14 @@ export function AppNav({ currentPath, user }: AppNavProps) {
       <div className={styles.account}>
         <div className={styles.accountMeta}>
           <strong>{labelForUser(user)}</strong>
-          <span>{user.email}</span>
+          <span>{hasUser ? user?.email : "Deine Daten bleiben auf diesem Gerät."}</span>
         </div>
 
-        <Link className={styles.logoutLink} href="/abmelden">
-          Abmelden
-        </Link>
+        {hasUser ? (
+          <Link className={styles.logoutLink} href="/abmelden">
+            Abmelden
+          </Link>
+        ) : null}
       </div>
     </nav>
   );
