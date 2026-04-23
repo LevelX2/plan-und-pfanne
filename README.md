@@ -62,6 +62,16 @@ In GitHub:
 
 Der Workflow liegt unter [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml).
 
+## Direkte Live-URL
+
+Die aktuell deployte Test- und Live-URL für dieses Repository ist:
+
+- `https://levelx2.github.io/plan-und-pfanne/`
+
+Direkt öffnen:
+
+- [Plan und Pfanne auf GitHub Pages](https://levelx2.github.io/plan-und-pfanne/)
+
 ## Basis-Pfad und URL
 
 Standardmäßig baut der Workflow für eine GitHub-Projektseite:
