@@ -476,3 +476,8 @@
   `npm run lint` erfolgreich,
   `npm run build` erfolgreich,
   `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` mit `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich gebaut.
+
+## [2026-04-24] dokumentation | Git-Regeln für Projekte ohne Remote ergänzt
+- `AGENTS.md` beschreibt jetzt ausdrücklich, dass Git auch ohne GitHub genutzt wird, GitHub-Schritte aber nur bei vorhandenem Remote oder ausdrücklichem Wunsch erfolgen.
+- Die Finito-Sequenz unterscheidet jetzt zwischen Projekten mit Remote und Projekten ohne Remote.
+- `Generische Entwicklungsvorgaben.md` enthält die gleiche wiederverwendbare Leitplanke für lokale Git-Projekte ohne GitHub-Anbindung.

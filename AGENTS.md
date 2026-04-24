@@ -47,6 +47,14 @@ Zu Beginn projektbezogener Arbeit zuerst diese Dateien lesen:
 2. Hotkeys sollen an einer zentralen Stelle definiert und dokumentiert werden; einzelne Screens dürfen nur fachlich begründete Ausnahmen ergänzen.
 3. Hotkeys dürfen Texteingaben, Formularfelder, native Browser-Kurzbefehle und Bedienhilfen nicht stören.
 
+## Git und Remote-Repositories
+
+- Git ist auch ohne GitHub zu verwenden, sofern das Projekt ein lokales Git-Repository ist.
+- Vor Push-, Pull-Request-, GitHub-Actions- oder Deployment-Schritten immer prüfen, ob ein passender Remote existiert.
+- Wenn kein Remote existiert, entfallen GitHub-Schritte vollständig. Dann lokal committen und den lokalen Stand klar benennen.
+- Einen Remote nicht ungefragt einrichten.
+- Bei Abschluss ohne Remote die Commit-Messages und Commit-Hashes nennen und ausdrücklich sagen, dass nicht gepusht wurde.
+
 ## Wissenspflege bei neuen Quellen
 
 Wenn neue Projektquellen hinzukommen:
@@ -121,4 +129,6 @@ Zusätzlich gilt:
 - Teile, die noch von offenen Fragen abhängen, sollen nicht vorschnell committed werden.
 - Uncommittete Änderungen, die erkennbar nicht zu diesem Thread gehören, sind kein automatischer Blocker und können am Ende kurz als Hinweis genannt werden.
 - Gemachte Commits sollen im Abschluss jeweils in einer eigenen Zeile mit ihrer Commit-Message genannt werden, damit sie schnell erkennbar sind.
+- Push, Pull Request und GitHub-Actions-Prüfung erfolgen nur, wenn ein passender Remote existiert oder der Nutzer das ausdrücklich verlangt.
+- In Projekten ohne Remote endet die Sequenz nach lokalen Commits und einer klaren Statusmeldung.
 - Wenn nach der Finito-Sequenz keine relevanten offenen Punkte mehr für diesen Thread übrig sind, gilt der Thread als abgeschlossen und archivierungsreif.
