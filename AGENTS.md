@@ -41,6 +41,12 @@ Zu Beginn projektbezogener Arbeit zuerst diese Dateien lesen:
 - Ausnahmen:
   Dateinamen, Pfade, Code-Symbole, IDs, technische Bezeichner, Markdown-Links auf bestehende Dateien und originale Quellzitate bleiben in ihrer technischen oder originalen Schreibweise.
 
+## Hotkey-Regeln
+
+1. Hotkeys sind als übergreifendes App-Verhalten zu behandeln und nicht seitenlokal oder komponentenlokal zu erfinden.
+2. Hotkeys sollen an einer zentralen Stelle definiert und dokumentiert werden; einzelne Screens dürfen nur fachlich begründete Ausnahmen ergänzen.
+3. Hotkeys dürfen Texteingaben, Formularfelder, native Browser-Kurzbefehle und Bedienhilfen nicht stören.
+
 ## Wissenspflege bei neuen Quellen
 
 Wenn neue Projektquellen hinzukommen:
