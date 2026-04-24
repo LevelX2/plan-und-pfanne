@@ -1,81 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import styles from "./settings.module.css";
-import { RegenerateWeekForm } from "@/app/regenerate-week-form";
+import { AppNav } from "@/app/app-nav";
+import { DateStepper } from "@/app/date-stepper";
 import { SettingsForm } from "./settings-form";
+import { addDays, todayInBerlinIso } from "@/lib/date";
+import { deleteLocalPlansOlderThan, getLocalRecipeMixPoolStats, getLocalSettings, listLocalHistoryEntries } from "@/lib/local-store";
 import { formatCalories, formatGrams } from "@/lib/format";
-import {
-  ensureLocalAppData,
-  getCurrentLocalWeekPlan,
-  getLocalAppMeta,
-  getLocalRecipeMixPoolStats,
-  getLocalSettings,
-  listLocalHistoryEntries,
-} from "@/lib/local-store";
-import type { UserSettings, WeekPlan } from "@/lib/types";
-
-type RecipeMixPoolStats = Awaited<ReturnType<typeof getLocalRecipeMixPoolStats>>;
-type LocalHistoryEntry = Awaited<ReturnType<typeof listLocalHistoryEntries>>[number];
-type LocalAppMeta = Awaited<ReturnType<typeof getLocalAppMeta>>;
+import { calculateTargets } from "@/lib/planner";
+import { activeProteinTargets } from "@/lib/protein-targets";
+import type { UserSettings } from "@/lib/types";
+import styles from "./settings.module.css";
 
 type SettingsPageData = {
   settings: UserSettings;
-  recipeMixPool: RecipeMixPoolStats;
-  currentWeekPlan: WeekPlan;
-  recentHistory: LocalHistoryEntry[];
-  appMeta: LocalAppMeta;
-  loadedAt: string;
+  historyCount: number;
+  recipeMixPool: Awaited<ReturnType<typeof getLocalRecipeMixPoolStats>>;
 };
 
-function macroTargets(calorieTarget: number, proteinPct: number, carbsPct: number, fatPct: number) {
-  return {
-    protein: Number(((calorieTarget * proteinPct) / 100 / 4).toFixed(1)),
-    carbs: Number(((calorieTarget * carbsPct) / 100 / 4).toFixed(1)),
-    fat: Number(((calorieTarget * fatPct) / 100 / 9).toFixed(1)),
-  };
-}
-
-function formatSavedAt(isoString: string) {
-  return new Intl.DateTimeFormat("de-DE", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(isoString));
-}
-
-async function loadSettingsPageData() {
-  await ensureLocalAppData();
-
-  const [settings, recipeMixPool, currentWeekPlan, recentHistory, appMeta] = await Promise.all([
+async function loadSettingsPageData(): Promise<SettingsPageData> {
+  const [settings, recipeMixPool, history] = await Promise.all([
     getLocalSettings(),
     getLocalRecipeMixPoolStats(),
-    getCurrentLocalWeekPlan(),
-    listLocalHistoryEntries(3),
-    getLocalAppMeta(),
+    listLocalHistoryEntries(),
   ]);
 
   return {
     settings,
     recipeMixPool,
-    currentWeekPlan,
-    recentHistory,
-    appMeta,
-    loadedAt: new Date().toISOString(),
-  } satisfies SettingsPageData;
-}
-
-function LocalNav() {
-  return (
-    <nav className={styles.topNav}>
-      <Link href="/">Dashboard</Link>
-      <Link href="/rezepte">Rezepte</Link>
-      <Link href="/einkaufsliste">Einkaufsliste</Link>
-      <Link aria-current="page" href="/einstellungen">
-        Einstellungen
-      </Link>
-    </nav>
-  );
+    historyCount: history.length,
+  };
 }
 
 export default function SettingsPage() {
@@ -83,6 +37,17 @@ export default function SettingsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusBadge, setStatusBadge] = useState<string | null>(null);
+  const [deleteMode, setDeleteMode] = useState("3m");
+  const [customDeleteDate, setCustomDeleteDate] = useState(addDays(todayInBerlinIso(), -90));
+
+  async function refreshPageData(nextStatusBadge?: string) {
+    const nextPageData = await loadSettingsPageData();
+    setPageData(nextPageData);
+    setLoadError(null);
+    if (nextStatusBadge) {
+      setStatusBadge(nextStatusBadge);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -101,11 +66,7 @@ export default function SettingsPage() {
           return;
         }
 
-        setLoadError(
-          error instanceof Error
-            ? error.message
-            : "Die Einstellungen konnten nicht geladen werden.",
-        );
+        setLoadError(error instanceof Error ? error.message : "Die Einstellungen konnten nicht geladen werden.");
       })
       .finally(() => {
         if (!cancelled) {
@@ -118,36 +79,44 @@ export default function SettingsPage() {
     };
   }, []);
 
-  async function refreshPageData(nextStatusBadge?: string) {
-    const nextPageData = await loadSettingsPageData();
-    setPageData(nextPageData);
-    setLoadError(null);
-    if (nextStatusBadge) {
-      setStatusBadge(nextStatusBadge);
+  function cutoffDateForDeleteMode() {
+    switch (deleteMode) {
+      case "1m":
+        return addDays(todayInBerlinIso(), -31);
+      case "3m":
+        return addDays(todayInBerlinIso(), -92);
+      case "6m":
+        return addDays(todayInBerlinIso(), -184);
+      case "custom":
+        return customDeleteDate;
+      default:
+        return addDays(todayInBerlinIso(), -92);
     }
+  }
+
+  async function deleteOldPlans() {
+    const cutoffDate = cutoffDateForDeleteMode();
+    const confirmed = window.confirm(
+      `Alte Pläne vor dem ${cutoffDate} löschen? Diese geplanten Tage und Mahlzeiten werden dauerhaft entfernt.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const deletedCount = await deleteLocalPlansOlderThan({ olderThanDate: cutoffDate });
+    await refreshPageData(`${deletedCount} alte Tage gelöscht`);
   }
 
   if (isLoading && !pageData) {
     return (
       <main className={styles.page}>
-        <LocalNav />
-
+        <AppNav currentPath="/einstellungen" />
         <section className={styles.hero}>
           <div className={styles.heroText}>
-            <p className={styles.eyebrow}>Planungsprofil</p>
+            <p className={styles.eyebrow}>Einstellungen</p>
             <h1>Deine Einstellungen werden geladen.</h1>
-            <p className={styles.lead}>
-              Kalorienziel, Makros, Zielmix und Ausschlüsse kommen direkt aus dem Gerätespeicher.
-            </p>
           </div>
-
-          <aside className={styles.heroPanel}>
-            <div>
-              <p className={styles.sectionKicker}>App-Start</p>
-              <h2>Planungsprofil vorbereiten</h2>
-              <p>Die App lädt dein Planungsprofil und die aktuelle Woche.</p>
-            </div>
-          </aside>
         </section>
       </main>
     );
@@ -156,73 +125,54 @@ export default function SettingsPage() {
   if (!pageData) {
     return (
       <main className={styles.page}>
-        <LocalNav />
-
+        <AppNav currentPath="/einstellungen" />
         <section className={styles.hero}>
           <div className={styles.heroText}>
-            <p className={styles.eyebrow}>Planungsprofil</p>
+            <p className={styles.eyebrow}>Einstellungen</p>
             <h1>Die Einstellungen konnten nicht geladen werden.</h1>
-            <p className={styles.lead}>
-              {loadError ?? "Bitte prüfe den App-Speicher oder initialisiere die App-Daten erneut."}
-            </p>
+            <p className={styles.lead}>{loadError}</p>
           </div>
-
-          <aside className={styles.heroPanel}>
-            <div>
-              <p className={styles.sectionKicker}>Status</p>
-              <h2>Start fehlgeschlagen</h2>
-              <p>Ohne gespeicherte Daten kann das Planungsprofil nicht verwendet werden.</p>
-            </div>
-          </aside>
         </section>
       </main>
     );
   }
 
-  const { settings, recipeMixPool, currentWeekPlan, recentHistory, appMeta, loadedAt } = pageData;
-  const targets = macroTargets(
-    settings.calorieTarget,
-    settings.macroProteinPct,
-    settings.macroCarbsPct,
-    settings.macroFatPct,
-  );
-  const latestHistory = recentHistory[0] ?? null;
-  const settingsKey = JSON.stringify(settings);
+  const { settings, recipeMixPool, historyCount } = pageData;
+  const targets = calculateTargets(settings);
+  const proteinTargetCount = activeProteinTargets(settings).length;
 
   return (
     <main className={styles.page}>
-      <LocalNav />
+      <AppNav currentPath="/einstellungen" />
 
       <section className={styles.hero}>
         <div className={styles.heroText}>
-          <p className={styles.eyebrow}>Planungsprofil</p>
-          <h1>Dein Wochenplan soll zu deinem Alltag passen.</h1>
+          <p className={styles.eyebrow}>Einstellungen</p>
+          <h1>Dein Tageskonzept steuern.</h1>
           <p className={styles.lead}>
-            Hier steuerst du Kalorienziel, Makroverteilung, Mahlzeitenrhythmus, Zielmix für Mittag
-            und Abend sowie Ausschlüsse. Beim Speichern wird die aktuelle Woche direkt mit den
-            neuen Vorgaben neu erzeugt.
+            Standard-Personenzahl, Kalorien, Makros und Planungsregeln gelten für neue
+            Generierungen. Bestehende Tagespläne bleiben erhalten, bis Du sie bearbeitest oder löschst.
           </p>
         </div>
 
         <aside className={styles.heroPanel}>
           <div>
-            <p className={styles.sectionKicker}>Aktiver Rahmen</p>
+            <p className={styles.sectionKicker}>Aktives Ziel</p>
             <h2>{formatCalories(settings.calorieTarget)} pro Tag</h2>
-            <p>
-              Glutenfrei bleibt fest gesetzt. Der Zielmix wirkt als weiche Verteilung für
-              Mittagessen und Abendessen im Wochenplan.
+            <p>{settings.defaultPeopleCount} Personen als Standard für neue Planzeiträume.</p>
+            <p className={styles.proteinTargetSummary}>
+              Eiweißziel: {formatGrams(targets.protein)} pro Person aus {proteinTargetCount} hinterlegten{" "}
+              {proteinTargetCount === 1 ? "Körperwert" : "Körperwerten"}.
             </p>
           </div>
-
           {statusBadge ? <span className={styles.statusBadge}>{statusBadge}</span> : null}
-
           <ul className={styles.macroPreview}>
             <li>
               <div>
-                <span>Protein</span>
+                <span>Eiweiß Ø</span>
                 <strong>{settings.macroProteinPct} %</strong>
               </div>
-              <small>{formatGrams(targets.protein)}</small>
+              <small>{formatGrams(targets.protein)} p. P.</small>
             </li>
             <li>
               <div>
@@ -248,13 +198,11 @@ export default function SettingsPage() {
             <p className={styles.sectionKicker}>Formular</p>
             <h2>Planungswerte anpassen</h2>
             <p className={styles.hint}>
-              Makroverteilung und Zielmix müssen jeweils zusammen 100 % ergeben. Ausgeschlossene
-              Zutaten trennst du mit Kommas. Nach dem Speichern wird die aktuelle Woche neu
-              geplant.
+              Das Speichern verändert künftige Generierungen. Personenzahlen einzelner Mahlzeiten
+              bearbeitest Du im Tagesdetail.
             </p>
-
             <SettingsForm
-              key={settingsKey}
+              key={JSON.stringify(settings)}
               onSaved={async (message) => {
                 await refreshPageData(message);
               }}
@@ -265,116 +213,55 @@ export default function SettingsPage() {
 
         <aside className={styles.sideColumn}>
           <article className={styles.summaryCard}>
-            <p className={styles.sectionKicker}>Aktive Regeln</p>
-            <h2>Was der Planer gerade beachtet</h2>
-            <dl className={styles.summaryList}>
-              <div>
-                <dt>Glutenfrei</dt>
-                <dd>immer aktiv</dd>
+            <p className={styles.sectionKicker}>Datenpflege</p>
+            <h2>Alte Pläne löschen</h2>
+            <div className={styles.formGrid}>
+              <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                <label htmlFor="deleteMode">Löschregel</label>
+                <select id="deleteMode" onChange={(event) => setDeleteMode(event.currentTarget.value)} value={deleteMode}>
+                  <option value="1m">älter als 1 Monat</option>
+                  <option value="3m">älter als 3 Monate</option>
+                  <option value="6m">älter als 6 Monate</option>
+                  <option value="custom">älter als bestimmtes Datum</option>
+                </select>
               </div>
-              <div>
-                <dt>Mahlzeitenfenster</dt>
-                <dd>{settings.mealsPerDay === 4 ? "4 mit Snack" : "3 ohne Snack"}</dd>
-              </div>
-              <div>
-                <dt>Zielmix</dt>
-                <dd>
-                  {settings.vegetarianSharePct} % vegetarisch, {settings.fishSharePct} % Fisch,{" "}
-                  {settings.meatSharePct} % Fleisch
-                </dd>
-              </div>
-              <div>
-                <dt>Zutaten ausschließen</dt>
-                <dd>
-                  {settings.excludedIngredients.length > 0
-                    ? settings.excludedIngredients.join(", ")
-                    : "keine"}
-                </dd>
-              </div>
-            </dl>
-          </article>
-
-          <article className={styles.statusCard}>
-            <p className={styles.sectionKicker}>Sofortaktion</p>
-            <h2>Diese Woche neu planen</h2>
-            <p>
-              Wenn du einen frischen Wochenvorschlag möchtest, kannst du die aktuelle Woche hier
-              jederzeit neu erzeugen. Dafür braucht die App keine Verbindung.
-            </p>
-            <RegenerateWeekForm
-              buttonClassName={styles.secondaryButton}
-              errorMessageClassName={styles.actionFeedbackError}
-              idleLabel="Woche neu planen"
-              layoutClassName={styles.actionStack}
-              onSuccess={async () => {
-                await refreshPageData("Woche neu geplant");
-              }}
-              pendingLabel="Plant Woche neu ..."
-              successMessageClassName={styles.actionFeedbackSuccess}
-            />
+              {deleteMode === "custom" ? (
+                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
+                  <DateStepper
+                    id="customDeleteDate"
+                    label="Stichtag"
+                    onChange={setCustomDeleteDate}
+                    value={customDeleteDate}
+                  />
+                </div>
+              ) : null}
+            </div>
+            <div className={styles.actionRow}>
+              <button className={styles.secondaryButton} onClick={() => void deleteOldPlans()} type="button">
+                Alte Pläne löschen
+              </button>
+            </div>
           </article>
 
           <article className={styles.infoCard}>
-            <p className={styles.sectionKicker}>App-Status</p>
-            <h2>Was zuletzt auf diesem Gerät passiert ist</h2>
+            <p className={styles.sectionKicker}>Status</p>
+            <h2>Lokaler Bestand</h2>
             <ul className={styles.mealList}>
               <li>
                 <div>
-                  <span>Aktuelle Woche</span>
-                  <strong>{formatSavedAt(currentWeekPlan.generatedAt)}</strong>
+                  <span>Geplante Tage</span>
+                  <strong>{historyCount}</strong>
                 </div>
               </li>
               <li>
                 <div>
-                  <span>Letzte Seed-Synchronisierung</span>
-                  <strong>{appMeta?.lastSeedSyncAt ? formatSavedAt(appMeta.lastSeedSyncAt) : "noch offen"}</strong>
+                  <span>Mix-gesteuerte Rezepte</span>
+                  <strong>{recipeMixPool.total}</strong>
                 </div>
               </li>
               <li>
                 <div>
-                  <span>Letzte App-Öffnung</span>
-                  <strong>{appMeta?.lastOpenedAt ? formatSavedAt(appMeta.lastOpenedAt) : formatSavedAt(loadedAt)}</strong>
-                </div>
-              </li>
-              <li>
-                <div>
-                  <span>Verlaufseinträge</span>
-                  <strong>{recentHistory.length}</strong>
-                </div>
-              </li>
-            </ul>
-            {latestHistory ? (
-              <p className={styles.hint}>
-                Zuletzt gespeichert: {formatSavedAt(latestHistory.savedAt)} als {latestHistory.generatedBy}.
-              </p>
-            ) : null}
-          </article>
-
-          <article className={styles.infoCard}>
-            <p className={styles.sectionKicker}>Auswirkung</p>
-            <h2>Welche Bereiche sich mit ändern</h2>
-            <ul className={styles.mealList}>
-              <li>
-                <div>
-                  <span>Dashboard</span>
-                  <strong>Neue Tageskarten und neue Makroabweichungen</strong>
-                </div>
-              </li>
-              <li>
-                <div>
-                  <span>Tagesseiten</span>
-                  <strong>Aktualisierte Mahlzeiten pro Datum</strong>
-                </div>
-              </li>
-              <li>
-                <div>
-                  <span>Einkaufsliste</span>
-                  <strong>Frisch abgeleitete Zutaten für die aktuelle Woche</strong>
-                </div>
-              </li>
-              <li>
-                <div>
-                  <span>Rezeptpool für den Mix</span>
+                  <span>Verteilung</span>
                   <strong>
                     {recipeMixPool.counts.vegetarian} vegetarisch, {recipeMixPool.counts.fish} Fisch,{" "}
                     {recipeMixPool.counts.meat} Fleisch
@@ -383,14 +270,6 @@ export default function SettingsPage() {
               </li>
             </ul>
           </article>
-
-          {loadError ? (
-            <article className={styles.statusCard}>
-              <p className={styles.sectionKicker}>Hinweis</p>
-              <h2>Letzter Ladehinweis</h2>
-              <p>{loadError}</p>
-            </article>
-          ) : null}
         </aside>
       </section>
     </main>

@@ -40,7 +40,7 @@ export function LoginForm({ nextPath }: LoginFormProps) {
 
         <ul>
           <li>Die App startet direkt im Dashboard.</li>
-          <li>Wochenplan, Rezepte und Einkaufsliste sind ohne Umweg erreichbar.</li>
+          <li>Tagesplan, Rezepte und Einkaufsliste sind ohne Umweg erreichbar.</li>
           <li>Von hier aus kannst du jederzeit sofort zurückspringen.</li>
         </ul>
       </aside>

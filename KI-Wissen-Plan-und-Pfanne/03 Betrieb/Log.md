@@ -403,3 +403,76 @@
   `npm run lint` erfolgreich,
   `http://localhost:3000/` erfolgreich mit Status `200`,
   `http://localhost:3000/einstellungen/` erfolgreich mit Status `200`.
+
+## [2026-04-24] umsetzung | App auf datumsbezogenes Tageskonzept umgestellt
+- Die Nutzeranforderung `Umstellung auf Tageskonzept` wurde als Rohquelle in die Wissensbasis aufgenommen.
+- Das lokale IndexedDB-Modell wurde auf Tagespläne umgestellt:
+  `settings`, `recipes`, `mealTypes`, `recipeDefaultMealTypeAssignments`, `userRecipeMealTypePreferences`, `plannedDays`, `plannedMeals`, `meta` und `snapshots`.
+- Alte lokale Wochenplan-Testdaten werden beim Upgrade bewusst verworfen; es gibt keine Migration alter Testdaten.
+- Der Generator plant jetzt frei wählbare Datumsbereiche, prüft Überschneidungen und überschreibt bestehende Tagespläne erst nach Bestätigung.
+- Die App hat neue beziehungsweise umgebaute Hauptbereiche für aktuellen Plan, Plan generieren, Tagesdetail, Rezeptzulassung, geplante Rezept-Kochansicht, Einkaufsliste, Historie und Einstellungen.
+- Jede geplante Mahlzeit kann im Tagesdetail bearbeitet werden:
+  Rezept tauschen, Personenzahl ändern, Mahlzeit deaktivieren, Einkaufslisten-Flag setzen und Snacks ergänzen.
+- Aus jedem aktiven Mahlzeiten-Slot führt `Rezept kochen` zur konkreten Kochansicht mit skalierten Zutaten und temporärer Personenzahländerung.
+- Die Einkaufsliste aggregiert aktive und einkaufsrelevante Mahlzeiten aus einem frei gewählten Datumsbereich.
+- Historische Tage oder Zeiträume können kopiert werden; alte Pläne lassen sich in den Einstellungen nach Alter oder Stichtag löschen.
+- `README.md`, `KODEX_STAND.md`, Projektstatus, Produktbild, Systembild, Projektüberblick, Leitentscheidungen, offene Punkte und Index wurden auf das Tageskonzept nachgezogen.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich,
+  `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` mit `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich gebaut.
+
+## [2026-04-24] nachbesserung | Tagesdetail lesbarer und Snackbestand erweitert
+- Die aktive Tagesauswahl im Tagesdetail wurde kontrastreicher gestaltet und als `Ausgewählter Tag` beschriftet.
+- Sichtbare UI-Texte im Tagesdetail vermeiden jetzt den englischen Begriff `Slot` und sprechen von Mahlzeiten.
+- Der Snack-Seedbestand wurde um vier glutenfreie Proteinriegel mit 30 %, 40 %, 50 % und 60 % Eiweißanteil ergänzt.
+- Der gesamte Seed-Bestand umfasst damit 74 Rezepte, davon 18 Snacks.
+
+## [2026-04-24] nachbesserung | Rezeptauswahl, Navigation und Einkaufsliste geschärft
+- Die Hauptnavigation bricht auf schmaleren Breiten um, damit `Historie` und `Einstellungen` sichtbar erreichbar bleiben.
+- Die Rezeptauswahl zeigt Mahlzeitentypen standardmäßig eingeklappt; einzelne Typen lassen sich zur Bearbeitung öffnen.
+- Der unklare Chip `Standard ein/aus` wurde durch `App-Vorschlag: ja/nein` ersetzt.
+- Der Hinweis `lokal gespeicherte glutenfreie Optionen` wurde zu `gespeicherte glutenfreie Optionen` vereinfacht.
+- Die Dashboard-Tageskarte spricht bei Makroabweichungen jetzt von `Makros abweichend` statt `prüfenswert`.
+- Die Einkaufsliste normalisiert Eier-Zutaten:
+  `Ei`, `Eier` und `Eiweiß` werden als `Eier` zusammengeführt; Eiweiß in Gramm wird mit 30 g pro Ei in Stück umgerechnet.
+- Die Makro-Vorschau in den Einstellungen trennt Label und Prozentwert jetzt sichtbar.
+
+## [2026-04-24] nachbesserung | Eiweißziel pro Person gewichtsbasiert ergänzt
+- Die Einstellungen speichern jetzt bis zu zwölf Eiweiß-Zielprofile mit Körpergewicht und Gramm Eiweiß pro Kilogramm Körpergewicht.
+- Sichtbar sind jeweils die Profile passend zur aktuellen Standard-Personenzahl; ausgeblendete Profile bleiben erhalten und erscheinen wieder, wenn die Personenzahl erhöht wird.
+- Die Zielwertberechnung nutzt für Eiweiß den Durchschnitt der aktiven Personenprofile als Tagesorientierung pro Person.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich,
+  `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` mit `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich gebaut,
+  Einstellungen im In-App-Browser auf dynamische Personenzeilen geprüft.
+
+## [2026-04-24] nachbesserung | Datumsbereich der Einkaufsliste schneller bedienbar
+- Start- und Enddatum in der Einkaufsliste haben jetzt je einen kleinen Minus- und Plus-Knopf für Tag zurück beziehungsweise Tag vor.
+- Die Knöpfe ändern denselben Datumsbereich wie die Date-Eingaben; ungültige Ein-Tages-Verkürzungen werden deaktiviert.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich,
+  `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` mit `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich gebaut,
+  Einkaufsliste im In-App-Browser visuell und per Button-Erreichbarkeit geprüft.
+
+## [2026-04-24] nachbesserung | Datums-Stepper als Standardmuster eingeführt
+- Die Plus-/Minus-Bedienung für Datumsfelder wurde in eine gemeinsame `DateStepper`-Komponente überführt.
+- Alle aktuellen Date-Eingaben in Plan-Generator, Einkaufsliste, Historie und dem optionalen Lösch-Stichtag der Einstellungen nutzen jetzt dieses Muster.
+- Leere Datumsfelder, wie die Kopierquelle in der Historie vor dem Laden geplanter Tage, deaktivieren die Stepper-Knöpfe bis ein gültiges Datum vorhanden ist.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich,
+  `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` mit `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich gebaut,
+  Planen, Einkaufsliste, Historie und Einstellungen im In-App-Browser auf vorhandene Stepper geprüft.
+
+## [2026-04-24] qualität | Domain-Tests für das Tageskonzept ergänzt
+- `package.json` enthält jetzt ein `npm test`-Skript auf Basis des eingebauten Node-Test-Runners.
+- `tests/domain.test.cjs` ergänzt einen kleinen TypeScript-Testloader ohne zusätzliche npm-Abhängigkeiten.
+- Abgedeckt werden Datumsbereiche, gewichtsbasiertes Eiweißziel, Tageszielberechnung, Ausschluss deaktivierter Mahlzeiten aus Tagesmakros sowie Einkaufsliste mit Personenzahl-Skalierung, Einkaufslisten-Flag und Eier-Normalisierung.
+- Verifikation:
+  `npm test` erfolgreich mit 5 Tests,
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich,
+  `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` mit `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich gebaut.

@@ -1,99 +1,129 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-23
+letzte_aktualisierung: 2026-04-24
 quellen:
-  - ../../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse.md
-  - ../../../01 Rohquellen/2026-04-23 Aktive Gerichte im Wochenplan und selektive Einkaufsliste.md
-  - ../../../01 Rohquellen/externe-quellen/2026-04-23 Glutenfreie Rezeptquellen BBC Good Food.md
-  - ../../../src/app/home-client.tsx
-  - ../../../src/app/einkaufsliste/shopping-list-client.tsx
+  - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../src/lib/planner.ts
-  - ../../../src/lib/store.ts
-  - ../../../src/lib/week-plan-selection.ts
+  - ../../../src/lib/local-store.ts
+  - ../../../src/lib/types.ts
+  - ../../../src/app/planen/page.tsx
+  - ../../../src/app/tage/page.tsx
+  - ../../../src/app/kochen/page.tsx
+  - ../../../src/app/einkaufsliste/shopping-list-client.tsx
+  - ../../../src/app/rezepte/recipes-client.tsx
   - ../../../src/lib/data/demo-recipes.ts
   - ../../../src/lib/data/imported-recipes.ts
 tags:
   - fachlogik
   - rezepte
   - planung
+  - tagesplanung
 ---
 
 # Produktbild und Kernlogik
 
 ## Fachlicher Kern
-Die Anwendung verbindet Rezeptverwaltung mit automatisierter Wochenplanung. Die Planung arbeitet nicht bloß auf Ebene einzelner Rezepte, sondern auf Tagesplänen mit fester Mahlzeitenstruktur.
+`Plan und Pfanne` verbindet Rezeptverwaltung, automatische glutenfreie Tagesplanung, konkrete Kochansichten und eine daraus abgeleitete Einkaufsliste. Die Planung ist nicht mehr wochengebunden, sondern arbeitet auf einzelnen Datumswerten.
+
+## Tagesmodell
+- Planung erfolgt auf Tagesebene.
+- Pro Datum gibt es maximal einen Plan.
+- Ein Planzeitraum ist nur Herkunfts- oder Erstellungsinformation.
+- Es gibt keine parallelen aktiven oder inaktiven Planversionen.
+- Ein Tagesplan enthält Frühstück, Mittagessen, Abendessen und optional Snacks.
 
 ## Mahlzeitenmodell
 - Frühstück
 - Mittagessen
 - Abendessen
-- optional Snack
+- Snack
+
+Jede geplante Mahlzeit trägt:
+- Rezept
+- Mahlzeitentyp
+- Personenzahl
+- `isEnabled` für `Mahlzeit findet statt`
+- `includeInShoppingList` für `in Einkaufsliste berücksichtigen`
+- Sortierung innerhalb des Tages
 
 ## Aktueller Rezeptpool
-- 70 Seed-Rezepte sind im aktuellen Datenbestand vorhanden.
+- 74 Seed-Rezepte sind im aktuellen Datenbestand vorhanden.
 - Darunter sind 28 zusätzliche glutenfreie Rezepte, die am 2026-04-23 aus externen Webquellen strukturiert in den Seed-Bestand übernommen wurden.
-- Verteilung nach Mahlzeiten:
+- Verteilung nach primärem Mahlzeitentyp:
   - 17 Frühstücke
   - 19 Mittagessen
   - 20 Abendessen
-  - 14 Snacks
+  - 18 Snacks
+- Standard-Snacks enthalten jetzt unter anderem Proteinshakes und glutenfreie Proteinriegel-Varianten mit 30 %, 40 %, 50 % und 60 % Eiweißanteil.
 - Glutenfreiheit ist im Seed-Bestand durchgängig gesetzt.
 
-## Planungslogik im verifizierten Code
+## Rezeptzulassung und Gewichtung
+- Die App verwendet nicht automatisch alle Rezepte für jeden Mahlzeitentyp.
+- Je Mahlzeitentyp kann gesteuert werden, ob ein Rezept für die automatische Planung zulässig ist.
+- Gewichtungen:
+  - `selten` = 0,5
+  - `normal` = 1,0
+  - `häufig` = 2,0
+- Die Gewichtung ist ein weicher Scoring-Faktor und kein harter Zwang.
+- Frühstück und Snack bleiben standardmäßig nur ihrem primären Typ zugeordnet.
+- Mittagessen und Abendessen sind standardmäßig gegenseitig zulässig.
+- Nutzeranpassungen an Zulassung und Gewichtung liegen getrennt von App-Standardzuordnungen und sollen Seed-Updates überdauern.
+
+## Planungslogik
+- Der Nutzer wählt beim Generieren Startdatum, Enddatum und Standard-Personenzahl.
+- Standard-Vorbelegung: Startdatum nächster Tag, Enddatum einige Tage später.
+- Der Generator prüft Überschneidungen und überschreibt bestehende Tage nur nach Bestätigung.
 - Zielwerte werden pro Tag betrachtet.
-- Die Tagesoptimierung orientiert sich an Makro-Zielwerten im Verhältnis `30 / 30 / 40`.
-- Rezeptpools werden nach Mahlzeitentyp gebildet.
-- Portionsfaktoren und Tages-Scoring werden berücksichtigt.
-- Wiederholungen werden bestraft.
-- Snacks werden genutzt, wenn `mealsPerDay >= 4`.
-- Für jeden Tag werden viele Kandidaten erzeugt und der beste Score übernommen; die Wochenplanung bleibt dadurch heuristisch und zufallsbasiert.
-- Als Zielkorridor gilt im aktuellen Code eine Abweichung von höchstens 5 Prozentpunkten je Makroverteilung.
+- Die Tagesoptimierung orientiert sich an der Makroverteilung:
+  30 % Kohlenhydrate, 30 % Fett, 40 % Eiweiß.
+- Makros bleiben eine pragmatische Ein-Personen-Tagesorientierung.
+- Das Eiweißziel kann pro Standard-Person aus Körpergewicht und Gramm Eiweiß pro Kilogramm Körpergewicht gepflegt werden.
+- Für die Tagesbewertung verwendet die App den Durchschnitt der aktiven Standard-Personen als Eiweißziel pro Person.
+- Die Personenzahl skaliert Zutaten, Einkaufsliste und Kochansicht, aber nicht die Tagesmakros als Mehrpersonen-Gesamtsumme.
+- Für jeden Tag werden Kandidaten erzeugt und anhand von Makroabweichung, Wiederholungen, Zielmix und Gewichtung bewertet.
 
-## Rezeptanforderungen
-- Glutenfreiheit ist als harte Filterbedingung vorgesehen.
-- Der MVP arbeitet zunächst mit einem eingebauten Rezeptbestand.
-- Extern recherchierte Rezepte werden derzeit als kuratierte Seed-Datensätze in den Repository-Bestand zurückgeführt, nicht als lose Laufzeitimporte.
-- Rezepte enthalten Makros, Zutaten, Zubereitung, Tags und die Kennzeichnung `glutenFree = true`.
+## Mahlzeitenbearbeitung
+Nach der Generierung ist jede geplante Mahlzeit im Tagesdetail bearbeitbar:
+- Gericht austauschen
+- Personenzahl dauerhaft ändern
+- Mahlzeit deaktivieren
+- Einkaufslisten-Berücksichtigung ein- oder ausschalten
+- Snacks hinzufügen
 
-## Ableitungen für Folgefunktionen
-- Einkaufsliste und Wochenübersicht hängen direkt am Wochenplan.
-- Einstellungen wirken auf die Planungslogik und müssen als fachlich relevante Quelle mitgedacht werden.
-- Detailseiten für Rezepte und Tagespläne sind fachlich eng mit der Planlogik verknüpft.
+Deaktivierte Mahlzeiten:
+- bleiben als Slot sichtbar
+- zeigen fachlich `fällt aus`
+- fließen nicht in Tagesmakros ein
+- fließen nicht in die Einkaufsliste ein
+- öffnen keine Kochansicht
 
-## Aktive Filter- und Steuerlogik
-- `glutenFreeOnly` bleibt derzeit effektiv auf `true`.
-- `vegetarianSharePct`, `fishSharePct` und `meatSharePct` bilden einen gekoppelten Zielmix, der zusammen immer `100 %` ergibt.
-- Dieser Zielmix wirkt im aktuellen Workspace als weiche Verteilung für `Mittagessen` und `Abendessen`.
-- Frühstück und Snack bleiben davon ausgenommen, weil der aktuelle Rezeptpool dort fachlich unausgewogen ist.
-- `excludedIngredients` entfernt Rezepte, deren Zutaten exakt auf die ausgeschlossenen Namen passen.
-- `maxRecipeRepeatsPerWeek` beeinflusst Wiederholungsstrafen zusätzlich.
-
-## Zielmix vegetarisch, Fisch und Fleisch
-- Die Bedienung erfolgt im aktuellen Workspace über drei gekoppelte Regler im Einstellungsformular, wobei `Vegetarisch` führend bleibt.
-- Beim Verschieben von `Vegetarisch` werden `Fisch` und `Fleisch` automatisch auf den verbleibenden Anteil verteilt, damit zusammen immer `100 %` erhalten bleiben.
-- Beim Verschieben von `Fisch` oder `Fleisch` bleibt der vegetarische Anteil unverändert; nur die beiden restlichen Anteile teilen dann den verbleibenden Rest neu auf.
-- Die aktuelle Datenbank speichert dafür persistente Prozentwerte; bestehende lokale Datenbanken werden beim Start automatisch migriert.
-- Der Planer behandelt den Mix bewusst als weiches Ziel statt als harten Filter, damit auch bei unausgewogenem Rezeptpool weiterhin ein Wochenplan erzeugbar bleibt.
-- Im Dashboard und in den Einstellungen wird der aktive Mix als Teil des Planungsprofils sichtbar angezeigt.
-- Die Rezeptbibliothek selbst wird durch den Mix nicht hart eingeschränkt; der Mix steuert die Wochenplanung, nicht die Sichtbarkeit der Rezepte.
+## Rezept-Kochansicht
+- Aus dem Tagesdetail führt jede aktive geplante Mahlzeit direkt in die Kochansicht.
+- Die Kochansicht ist auf den konkreten geplanten Slot bezogen.
+- Angezeigt werden Rezeptname, geplanter Tag, Mahlzeitentyp, geplante Personenzahl, skalierte Zutaten und Zubereitungsschritte.
+- Die Personenzahl ist in der Kochansicht temporär änderbar.
+- Temporäre Änderungen in der Kochansicht schreiben nicht zurück in Planung, Tagesmakros oder Einkaufsliste.
 
 ## Einkaufslogik
-- Die Einkaufsliste kann entweder aus allen geplanten Mahlzeiten der Woche oder nur aus aktiv ausgewählten Mahlzeiten abgeleitet werden.
-- Zutaten werden nach Einkaufskategorie gruppiert und mengenbasiert zusammengeführt.
-- Mengen werden für die Anzeige kaufpraktisch gerundet, die exakte Menge bleibt in Klammern sichtbar, wenn sich die Rundung ändert.
+- Die Einkaufsliste wird aus einem frei gewählten Datumsbereich erzeugt.
+- Berücksichtigt werden nur Mahlzeiten mit:
+  - `isEnabled = true`
+  - `includeInShoppingList = true`
+- Zutaten werden nach Kategorie, Name und Einheit zusammengeführt.
+- Für die Einkaufsliste werden bekannte Einkaufsäquivalente vor dem Zusammenführen normalisiert; `Ei`, `Eier` und `Eiweiß` werden aktuell als `Eier` in Stück ausgewiesen, Eiweiß in Gramm mit 30 g pro Ei.
+- Mengen werden anhand der Personenzahl je Mahlzeit skaliert.
+- Deaktivierte Mahlzeiten und abgewählte Einkaufslisten-Mahlzeiten bleiben außen vor.
 
-## Aktive Gerichte innerhalb des Wochenplans
-- Zusätzlich zum erzeugten Wochenplan soll es einen separaten Auswahlzustand für geplante Gerichte geben.
-- Dieser Auswahlzustand ist fachlich kein neuer Wochenplan, sondern eine nutzerseitige Aktivierung einzelner bereits geplanter Mahlzeiten.
-- Die Aktivierung ist im aktuellen Workspace pro geplanter Mahlzeit direkt in der Wochenübersicht ein- und ausschaltbar.
-- Der Initialzustand ist leer: Nach einer neuen Woche ist zunächst noch kein Gericht aktiv ausgewählt.
-- Die Einkaufsliste unterstützt im aktuellen Workspace zwei Sichten:
-  - alle geplanten Gerichte der Woche
-  - nur aktiv ausgewählte Gerichte
-- Wenn keine Gerichte aktiv sind und die Sicht auf aktive Gerichte steht, erscheint ein expliziter Leerzustand statt einer leeren, missverständlichen Zutatenliste.
-- Die aktive Auswahl und der Listenmodus werden pro Woche im Gerätespeicher gehalten und beim erneuten Öffnen der App wiederhergestellt.
+## Historie und Kopieren
+- Die Historie funktioniert als Tagesliste beziehungsweise Datumsbereich.
+- Jeder Tag bleibt ein eigener Datensatz mit Metadaten zu Quelle, Planzeitraum und Kopierquelle.
+- Historische Quellzeiträume können in neue Zielzeiträume kopiert werden.
+- Gleiche Länge wird 1:1 kopiert.
+- Kürzere Zielzeiträume schneiden die Vorlage ab.
+- Längere Zielzeiträume kopieren vorhandene Tage und generieren zusätzliche Tage neu.
+- Beim Kopieren werden nur Rezepte übernommen; Personenzahl, Aktivstatus und Einkaufslisten-Flag kommen aus aktuellen Defaults.
 
 ## Offene Verifikation
-- Die heuristische Planung ist verifiziert, aber ihre gewünschte Produktqualität und Erklärbarkeit sind noch nicht fachlich bewertet.
-- Für Tagespläne und Einstellungen fehlt derzeit noch der vollständige UI-Durchstich, obwohl Teile der Fachlogik bereits vorhanden sind.
+- Die neue Tagesplanung ist technisch gebaut und mit Lint/Build verifiziert.
+- Ein produktnaher Test auf echten Mobilgeräten steht weiterhin aus.

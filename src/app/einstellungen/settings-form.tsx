@@ -2,60 +2,62 @@
 
 import { useState } from "react";
 import { z } from "zod";
-import styles from "./settings.module.css";
 import { saveLocalSettings } from "@/lib/local-store";
+import {
+  MAX_PROTEIN_TARGET_PEOPLE,
+  normalizeProteinTargets,
+  proteinGramsForPerson,
+} from "@/lib/protein-targets";
+import type { ProteinTargetPerson } from "@/lib/types";
 import type { UserSettings } from "@/lib/types";
+import styles from "./settings.module.css";
 
 type SettingsFormProps = {
   onSaved?: (message: string) => Promise<void> | void;
   settings: UserSettings;
 };
 
-type MixKey = "vegetarianSharePct" | "fishSharePct" | "meatSharePct";
-type MixState = Record<MixKey, number>;
-
-type SettingsFieldKey =
-  | "calorieTarget"
-  | "mealsPerDay"
-  | "macroProteinPct"
-  | "macroCarbsPct"
-  | "macroFatPct"
-  | "maxRecipeRepeatsPerWeek"
-  | "vegetarianSharePct"
-  | "fishSharePct"
-  | "meatSharePct"
-  | "excludedIngredients";
-
-type SettingsFieldErrors = Partial<Record<SettingsFieldKey, string>>;
-
 type SettingsFormState = {
-  fieldErrors: SettingsFieldErrors;
   message: string;
   status: "idle" | "success" | "error";
 };
 
-const initialSettingsFormState: SettingsFormState = {
-  fieldErrors: {},
+const initialState: SettingsFormState = {
   message: "",
   status: "idle",
 };
 
-const mixKeys: MixKey[] = ["vegetarianSharePct", "fishSharePct", "meatSharePct"];
+const settingsInputSchema = z
+  .object({
+    calorieTarget: z.coerce.number().int().min(1200).max(5000),
+    defaultPeopleCount: z.coerce.number().int().min(1).max(12),
+    includeSnackByDefault: z.boolean(),
+    macroCarbsPct: z.coerce.number().int().min(0).max(100),
+    macroFatPct: z.coerce.number().int().min(0).max(100),
+    macroProteinPct: z.coerce.number().int().min(0).max(100),
+    vegetarianSharePct: z.coerce.number().int().min(0).max(100),
+    fishSharePct: z.coerce.number().int().min(0).max(100),
+    meatSharePct: z.coerce.number().int().min(0).max(100),
+    excludedIngredients: z.string().max(500),
+    maxRecipeRepeatsPerWeek: z.coerce.number().int().min(1).max(7),
+  })
+  .superRefine((value, context) => {
+    if (value.macroCarbsPct + value.macroFatPct + value.macroProteinPct !== 100) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Kohlenhydrate, Fett und Eiweiß müssen zusammen 100 % ergeben.",
+        path: ["macroCarbsPct"],
+      });
+    }
 
-const mixContent: Record<MixKey, { title: string; copy: string }> = {
-  vegetarianSharePct: {
-    title: "Vegetarisch",
-    copy: "Zum Beispiel Hülsenfrüchte, Tofu, Eier oder Milchprodukte.",
-  },
-  fishSharePct: {
-    title: "Fisch",
-    copy: "Für Fischgerichte wie Lachs, Thunfisch, Kabeljau oder Garnelen.",
-  },
-  meatSharePct: {
-    title: "Fleisch",
-    copy: "Für Gerichte mit Huhn, Pute, Rind oder ähnlichen Fleischquellen.",
-  },
-};
+    if (value.vegetarianSharePct + value.fishSharePct + value.meatSharePct !== 100) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Vegetarisch, Fisch und Fleisch müssen zusammen 100 % ergeben.",
+        path: ["vegetarianSharePct"],
+      });
+    }
+  });
 
 function parseExcludedIngredients(value: string) {
   const seen = new Set<string>();
@@ -65,230 +67,78 @@ function parseExcludedIngredients(value: string) {
     .map((entry) => entry.trim())
     .filter(Boolean)
     .filter((entry) => {
-      const normalized = entry.toLocaleLowerCase("de-DE");
-      if (seen.has(normalized)) {
+      const key = entry.toLocaleLowerCase("de-DE");
+      if (seen.has(key)) {
         return false;
       }
 
-      seen.add(normalized);
+      seen.add(key);
       return true;
     });
 }
 
-const settingsInputSchema = z
-  .object({
-    calorieTarget: z.coerce.number().int().min(1200, "Bitte mindestens 1200 kcal wählen.").max(5000, "Bitte höchstens 5000 kcal wählen."),
-    mealsPerDay: z.coerce
-      .number()
-      .int()
-      .refine((value) => value === 3 || value === 4, "Bitte 3 oder 4 Mahlzeiten wählen."),
-    macroProteinPct: z.coerce.number().int().min(20, "Bitte mindestens 20 % Protein wählen.").max(60, "Bitte höchstens 60 % Protein wählen."),
-    macroCarbsPct: z.coerce.number().int().min(10, "Bitte mindestens 10 % Kohlenhydrate wählen.").max(60, "Bitte höchstens 60 % Kohlenhydrate wählen."),
-    macroFatPct: z.coerce.number().int().min(10, "Bitte mindestens 10 % Fett wählen.").max(50, "Bitte höchstens 50 % Fett wählen."),
-    maxRecipeRepeatsPerWeek: z.coerce.number().int().min(1, "Bitte mindestens 1 Wiederholung zulassen.").max(4, "Bitte höchstens 4 Wiederholungen zulassen."),
-    vegetarianSharePct: z.coerce.number().int().min(0, "Nicht unter 0 % möglich.").max(100, "Nicht über 100 % möglich."),
-    fishSharePct: z.coerce.number().int().min(0, "Nicht unter 0 % möglich.").max(100, "Nicht über 100 % möglich."),
-    meatSharePct: z.coerce.number().int().min(0, "Nicht unter 0 % möglich.").max(100, "Nicht über 100 % möglich."),
-    excludedIngredients: z
-      .string()
-      .max(500, "Bitte die Liste der Ausschlüsse kürzer halten.")
-      .transform(parseExcludedIngredients),
-  })
-  .superRefine((value, context) => {
-    const macroSum = value.macroProteinPct + value.macroCarbsPct + value.macroFatPct;
-    if (macroSum !== 100) {
-      for (const key of ["macroProteinPct", "macroCarbsPct", "macroFatPct"] as const) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Protein, Kohlenhydrate und Fett müssen zusammen 100 % ergeben.",
-          path: [key],
-        });
-      }
-    }
-
-    const mixSum = value.vegetarianSharePct + value.fishSharePct + value.meatSharePct;
-    if (mixSum !== 100) {
-      for (const key of mixKeys) {
-        context.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Vegetarisch, Fisch und Fleisch müssen zusammen 100 % ergeben.",
-          path: [key],
-        });
-      }
-    }
-  });
-
-function fieldError(state: SettingsFormState, key: SettingsFieldKey) {
-  return state.fieldErrors[key];
-}
-
-function clampPercent(value: number) {
-  return Math.max(0, Math.min(100, Math.round(value)));
-}
-
-function distributeWeighted(values: Array<{ key: MixKey; weight: number }>, total: number) {
-  if (values.length === 0) {
-    return {} as Record<MixKey, number>;
-  }
-
-  const safeWeights = values.some((item) => item.weight > 0)
-    ? values
-    : values.map((item) => ({ ...item, weight: 1 }));
-  const weightSum = safeWeights.reduce((sum, item) => sum + item.weight, 0);
-
-  const withFractions = safeWeights.map((item) => {
-    const exact = (item.weight / weightSum) * total;
-    return {
-      key: item.key,
-      floorValue: Math.floor(exact),
-      remainder: exact - Math.floor(exact),
-    };
-  });
-
-  let remaining = total - withFractions.reduce((sum, item) => sum + item.floorValue, 0);
-  withFractions.sort((left, right) => right.remainder - left.remainder);
-
-  const result = {} as Record<MixKey, number>;
-  for (const item of withFractions) {
-    const extra = remaining > 0 ? 1 : 0;
-    result[item.key] = item.floorValue + extra;
-    remaining -= extra;
-  }
-
-  return result;
-}
-
-function rebalanceFromLeadingVegetarian(current: MixState, nextValue: number): MixState {
-  const vegetarianSharePct = clampPercent(nextValue);
-  const remaining = 100 - vegetarianSharePct;
-  const redistributed = distributeWeighted(
-    [
-      { key: "fishSharePct", weight: current.fishSharePct },
-      { key: "meatSharePct", weight: current.meatSharePct },
-    ],
-    remaining,
+export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
+  const [state, setState] = useState(initialState);
+  const [isPending, setIsPending] = useState(false);
+  const [peopleCount, setPeopleCount] = useState(settings.defaultPeopleCount);
+  const [proteinTargets, setProteinTargets] = useState(() =>
+    normalizeProteinTargets(settings.proteinTargets, MAX_PROTEIN_TARGET_PEOPLE),
   );
 
-  return {
-    vegetarianSharePct,
-    fishSharePct: redistributed.fishSharePct,
-    meatSharePct: redistributed.meatSharePct,
-  };
-}
+  function updatePeopleCount(value: number) {
+    const nextPeopleCount = Number.isFinite(value)
+      ? Math.max(1, Math.min(MAX_PROTEIN_TARGET_PEOPLE, Math.round(value)))
+      : 1;
 
-function rebalanceRemainingMix(
-  current: MixState,
-  changedKey: Exclude<MixKey, "vegetarianSharePct">,
-  nextValue: number,
-): MixState {
-  const vegetarianSharePct = clampPercent(current.vegetarianSharePct);
-  const remaining = Math.max(0, 100 - vegetarianSharePct);
-  const changedValue = Math.max(0, Math.min(remaining, Math.round(nextValue)));
-
-  if (changedKey === "fishSharePct") {
-    return {
-      vegetarianSharePct,
-      fishSharePct: changedValue,
-      meatSharePct: remaining - changedValue,
-    };
+    setPeopleCount(nextPeopleCount);
+    setProteinTargets((currentTargets) => normalizeProteinTargets(currentTargets, MAX_PROTEIN_TARGET_PEOPLE));
   }
 
-  return {
-    vegetarianSharePct,
-    fishSharePct: remaining - changedValue,
-    meatSharePct: changedValue,
-  };
-}
+  function updateProteinTarget(
+    index: number,
+    field: keyof Pick<ProteinTargetPerson, "bodyWeightKg" | "proteinGPerKg">,
+    value: number,
+  ) {
+    setProteinTargets((currentTargets) => {
+      const nextTargets = normalizeProteinTargets(currentTargets, MAX_PROTEIN_TARGET_PEOPLE);
+      const previousTarget = nextTargets[index];
 
-function rebalanceMix(current: MixState, changedKey: MixKey, nextValue: number): MixState {
-  if (changedKey === "vegetarianSharePct") {
-    return rebalanceFromLeadingVegetarian(current, nextValue);
+      if (!previousTarget || !Number.isFinite(value)) {
+        return nextTargets;
+      }
+
+      nextTargets[index] = {
+        ...previousTarget,
+        [field]: value,
+      };
+
+      return nextTargets;
+    });
   }
-
-  return rebalanceRemainingMix(current, changedKey, nextValue);
-}
-
-function toFieldErrors(error: z.ZodError): SettingsFieldErrors {
-  const nextErrors: SettingsFieldErrors = {};
-
-  for (const issue of error.issues) {
-    const [field] = issue.path;
-    if (typeof field === "string" && !(field in nextErrors)) {
-      nextErrors[field as SettingsFieldKey] = issue.message;
-    }
-  }
-
-  return nextErrors;
-}
-
-function buildSettingsPayload(formData: FormData, fallbackSettings: UserSettings) {
-  const parsed = settingsInputSchema.safeParse({
-    calorieTarget: formData.get("calorieTarget"),
-    mealsPerDay: formData.get("mealsPerDay"),
-    macroProteinPct: formData.get("macroProteinPct"),
-    macroCarbsPct: formData.get("macroCarbsPct"),
-    macroFatPct: formData.get("macroFatPct"),
-    maxRecipeRepeatsPerWeek: formData.get("maxRecipeRepeatsPerWeek"),
-    vegetarianSharePct: formData.get("vegetarianSharePct"),
-    fishSharePct: formData.get("fishSharePct"),
-    meatSharePct: formData.get("meatSharePct"),
-    excludedIngredients: String(formData.get("excludedIngredients") ?? ""),
-  });
-
-  if (!parsed.success) {
-    return parsed;
-  }
-
-  return {
-    success: true as const,
-    data: {
-      ...fallbackSettings,
-      ...parsed.data,
-      glutenFreeOnly: true,
-    } satisfies UserSettings,
-  };
-}
-
-function feedbackClassName(state: SettingsFormState) {
-  if (state.status === "success") {
-    return styles.actionFeedbackSuccess;
-  }
-
-  if (state.status === "error") {
-    return styles.formMessage;
-  }
-
-  return null;
-}
-
-export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
-  const [state, setState] = useState(initialSettingsFormState);
-  const [isPending, setIsPending] = useState(false);
-  const [mix, setMix] = useState<MixState>({
-    vegetarianSharePct: settings.vegetarianSharePct,
-    fishSharePct: settings.fishSharePct,
-    meatSharePct: settings.meatSharePct,
-  });
-
-  const mixError =
-    fieldError(state, "vegetarianSharePct") ??
-    fieldError(state, "fishSharePct") ??
-    fieldError(state, "meatSharePct");
-  const mixSum = mix.vegetarianSharePct + mix.fishSharePct + mix.meatSharePct;
-  const feedbackClass = feedbackClassName(state);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setState(initialSettingsFormState);
+    setState(initialState);
 
     const formData = new FormData(event.currentTarget);
-    const payload = buildSettingsPayload(formData, settings);
+    const parsed = settingsInputSchema.safeParse({
+      calorieTarget: formData.get("calorieTarget"),
+      defaultPeopleCount: formData.get("defaultPeopleCount"),
+      includeSnackByDefault: formData.get("includeSnackByDefault") === "on",
+      macroCarbsPct: formData.get("macroCarbsPct"),
+      macroFatPct: formData.get("macroFatPct"),
+      macroProteinPct: formData.get("macroProteinPct"),
+      vegetarianSharePct: formData.get("vegetarianSharePct"),
+      fishSharePct: formData.get("fishSharePct"),
+      meatSharePct: formData.get("meatSharePct"),
+      excludedIngredients: String(formData.get("excludedIngredients") ?? ""),
+      maxRecipeRepeatsPerWeek: formData.get("maxRecipeRepeatsPerWeek"),
+    });
 
-    if (!payload.success) {
+    if (!parsed.success) {
       setState({
-        fieldErrors: toFieldErrors(payload.error),
-        message: "Bitte prüfe die markierten Felder.",
         status: "error",
+        message: parsed.error.issues[0]?.message ?? "Bitte prüfe die Eingaben.",
       });
       return;
     }
@@ -296,27 +146,25 @@ export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
     setIsPending(true);
 
     try {
-      await saveLocalSettings(payload.data, {
-        reason: "settings-change",
-        regenerateCurrentWeekPlan: true,
+      await saveLocalSettings({
+        ...settings,
+        ...parsed.data,
+        mealsPerDay: parsed.data.includeSnackByDefault ? 4 : 3,
+        glutenFreeOnly: true,
+        proteinTargets: normalizeProteinTargets(proteinTargets, MAX_PROTEIN_TARGET_PEOPLE),
+        excludedIngredients: parseExcludedIngredients(parsed.data.excludedIngredients),
       });
 
-      const successMessage = "Einstellungen gespeichert und Woche neu geplant.";
-      await onSaved?.(successMessage);
-
+      const message = "Einstellungen gespeichert.";
+      await onSaved?.(message);
       setState({
-        fieldErrors: {},
-        message: successMessage,
         status: "success",
+        message,
       });
     } catch (error) {
       setState({
-        fieldErrors: {},
-        message:
-          error instanceof Error
-            ? error.message
-            : "Die Einstellungen konnten nicht gespeichert werden.",
         status: "error",
+        message: error instanceof Error ? error.message : "Die Einstellungen konnten nicht gespeichert werden.",
       });
     } finally {
       setIsPending(false);
@@ -325,18 +173,33 @@ export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
 
   return (
     <form onSubmit={handleSubmit}>
-      {state.status !== "idle" && feedbackClass ? (
-        <p aria-live="polite" className={feedbackClass}>
+      {state.status !== "idle" ? (
+        <p
+          aria-live="polite"
+          className={state.status === "success" ? styles.actionFeedbackSuccess : styles.formMessage}
+        >
           {state.message}
         </p>
       ) : null}
 
       <div className={styles.formGrid}>
         <div className={styles.inputGroup}>
+          <label htmlFor="defaultPeopleCount">Standard-Personenzahl</label>
+          <input
+            id="defaultPeopleCount"
+            max={MAX_PROTEIN_TARGET_PEOPLE}
+            min={1}
+            name="defaultPeopleCount"
+            onChange={(event) => updatePeopleCount(event.currentTarget.valueAsNumber)}
+            required
+            type="number"
+            value={peopleCount}
+          />
+        </div>
+
+        <div className={styles.inputGroup}>
           <label htmlFor="calorieTarget">Kalorienziel pro Tag</label>
           <input
-            aria-describedby={fieldError(state, "calorieTarget") ? "calorieTarget-error" : undefined}
-            aria-invalid={Boolean(fieldError(state, "calorieTarget"))}
             defaultValue={settings.calorieTarget}
             id="calorieTarget"
             max={5000}
@@ -346,207 +209,125 @@ export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
             step={50}
             type="number"
           />
-          {fieldError(state, "calorieTarget") ? (
-            <p className={styles.fieldError} id="calorieTarget-error">
-              {fieldError(state, "calorieTarget")}
-            </p>
-          ) : null}
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label htmlFor="mealsPerDay">Mahlzeiten pro Tag</label>
-          <select
-            aria-describedby={fieldError(state, "mealsPerDay") ? "mealsPerDay-error" : undefined}
-            aria-invalid={Boolean(fieldError(state, "mealsPerDay"))}
-            defaultValue={String(settings.mealsPerDay)}
-            id="mealsPerDay"
-            name="mealsPerDay"
-          >
-            <option value="3">3 Mahlzeiten</option>
-            <option value="4">4 Mahlzeiten mit Snack</option>
-          </select>
-          {fieldError(state, "mealsPerDay") ? (
-            <p className={styles.fieldError} id="mealsPerDay-error">
-              {fieldError(state, "mealsPerDay")}
-            </p>
-          ) : null}
-        </div>
-
-        <div className={styles.inputGroup}>
-          <label htmlFor="macroProteinPct">Protein in %</label>
-          <input
-            aria-describedby={fieldError(state, "macroProteinPct") ? "macroProteinPct-error" : undefined}
-            aria-invalid={Boolean(fieldError(state, "macroProteinPct"))}
-            defaultValue={settings.macroProteinPct}
-            id="macroProteinPct"
-            max={60}
-            min={20}
-            name="macroProteinPct"
-            required
-            step={1}
-            type="number"
-          />
-          {fieldError(state, "macroProteinPct") ? (
-            <p className={styles.fieldError} id="macroProteinPct-error">
-              {fieldError(state, "macroProteinPct")}
-            </p>
-          ) : null}
         </div>
 
         <div className={styles.inputGroup}>
           <label htmlFor="macroCarbsPct">Kohlenhydrate in %</label>
-          <input
-            aria-describedby={fieldError(state, "macroCarbsPct") ? "macroCarbsPct-error" : undefined}
-            aria-invalid={Boolean(fieldError(state, "macroCarbsPct"))}
-            defaultValue={settings.macroCarbsPct}
-            id="macroCarbsPct"
-            max={60}
-            min={10}
-            name="macroCarbsPct"
-            required
-            step={1}
-            type="number"
-          />
-          {fieldError(state, "macroCarbsPct") ? (
-            <p className={styles.fieldError} id="macroCarbsPct-error">
-              {fieldError(state, "macroCarbsPct")}
-            </p>
-          ) : null}
+          <input defaultValue={settings.macroCarbsPct} id="macroCarbsPct" name="macroCarbsPct" required type="number" />
         </div>
 
         <div className={styles.inputGroup}>
           <label htmlFor="macroFatPct">Fett in %</label>
-          <input
-            aria-describedby={fieldError(state, "macroFatPct") ? "macroFatPct-error" : undefined}
-            aria-invalid={Boolean(fieldError(state, "macroFatPct"))}
-            defaultValue={settings.macroFatPct}
-            id="macroFatPct"
-            max={50}
-            min={10}
-            name="macroFatPct"
-            required
-            step={1}
-            type="number"
-          />
-          {fieldError(state, "macroFatPct") ? (
-            <p className={styles.fieldError} id="macroFatPct-error">
-              {fieldError(state, "macroFatPct")}
-            </p>
-          ) : null}
+          <input defaultValue={settings.macroFatPct} id="macroFatPct" name="macroFatPct" required type="number" />
         </div>
 
         <div className={styles.inputGroup}>
-          <label htmlFor="maxRecipeRepeatsPerWeek">Maximale Wiederholungen pro Woche</label>
-          <select
-            aria-describedby={
-              fieldError(state, "maxRecipeRepeatsPerWeek")
-                ? "maxRecipeRepeatsPerWeek-error"
-                : undefined
-            }
-            aria-invalid={Boolean(fieldError(state, "maxRecipeRepeatsPerWeek"))}
-            defaultValue={String(settings.maxRecipeRepeatsPerWeek)}
+          <label htmlFor="macroProteinPct">Eiweiß in %</label>
+          <input defaultValue={settings.macroProteinPct} id="macroProteinPct" name="macroProteinPct" required type="number" />
+        </div>
+
+        <div className={`${styles.proteinTargetCard} ${styles.fullWidth}`}>
+          <div className={styles.mixHeader}>
+            <div>
+              <p className={styles.mixEyebrow}>Eiweißziel</p>
+              <h3>Pro Person nach Körpergewicht</h3>
+            </div>
+          </div>
+          <p className={styles.mixHint}>
+            Die Werte bleiben gespeichert, auch wenn Du die Standard-Personenzahl vorübergehend reduzierst.
+          </p>
+          <div className={styles.personTargetGrid}>
+            {proteinTargets.slice(0, peopleCount).map((target, index) => (
+              <div className={styles.personTargetRow} key={target.id}>
+                <strong>{target.label}</strong>
+                <label className={styles.compactInput}>
+                  <span>Körpergewicht</span>
+                  <input
+                    max={250}
+                    min={30}
+                    onChange={(event) => updateProteinTarget(index, "bodyWeightKg", event.currentTarget.valueAsNumber)}
+                    step={0.5}
+                    type="number"
+                    value={target.bodyWeightKg}
+                  />
+                </label>
+                <label className={styles.compactInput}>
+                  <span>Eiweiß g/kg</span>
+                  <input
+                    max={4}
+                    min={0.5}
+                    onChange={(event) => updateProteinTarget(index, "proteinGPerKg", event.currentTarget.valueAsNumber)}
+                    step={0.1}
+                    type="number"
+                    value={target.proteinGPerKg}
+                  />
+                </label>
+                <span className={styles.personTargetResult}>{proteinGramsForPerson(target)} g</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.inputGroup}>
+          <label htmlFor="maxRecipeRepeatsPerWeek">Wiederholungsstrafe nach</label>
+          <input
+            defaultValue={settings.maxRecipeRepeatsPerWeek}
             id="maxRecipeRepeatsPerWeek"
+            max={7}
+            min={1}
             name="maxRecipeRepeatsPerWeek"
-          >
-            <option value="1">1 Wiederholung</option>
-            <option value="2">2 Wiederholungen</option>
-            <option value="3">3 Wiederholungen</option>
-            <option value="4">4 Wiederholungen</option>
-          </select>
-          {fieldError(state, "maxRecipeRepeatsPerWeek") ? (
-            <p className={styles.fieldError} id="maxRecipeRepeatsPerWeek-error">
-              {fieldError(state, "maxRecipeRepeatsPerWeek")}
-            </p>
-          ) : null}
+            required
+            type="number"
+          />
+        </div>
+
+        <div className={`${styles.checkboxGrid} ${styles.fullWidth}`}>
+          <label className={styles.checkboxLabel}>
+            <input defaultChecked={settings.includeSnackByDefault} name="includeSnackByDefault" type="checkbox" />
+            <span className={styles.checkboxText}>
+              <strong>Snacks automatisch einplanen</strong>
+              <span>Zusätzliche Snacks können im Tagesdetail jederzeit manuell ergänzt werden.</span>
+            </span>
+          </label>
         </div>
 
         <div className={`${styles.mixCard} ${styles.fullWidth}`}>
           <div className={styles.mixHeader}>
             <div>
               <p className={styles.mixEyebrow}>Zielmix für Mittag und Abend</p>
-              <h3>Vegetarisch, Fisch und Fleisch im Wochenplan ausbalancieren</h3>
+              <h3>Vegetarisch, Fisch und Fleisch</h3>
             </div>
-            <span className={mixSum === 100 ? styles.mixBadgeValid : styles.mixBadgeInvalid}>
-              Summe: {mixSum} %
-            </span>
           </div>
-
-          <p className={styles.mixHint}>
-            Der Planer nutzt diese Verteilung als Zielmix für Mittagessen und Abendessen.
-            Vegetarisch bleibt dabei führend, Fisch und Fleisch teilen den verbleibenden Anteil.
-            Frühstück und Snack laufen weiterhin über den allgemeinen Rezeptpool.
-          </p>
-
-          <div className={styles.mixSliderList}>
-            {mixKeys.map((key) => (
-              <div className={styles.mixSliderCard} key={key}>
-                <div className={styles.mixSliderTop}>
-                  <div>
-                    <label className={styles.mixLabel} htmlFor={key}>
-                      {mixContent[key].title}
-                    </label>
-                    <p className={styles.mixCopy}>{mixContent[key].copy}</p>
-                  </div>
-                  <strong>{mix[key]} %</strong>
-                </div>
-
-                <input
-                  className={styles.mixSlider}
-                  id={key}
-                  max={key === "vegetarianSharePct" ? 100 : 100 - mix.vegetarianSharePct}
-                  min={0}
-                  onChange={(event) => {
-                    const nextValue = Number(event.currentTarget.value);
-                    setMix((current) => rebalanceMix(current, key, nextValue));
-                  }}
-                  step={1}
-                  type="range"
-                  value={mix[key]}
-                />
-              </div>
-            ))}
+          <div className={styles.formGrid}>
+            <div className={styles.inputGroup}>
+              <label htmlFor="vegetarianSharePct">Vegetarisch</label>
+              <input defaultValue={settings.vegetarianSharePct} id="vegetarianSharePct" name="vegetarianSharePct" required type="number" />
+            </div>
+            <div className={styles.inputGroup}>
+              <label htmlFor="fishSharePct">Fisch</label>
+              <input defaultValue={settings.fishSharePct} id="fishSharePct" name="fishSharePct" required type="number" />
+            </div>
+            <div className={styles.inputGroup}>
+              <label htmlFor="meatSharePct">Fleisch</label>
+              <input defaultValue={settings.meatSharePct} id="meatSharePct" name="meatSharePct" required type="number" />
+            </div>
           </div>
-
-          <div className={styles.mixInlineValues}>
-            <span>Vegetarisch {mix.vegetarianSharePct} %</span>
-            <span>Fisch {mix.fishSharePct} %</span>
-            <span>Fleisch {mix.meatSharePct} %</span>
-          </div>
-
-          <input name="vegetarianSharePct" type="hidden" value={mix.vegetarianSharePct} />
-          <input name="fishSharePct" type="hidden" value={mix.fishSharePct} />
-          <input name="meatSharePct" type="hidden" value={mix.meatSharePct} />
-
-          {mixError ? (
-            <p className={styles.fieldError} id="recipeMix-error">
-              {mixError}
-            </p>
-          ) : null}
         </div>
 
         <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
           <label htmlFor="excludedIngredients">Ausgeschlossene Zutaten</label>
           <textarea
-            aria-describedby={
-              fieldError(state, "excludedIngredients") ? "excludedIngredients-error" : undefined
-            }
-            aria-invalid={Boolean(fieldError(state, "excludedIngredients"))}
             defaultValue={settings.excludedIngredients.join(", ")}
             id="excludedIngredients"
             name="excludedIngredients"
             placeholder="zum Beispiel Pilze, Sellerie, Koriander"
           />
-          {fieldError(state, "excludedIngredients") ? (
-            <p className={styles.fieldError} id="excludedIngredients-error">
-              {fieldError(state, "excludedIngredients")}
-            </p>
-          ) : null}
         </div>
       </div>
 
       <div className={styles.actionRow}>
         <button className={styles.primaryButton} disabled={isPending} type="submit">
-          {isPending ? "Speichert und plant neu ..." : "Änderungen speichern und Woche neu planen"}
+          {isPending ? "Speichert ..." : "Einstellungen speichern"}
         </button>
       </div>
     </form>

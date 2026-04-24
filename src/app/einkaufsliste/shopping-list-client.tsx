@@ -1,188 +1,101 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppNav } from "@/app/app-nav";
+import { DateStepper } from "@/app/date-stepper";
 import { formatDateRange, formatShoppingListQuantity } from "@/lib/format";
-import { loadOfflineSnapshot, saveOfflineSnapshot } from "@/lib/offline-store";
-import type { WeekPlan } from "@/lib/types";
-import { LOCAL_PWA_STORAGE_NAMESPACE } from "@/lib/user-storage";
 import {
-  buildShoppingListGroupsForWeekPlan,
-  countShoppingItems,
-  createShoppingChecksStorageKey,
-  createWeekPlanSignature,
-  createWeekSelectionStorageKey,
-  listWeekMealKeys,
-  normalizeSelectedMealKeys,
-  type ShoppingListMode,
-  type WeekSelectionSnapshot,
-} from "@/lib/week-plan-selection";
+  getDefaultShoppingEndDate,
+  getDefaultShoppingStartDate,
+  listLocalPlannedDays,
+} from "@/lib/local-store";
+import { buildShoppingListGroupsForPlannedDays, countShoppingItems } from "@/lib/week-plan-selection";
+import type { DayPlan } from "@/lib/types";
 import styles from "./shopping.module.css";
 
-type LocalStoreApi = {
-  ensureLocalAppData?: () => Promise<unknown>;
-  getCurrentLocalWeekPlan?: () => Promise<WeekPlan | null>;
-};
-
 type ShoppingSnapshot = {
-  checkedIds: string[];
-  savedAt: string;
+  days: DayPlan[];
+  loadedAt: string;
 };
 
 function itemId(category: string, name: string, unit: string) {
   return `${category}::${name}::${unit}`;
 }
 
-async function loadCurrentWeekPlanFromLocalStore() {
-  const api = (await import("@/lib/local-store")) as LocalStoreApi;
-
-  if (typeof api.ensureLocalAppData === "function") {
-    await api.ensureLocalAppData();
-  }
-
-  if (typeof api.getCurrentLocalWeekPlan !== "function") {
-    throw new Error("Der Wochenplan ist noch nicht verfügbar.");
-  }
-
-  return api.getCurrentLocalWeekPlan();
-}
-
-function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
-  const [selectedMealKeys, setSelectedMealKeys] = useState<string[]>([]);
-  const [shoppingMode, setShoppingMode] = useState<ShoppingListMode>("active-only");
+export function ShoppingListClient() {
+  const [startDate, setStartDate] = useState(getDefaultShoppingStartDate());
+  const [endDate, setEndDate] = useState(getDefaultShoppingEndDate());
+  const [snapshot, setSnapshot] = useState<ShoppingSnapshot | null>(null);
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const selectionHydratedRef = useRef(false);
-  const checksHydratedRef = useRef(false);
-  const planSignature = createWeekPlanSignature(weekPlan);
-  const totalPlannedMeals = listWeekMealKeys(weekPlan).length;
-  const groups = buildShoppingListGroupsForWeekPlan(weekPlan, shoppingMode, selectedMealKeys);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  async function refresh() {
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const days = await listLocalPlannedDays(startDate, endDate);
+      setSnapshot({
+        days,
+        loadedAt: new Date().toISOString(),
+      });
+      setCheckedIds([]);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Die Einkaufsliste konnte nicht geladen werden.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadInitialShoppingList() {
+      try {
+        const days = await listLocalPlannedDays(startDate, endDate);
+        if (cancelled) {
+          return;
+        }
+
+        setSnapshot({
+          days,
+          loadedAt: new Date().toISOString(),
+        });
+        setCheckedIds([]);
+        setLoadError(null);
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(error instanceof Error ? error.message : "Die Einkaufsliste konnte nicht geladen werden.");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadInitialShoppingList();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [endDate, startDate]);
+
+  const groups = useMemo(
+    () => buildShoppingListGroupsForPlannedDays(snapshot?.days ?? []),
+    [snapshot],
+  );
+  const activeMeals = snapshot?.days.flatMap((day) =>
+    day.meals.filter((meal) => meal.isEnabled !== false && meal.includeInShoppingList !== false),
+  ) ?? [];
+  const totalItems = countShoppingItems(groups);
   const allItemIds = groups.flatMap((group) =>
     group.items.map((item) => itemId(group.category, item.name, item.unit)),
   );
-  const allItemIdsSnapshot = JSON.stringify(allItemIds);
-  const checksStorageKey = createShoppingChecksStorageKey({
-    storageNamespace: LOCAL_PWA_STORAGE_NAMESPACE,
-    startDate: weekPlan.startDate,
-    mode: shoppingMode,
-    planSignature,
-    selectedMealKeys,
-  });
-
-  useEffect(() => {
-    let cancelled = false;
-    selectionHydratedRef.current = false;
-
-    void loadOfflineSnapshot<WeekSelectionSnapshot>(
-      createWeekSelectionStorageKey(LOCAL_PWA_STORAGE_NAMESPACE, weekPlan.startDate),
-    )
-      .then((snapshot) => {
-        if (cancelled) {
-          return;
-        }
-
-        if (snapshot?.planSignature === planSignature) {
-          setSelectedMealKeys(normalizeSelectedMealKeys(weekPlan, snapshot.selectedMealKeys));
-          setShoppingMode(snapshot.shoppingMode);
-        } else {
-          setSelectedMealKeys([]);
-          setShoppingMode("active-only");
-        }
-
-        selectionHydratedRef.current = true;
-      })
-      .catch(() => {
-        if (cancelled) {
-          return;
-        }
-
-        setSelectedMealKeys([]);
-        setShoppingMode("active-only");
-        selectionHydratedRef.current = true;
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [planSignature, weekPlan, weekPlan.startDate]);
-
-  useEffect(() => {
-    if (!selectionHydratedRef.current) {
-      return;
-    }
-
-    const selectionSnapshot: WeekSelectionSnapshot = {
-      planSignature,
-      selectedMealKeys,
-      shoppingMode,
-      savedAt: new Date().toISOString(),
-    };
-
-    void saveOfflineSnapshot(
-      createWeekSelectionStorageKey(LOCAL_PWA_STORAGE_NAMESPACE, weekPlan.startDate),
-      selectionSnapshot,
-    ).catch((error) => {
-      console.error("Aktive Gerichte konnten nicht gespeichert werden.", error);
-    });
-  }, [planSignature, selectedMealKeys, shoppingMode, weekPlan.startDate]);
-
-  useEffect(() => {
-    let cancelled = false;
-    checksHydratedRef.current = false;
-
-    const allowedIds = new Set(JSON.parse(allItemIdsSnapshot) as string[]);
-
-    void loadOfflineSnapshot<ShoppingSnapshot>(checksStorageKey)
-      .then((snapshot) => {
-        const nextCheckedIds = snapshot?.checkedIds?.filter((id) => allowedIds.has(id)) ?? [];
-
-        const frame = window.requestAnimationFrame(() => {
-          if (cancelled) {
-            return;
-          }
-
-          checksHydratedRef.current = true;
-          setCheckedIds(nextCheckedIds);
-        });
-
-        return () => {
-          window.cancelAnimationFrame(frame);
-        };
-      })
-      .catch(() => {
-        const frame = window.requestAnimationFrame(() => {
-          if (cancelled) {
-            return;
-          }
-
-          checksHydratedRef.current = true;
-          setCheckedIds([]);
-        });
-
-        return () => {
-          window.cancelAnimationFrame(frame);
-        };
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [allItemIdsSnapshot, checksStorageKey]);
-
-  useEffect(() => {
-    if (!checksHydratedRef.current) {
-      return;
-    }
-
-    const snapshot: ShoppingSnapshot = {
-      checkedIds,
-      savedAt: new Date().toISOString(),
-    };
-
-    void saveOfflineSnapshot(checksStorageKey, snapshot).catch((error) => {
-      console.error("Einkaufsliste konnte nicht offline gespeichert werden.", error);
-    });
-  }, [checkedIds, checksStorageKey]);
+  const checkedCount = checkedIds.length;
+  const percent = totalItems === 0 ? 0 : Math.round((checkedCount / totalItems) * 100);
 
   function toggleItem(id: string) {
     setCheckedIds((current) =>
@@ -194,170 +107,16 @@ function ShoppingListContent({ weekPlan }: { weekPlan: WeekPlan }) {
     setCheckedIds([]);
   }
 
-  const checkedCount = checkedIds.length;
-  const totalCount = allItemIds.length;
-  const percent = totalCount === 0 ? 0 : Math.round((checkedCount / totalCount) * 100);
-  const selectedMealCount = selectedMealKeys.length;
-  const isActiveOnlyMode = shoppingMode === "active-only";
-  const isEmptyActiveSelection = isActiveOnlyMode && selectedMealCount === 0;
-  const totalItemsLabel = countShoppingItems(groups);
-
-  return (
-    <section className={styles.listSection}>
-      <div className={styles.toolbar}>
-        <div className={styles.modePanel}>
-          <p className={styles.sectionKicker}>Listenmodus</p>
-          <div className={styles.modeButtons}>
-            <button
-              className={`${styles.modeButton} ${
-                isActiveOnlyMode ? styles.modeButtonActive : styles.modeButtonInactive
-              }`}
-              onClick={() => setShoppingMode("active-only")}
-              type="button"
-            >
-              Aktive Gerichte
-            </button>
-            <button
-              className={`${styles.modeButton} ${
-                shoppingMode === "all-planned" ? styles.modeButtonActive : styles.modeButtonInactive
-              }`}
-              onClick={() => setShoppingMode("all-planned")}
-              type="button"
-            >
-              Alle geplanten Gerichte
-            </button>
-          </div>
-          <p className={styles.modeSummary}>
-            {selectedMealCount} von {totalPlannedMeals} Gerichten aktiv
-          </p>
-        </div>
-
-        <div className={styles.progressCard}>
-          <p className={styles.sectionKicker}>Einkaufsfortschritt</p>
-          <strong>
-            {checkedCount} / {totalCount}
-          </strong>
-          <span>
-            {percent} % abgehakt bei {totalItemsLabel} Positionen
-          </span>
-        </div>
-
-        <button className={styles.clearButton} onClick={clearChecks} type="button">
-          Häkchen zurücksetzen
-        </button>
-      </div>
-
-      {isEmptyActiveSelection ? (
-        <section className={styles.emptyState}>
-          <p className={styles.sectionKicker}>Noch keine Auswahl</p>
-          <h2>Du hast noch keine Gerichte aktiviert.</h2>
-          <p>
-            Aktiviere zuerst in der Wochenübersicht die Gerichte, die du wirklich kochen möchtest.
-            Danach erscheint hier automatisch die passende Einkaufsliste.
-          </p>
-          <div className={styles.emptyActions}>
-            <Link className={styles.emptyLink} href="/">
-              Zur Wochenübersicht
-            </Link>
-            <button
-              className={styles.modeButton}
-              onClick={() => setShoppingMode("all-planned")}
-              type="button"
-            >
-              Stattdessen komplette Woche anzeigen
-            </button>
-          </div>
-        </section>
-      ) : null}
-
-      {groups.length > 0 ? (
-        <div className={styles.groupStack}>
-          {groups.map((group) => (
-            <article className={styles.groupCard} key={group.category}>
-              <div className={styles.groupHeader}>
-                <div>
-                  <p className={styles.sectionKicker}>Kategorie</p>
-                  <h2>{group.category}</h2>
-                </div>
-                <span>{group.items.length} Positionen</span>
-              </div>
-
-              <ul className={styles.itemList}>
-                {group.items.map((item) => {
-                  const id = itemId(group.category, item.name, item.unit);
-                  const checked = checkedIds.includes(id);
-
-                  return (
-                    <li className={checked ? styles.itemChecked : styles.itemRow} key={id}>
-                      <label className={styles.checkboxLabel}>
-                        <input
-                          checked={checked}
-                          onChange={() => toggleItem(id)}
-                          type="checkbox"
-                        />
-                        <span className={styles.fakeCheckbox} />
-                        <span className={styles.itemText}>
-                          <strong>{item.name}</strong>
-                          <small>{formatShoppingListQuantity(item.totalAmount, item.unit)}</small>
-                        </span>
-                      </label>
-                    </li>
-                  );
-                })}
-              </ul>
-            </article>
-          ))}
-        </div>
-      ) : null}
-    </section>
-  );
-}
-
-export function ShoppingListClient() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [weekPlan, setWeekPlan] = useState<WeekPlan | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadWeekPlan() {
-      try {
-        setIsLoading(true);
-        setLoadError(null);
-
-        const nextWeekPlan = await loadCurrentWeekPlanFromLocalStore();
-
-        if (cancelled) {
-          return;
-        }
-
-        setWeekPlan(nextWeekPlan);
-      } catch (error) {
-        if (cancelled) {
-          return;
-        }
-
-        setLoadError(
-          error instanceof Error
-            ? error.message
-            : "Die Einkaufsliste konnte nicht geladen werden.",
-        );
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
+  function updateStartDate(nextStartDate: string) {
+    setStartDate(nextStartDate);
+    if (endDate < nextStartDate) {
+      setEndDate(nextStartDate);
     }
+  }
 
-    void loadWeekPlan();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const totalMeals = weekPlan?.days.reduce((sum, day) => sum + day.meals.length, 0) ?? 0;
+  function updateEndDate(nextEndDate: string) {
+    setEndDate(nextEndDate);
+  }
 
   return (
     <main className={styles.page}>
@@ -366,64 +125,130 @@ export function ShoppingListClient() {
       <section className={styles.hero}>
         <div>
           <p className={styles.eyebrow}>Einkaufsliste</p>
-          <h1>Deine Woche ist als Einkaufsliste bereit.</h1>
+          <h1>Zutaten aus Deinem Datumsbereich.</h1>
           <p className={styles.lead}>
-            Öffne diese Seite auf dem Handy und hake die Zutaten direkt beim Einkaufen ab. Der
-            Fortschritt bleibt zusammen mit deiner aktiven Auswahl auf diesem Gerät gespeichert.
+            Die Liste berücksichtigt aktive Mahlzeiten, Personenzahlen, getauschte Gerichte und
+            zusätzliche Snacks. Deaktivierte Mahlzeiten und abgewählte Einkaufspositionen bleiben außen vor.
           </p>
         </div>
 
         <div className={styles.heroStat}>
-          <span>
-            {isLoading ? "Daten werden vorbereitet" : weekPlan ? "Aktive Woche" : "Noch kein Plan"}
-          </span>
-          <strong>
-            {weekPlan ? formatDateRange(weekPlan.startDate, weekPlan.endDate) : "Noch keine Woche"}
-          </strong>
-          <p>
-            {weekPlan
-              ? `${totalMeals} geplante Gerichte. Wechsle unten zwischen aktivem Kochfokus und kompletter Woche.`
-              : "Sobald ein Wochenplan vorhanden ist, erscheint hier automatisch deine Einkaufsliste."}
-          </p>
+          <span>{isLoading ? "wird geladen" : "Zeitraum"}</span>
+          <strong>{formatDateRange(startDate, endDate)}</strong>
+          <p>{activeMeals.length} Mahlzeiten fließen in die Einkaufsliste ein.</p>
         </div>
       </section>
 
-      {isLoading ? (
-        <section className={styles.listSection}>
+      <section className={styles.listSection}>
+        <div className={styles.toolbar}>
+          <div className={styles.modePanel}>
+            <p className={styles.sectionKicker}>Datumsbereich</p>
+            <div className={styles.modeButtons}>
+              <DateStepper id="shoppingStart" label="Start" onChange={updateStartDate} value={startDate} />
+              <DateStepper id="shoppingEnd" label="Ende" min={startDate} onChange={updateEndDate} value={endDate} />
+              <button
+                className={`${styles.modeButton} ${styles.modeButtonActive}`}
+                onClick={() => void refresh()}
+                type="button"
+              >
+                Liste aktualisieren
+              </button>
+            </div>
+            <p className={styles.modeSummary}>
+              {snapshot?.days.length ?? 0} Tage, {activeMeals.length} relevante Mahlzeiten
+            </p>
+          </div>
+
+          <div className={styles.progressCard}>
+            <p className={styles.sectionKicker}>Einkaufsfortschritt</p>
+            <strong>
+              {checkedCount} / {totalItems}
+            </strong>
+            <span>{percent} % abgehakt</span>
+          </div>
+
+          <button className={styles.clearButton} onClick={clearChecks} type="button">
+            Häkchen zurücksetzen
+          </button>
+        </div>
+
+        {isLoading ? (
           <section className={styles.emptyState}>
             <p className={styles.sectionKicker}>App-Start</p>
             <h2>Die Einkaufsliste wird vorbereitet.</h2>
-            <p>
-              Beim ersten Start kann der Gerätespeicher kurz befüllt oder auf eine neue Version
-              migriert werden.
-            </p>
           </section>
-        </section>
-      ) : null}
+        ) : null}
 
-      {loadError ? (
-        <section className={styles.listSection}>
+        {loadError ? (
           <section className={styles.emptyState}>
             <p className={styles.sectionKicker}>Fehler</p>
             <h2>Die Einkaufsliste konnte nicht geladen werden.</h2>
             <p>{loadError}</p>
           </section>
-        </section>
-      ) : null}
+        ) : null}
 
-      {!isLoading && !loadError && !weekPlan ? (
-        <section className={styles.listSection}>
+        {!isLoading && !loadError && snapshot && snapshot.days.length === 0 ? (
           <section className={styles.emptyState}>
-            <p className={styles.sectionKicker}>Noch kein Wochenplan</p>
-            <h2>Es ist noch keine Woche hinterlegt.</h2>
+            <p className={styles.sectionKicker}>Noch kein Plan</p>
+            <h2>Für diesen Zeitraum gibt es keine geplanten Tage.</h2>
+            <p>Erzeuge zuerst einen Planzeitraum oder wähle einen anderen Datumsbereich.</p>
+            <div className={styles.emptyActions}>
+              <Link className={styles.emptyLink} href="/planen">
+                Plan generieren
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
+        {!isLoading && !loadError && snapshot && snapshot.days.length > 0 && groups.length === 0 ? (
+          <section className={styles.emptyState}>
+            <p className={styles.sectionKicker}>Leer</p>
+            <h2>Keine Zutaten für diesen Ausschnitt.</h2>
             <p>
-              Öffne zuerst das Dashboard oder lass die App einen Wochenplan anlegen.
+              Prüfe im Tagesdetail, ob Mahlzeiten deaktiviert sind oder nicht in der Einkaufsliste
+              berücksichtigt werden.
             </p>
           </section>
-        </section>
-      ) : null}
+        ) : null}
 
-      {!isLoading && !loadError && weekPlan ? <ShoppingListContent weekPlan={weekPlan} /> : null}
+        {groups.length > 0 ? (
+          <div className={styles.groupStack}>
+            {groups.map((group) => (
+              <article className={styles.groupCard} key={group.category}>
+                <div className={styles.groupHeader}>
+                  <div>
+                    <p className={styles.sectionKicker}>Kategorie</p>
+                    <h2>{group.category}</h2>
+                  </div>
+                  <span>{group.items.length} Positionen</span>
+                </div>
+
+                <ul className={styles.itemList}>
+                  {group.items.map((item) => {
+                    const id = itemId(group.category, item.name, item.unit);
+                    const checked = checkedIds.includes(id);
+
+                    return (
+                      <li className={checked ? styles.itemChecked : styles.itemRow} key={id}>
+                        <label className={styles.checkboxLabel}>
+                          <input checked={checked} onChange={() => toggleItem(id)} type="checkbox" />
+                          <span className={styles.fakeCheckbox} />
+                          <span className={styles.itemText}>
+                            <strong>{item.name}</strong>
+                            <small>{formatShoppingListQuantity(item.totalAmount, item.unit)}</small>
+                          </span>
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </article>
+            ))}
+          </div>
+        ) : null}
+
+        {allItemIds.length > 0 ? null : null}
+      </section>
     </main>
   );
 }

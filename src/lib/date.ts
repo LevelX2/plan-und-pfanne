@@ -35,6 +35,34 @@ export function addDays(isoDate: string, amount: number) {
   return formatIsoDate(date);
 }
 
+export function tomorrowInBerlinIso() {
+  return addDays(todayInBerlinIso(), 1);
+}
+
+export function isIsoDate(value: string | null | undefined): value is string {
+  return Boolean(value && /^\d{4}-\d{2}-\d{2}$/.test(value));
+}
+
+export function compareIsoDates(left: string, right: string) {
+  return left.localeCompare(right);
+}
+
+export function listDatesInRange(startDate: string, endDate: string) {
+  if (!isIsoDate(startDate) || !isIsoDate(endDate) || startDate > endDate) {
+    return [];
+  }
+
+  const dates: string[] = [];
+  let cursor = startDate;
+
+  while (cursor <= endDate) {
+    dates.push(cursor);
+    cursor = addDays(cursor, 1);
+  }
+
+  return dates;
+}
+
 export function startOfWeekMonday(isoDate: string) {
   const date = parseIsoDate(isoDate);
   const weekday = date.getUTCDay();

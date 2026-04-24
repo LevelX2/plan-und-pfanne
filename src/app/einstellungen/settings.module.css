@@ -214,6 +214,15 @@
   background: linear-gradient(180deg, rgba(20, 76, 57, 0.08), rgba(255, 252, 247, 0.92));
 }
 
+.proteinTargetCard {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid rgba(19, 38, 29, 0.1);
+  background: linear-gradient(180deg, rgba(20, 76, 57, 0.08), rgba(255, 252, 247, 0.92));
+}
+
 .mixHeader,
 .mixSliderTop {
   display: flex;
@@ -237,9 +246,68 @@
 }
 
 .mixHint,
-.mixCopy {
+.mixCopy,
+.proteinTargetSummary {
   color: rgba(19, 38, 29, 0.72);
   line-height: 1.6;
+}
+
+.proteinTargetSummary {
+  margin-top: 10px;
+}
+
+.personTargetGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.personTargetRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.7fr) minmax(150px, 1fr) minmax(140px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  background: rgba(255, 252, 247, 0.78);
+}
+
+.personTargetRow > strong {
+  align-self: center;
+}
+
+.compactInput {
+  display: grid;
+  gap: 8px;
+}
+
+.compactInput span {
+  color: rgba(19, 38, 29, 0.72);
+  font-size: 0.86rem;
+}
+
+.compactInput input {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #13261d;
+  font: inherit;
+  padding: 12px 14px;
+}
+
+.personTargetResult {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(20, 140, 86, 0.14);
+  color: #116541;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .mixBadgeValid,
@@ -444,6 +512,13 @@
   font-size: 1rem;
 }
 
+.macroPreview li > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+}
+
 .macroPreview,
 .mealList {
   list-style: none;
@@ -495,5 +570,13 @@
   .mixHeader,
   .mixSliderTop {
     flex-direction: column;
+  }
+
+  .personTargetRow {
+    grid-template-columns: 1fr;
+  }
+
+  .personTargetResult {
+    width: fit-content;
   }
 }

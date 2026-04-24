@@ -60,11 +60,11 @@ function successMessageFromResult(result: unknown) {
     }
   }
 
-  return "Die aktuelle Woche wurde neu geplant.";
+  return "Der aktuelle Plan wurde neu geplant.";
 }
 
 function errorMessageFromError(error: unknown) {
-  return error instanceof Error ? error.message : "Die Woche konnte nicht neu geplant werden.";
+  return error instanceof Error ? error.message : "Der Plan konnte nicht neu geplant werden.";
 }
 
 export function RegenerateWeekForm({

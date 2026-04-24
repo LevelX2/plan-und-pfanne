@@ -1,17 +1,28 @@
 "use client";
 
-import type { Recipe, UserSettings, WeekPlan } from "@/lib/types";
+import type {
+  MealTypeDefinition,
+  PlannedDayRecord,
+  PlannedMealRecord,
+  Recipe,
+  RecipeMealTypeDefaultAssignment,
+  RecipeMealTypePreference,
+  UserSettings,
+} from "@/lib/types";
 
 export const LOCAL_APP_DB_NAME = "gf-wochenplan-offline";
-export const LOCAL_APP_DB_VERSION = 2;
+export const LOCAL_APP_DB_VERSION = 3;
 
 export const LOCAL_APP_STORES = {
   snapshots: "snapshots",
   meta: "meta",
   settings: "settings",
   recipes: "recipes",
-  weekPlans: "weekPlans",
-  history: "history",
+  mealTypes: "mealTypes",
+  recipeDefaultMealTypeAssignments: "recipeDefaultMealTypeAssignments",
+  userRecipeMealTypePreferences: "userRecipeMealTypePreferences",
+  plannedDays: "plannedDays",
+  plannedMeals: "plannedMeals",
 } as const;
 
 export type LocalAppStoreName = (typeof LOCAL_APP_STORES)[keyof typeof LOCAL_APP_STORES];
@@ -38,35 +49,15 @@ export type LocalRecipeRecord = Recipe & {
   updatedAt: string;
 };
 
-export type LocalWeekPlanRecord = {
-  startDate: string;
-  endDate: string;
-  generatedAt: string;
-  generatedBy: string;
-  savedAt: string;
-  plan: WeekPlan;
-};
-
-export type LocalHistoryRecord = {
-  id: string;
-  startDate: string;
-  endDate: string;
-  generatedAt: string;
-  generatedBy: string;
-  savedAt: string;
-  averageScore: number;
-  averageProteinPct: number;
-  averageCarbsPct: number;
-  averageFatPct: number;
-  dayCount: number;
-  mealsPerDay: number;
-  recipeIds: string[];
-  plan: WeekPlan;
-};
+export type LocalMealTypeRecord = MealTypeDefinition;
+export type LocalRecipeDefaultMealTypeAssignmentRecord = RecipeMealTypeDefaultAssignment;
+export type LocalRecipeMealTypePreferenceRecord = RecipeMealTypePreference;
+export type LocalPlannedDayRecord = PlannedDayRecord;
+export type LocalPlannedMealRecord = PlannedMealRecord;
 
 function getIndexedDb() {
   if (typeof globalThis === "undefined" || !("indexedDB" in globalThis) || !globalThis.indexedDB) {
-    throw new Error("IndexedDB ist in dieser Umgebung nicht verfuegbar.");
+    throw new Error("IndexedDB ist in dieser Umgebung nicht verfügbar.");
   }
 
   return globalThis.indexedDB;
@@ -96,32 +87,76 @@ function ensureIndex(
   }
 }
 
+function deleteStoreIfPresent(database: IDBDatabase, storeName: string) {
+  if (database.objectStoreNames.contains(storeName)) {
+    database.deleteObjectStore(storeName);
+  }
+}
+
 function configureUpgrade(database: IDBDatabase, transaction: IDBTransaction, oldVersion: number) {
-  if (oldVersion < 1 || !database.objectStoreNames.contains(LOCAL_APP_STORES.snapshots)) {
-    getOrCreateStore(database, transaction, LOCAL_APP_STORES.snapshots);
+  if (oldVersion < 3) {
+    for (const storeName of [
+      "snapshots",
+      "meta",
+      "settings",
+      "recipes",
+      "weekPlans",
+      "history",
+      "mealTypes",
+      "recipeDefaultMealTypeAssignments",
+      "userRecipeMealTypePreferences",
+      "plannedDays",
+      "plannedMeals",
+    ]) {
+      deleteStoreIfPresent(database, storeName);
+    }
   }
 
-  if (oldVersion < 2) {
-    getOrCreateStore(database, transaction, LOCAL_APP_STORES.meta, { keyPath: "key" });
-    getOrCreateStore(database, transaction, LOCAL_APP_STORES.settings, { keyPath: "key" });
+  getOrCreateStore(database, transaction, LOCAL_APP_STORES.snapshots);
+  getOrCreateStore(database, transaction, LOCAL_APP_STORES.meta, { keyPath: "key" });
+  getOrCreateStore(database, transaction, LOCAL_APP_STORES.settings, { keyPath: "key" });
 
-    const recipesStore = getOrCreateStore(database, transaction, LOCAL_APP_STORES.recipes, {
-      keyPath: "id",
-    });
-    ensureIndex(recipesStore, "bySource", "source");
-    ensureIndex(recipesStore, "byMealType", "mealType");
+  const recipesStore = getOrCreateStore(database, transaction, LOCAL_APP_STORES.recipes, {
+    keyPath: "id",
+  });
+  ensureIndex(recipesStore, "bySource", "source");
+  ensureIndex(recipesStore, "byMealType", "mealType");
 
-    const weekPlansStore = getOrCreateStore(database, transaction, LOCAL_APP_STORES.weekPlans, {
-      keyPath: "startDate",
-    });
-    ensureIndex(weekPlansStore, "byGeneratedAt", "generatedAt");
+  const mealTypesStore = getOrCreateStore(database, transaction, LOCAL_APP_STORES.mealTypes, {
+    keyPath: "key",
+  });
+  ensureIndex(mealTypesStore, "bySortOrder", "sortOrder");
 
-    const historyStore = getOrCreateStore(database, transaction, LOCAL_APP_STORES.history, {
-      keyPath: "id",
-    });
-    ensureIndex(historyStore, "byGeneratedAt", "generatedAt");
-    ensureIndex(historyStore, "byStartDate", "startDate");
-  }
+  const defaultAssignmentsStore = getOrCreateStore(
+    database,
+    transaction,
+    LOCAL_APP_STORES.recipeDefaultMealTypeAssignments,
+    { keyPath: "id" },
+  );
+  ensureIndex(defaultAssignmentsStore, "byRecipe", "recipeId");
+  ensureIndex(defaultAssignmentsStore, "byMealType", "mealType");
+
+  const userPreferencesStore = getOrCreateStore(
+    database,
+    transaction,
+    LOCAL_APP_STORES.userRecipeMealTypePreferences,
+    { keyPath: "id" },
+  );
+  ensureIndex(userPreferencesStore, "byRecipe", "recipeId");
+  ensureIndex(userPreferencesStore, "byMealType", "mealType");
+
+  const plannedDaysStore = getOrCreateStore(database, transaction, LOCAL_APP_STORES.plannedDays, {
+    keyPath: "date",
+  });
+  ensureIndex(plannedDaysStore, "byCreatedAt", "createdAt");
+  ensureIndex(plannedDaysStore, "bySourcePeriod", ["sourcePeriodStart", "sourcePeriodEnd"]);
+
+  const plannedMealsStore = getOrCreateStore(database, transaction, LOCAL_APP_STORES.plannedMeals, {
+    keyPath: "id",
+  });
+  ensureIndex(plannedMealsStore, "byPlannedDayId", "plannedDayId");
+  ensureIndex(plannedMealsStore, "byDate", "date");
+  ensureIndex(plannedMealsStore, "byMealType", "mealType");
 }
 
 export function openLocalAppDb(): Promise<IDBDatabase> {
@@ -129,7 +164,7 @@ export function openLocalAppDb(): Promise<IDBDatabase> {
     const request = getIndexedDb().open(LOCAL_APP_DB_NAME, LOCAL_APP_DB_VERSION);
 
     request.onerror = () => {
-      reject(request.error ?? new Error("Lokale Datenbank konnte nicht geoeffnet werden."));
+      reject(request.error ?? new Error("Lokale Datenbank konnte nicht geöffnet werden."));
     };
 
     request.onblocked = () => {

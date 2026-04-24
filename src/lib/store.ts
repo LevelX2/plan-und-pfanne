@@ -10,7 +10,8 @@ import {
 } from "@/lib/date";
 import { getDb } from "@/lib/db";
 import { formatWeekdayLong } from "@/lib/format";
-import { buildWeeklyPlan } from "@/lib/planner";
+import { buildWeeklyPlan, calculateTargets } from "@/lib/planner";
+import { createDefaultProteinTargets } from "@/lib/protein-targets";
 import {
   createEmptyRecipeMixCounts,
   getRecipeMixCategory,
@@ -34,6 +35,9 @@ const DEFAULT_SETTINGS: UserSettings = {
   macroCarbsPct: 30,
   macroFatPct: 30,
   macroProteinPct: 40,
+  defaultPeopleCount: 2,
+  proteinTargets: createDefaultProteinTargets(),
+  includeSnackByDefault: true,
   mealsPerDay: 4,
   glutenFreeOnly: true,
   vegetarianSharePct: 40,
@@ -125,6 +129,9 @@ function parseSettings(row: SettingsRow): UserSettings {
     macroCarbsPct: row.macro_carbs_pct,
     macroFatPct: row.macro_fat_pct,
     macroProteinPct: row.macro_protein_pct,
+    defaultPeopleCount: 2,
+    proteinTargets: createDefaultProteinTargets(),
+    includeSnackByDefault: row.meals_per_day >= 4,
     mealsPerDay: row.meals_per_day,
     glutenFreeOnly: Boolean(row.gluten_free_only),
     vegetarianSharePct: row.vegetarian_share_pct,
@@ -140,17 +147,7 @@ function normalize(value: string) {
 }
 
 function targetsFromSettings(settings: UserSettings) {
-  return {
-    calories: settings.calorieTarget,
-    protein: Number(((settings.calorieTarget * settings.macroProteinPct) / 100 / 4).toFixed(1)),
-    carbs: Number(((settings.calorieTarget * settings.macroCarbsPct) / 100 / 4).toFixed(1)),
-    fat: Number(((settings.calorieTarget * settings.macroFatPct) / 100 / 9).toFixed(1)),
-    macroPercents: {
-      protein: settings.macroProteinPct,
-      carbs: settings.macroCarbsPct,
-      fat: settings.macroFatPct,
-    },
-  };
+  return calculateTargets(settings);
 }
 
 function macroPercents(protein: number, carbs: number, fat: number) {

@@ -1,4 +1,4 @@
-import type { MealType, PlannedMeal, Recipe, ShoppingCategory, ShoppingGroup, WeekPlan } from "@/lib/types";
+import type { DayPlan, MealType, PlannedMeal, Recipe, ShoppingCategory, ShoppingGroup, WeekPlan } from "@/lib/types";
 
 export type PlannedMealKey = string;
 export type ShoppingListMode = "active-only" | "all-planned";
@@ -22,17 +22,63 @@ type WeekMealEntry = {
   meal: PlannedMeal;
 };
 
-function ingredientEntriesForMeal(meal: PlannedMeal): ShoppingIngredientEntry[] {
+const EGG_WHITE_GRAMS_PER_EGG = 30;
+
+function normalizeIngredientName(value: string) {
+  return value.trim().toLocaleLowerCase("de-DE");
+}
+
+function normalizeShoppingIngredientEntry(ingredient: ShoppingIngredientEntry): ShoppingIngredientEntry {
+  const normalizedName = normalizeIngredientName(ingredient.name);
+  const normalizedUnit = ingredient.unit.trim().toLocaleLowerCase("de-DE");
+
+  if (ingredient.category === "Eier" && (normalizedName === "ei" || normalizedName === "eier")) {
+    return {
+      ...ingredient,
+      name: "Eier",
+      unit: "Stk",
+    };
+  }
+
+  if (ingredient.category === "Eier" && normalizedName === "eiweiß") {
+    const amount =
+      normalizedUnit === "g"
+        ? ingredient.amount / EGG_WHITE_GRAMS_PER_EGG
+        : ingredient.amount;
+
+    return {
+      category: "Eier",
+      name: "Eier",
+      unit: "Stk",
+      amount: Number(amount.toFixed(2)),
+    };
+  }
+
+  return ingredient;
+}
+
+function ingredientScaleForMeal(meal: PlannedMeal, scalePeopleCount = false) {
+  if (!scalePeopleCount) {
+    return meal.portionFactor;
+  }
+
+  const baseServings = meal.recipe.baseServings && meal.recipe.baseServings > 0 ? meal.recipe.baseServings : 1;
+  return ((meal.peopleCount ?? 1) / baseServings) * meal.portionFactor;
+}
+
+function ingredientEntriesForMeal(meal: PlannedMeal, scalePeopleCount = false): ShoppingIngredientEntry[] {
+  const scale = ingredientScaleForMeal(meal, scalePeopleCount);
+
   return meal.recipe.ingredients.map((ingredient) => ({
     category: ingredient.category,
     name: ingredient.name,
     unit: ingredient.unit,
-    amount: Number((ingredient.amount * meal.portionFactor).toFixed(1)),
+    amount: Number((ingredient.amount * scale).toFixed(1)),
   }));
 }
 
-function shoppingEntriesFromMeals(meals: PlannedMeal[]): ShoppingIngredientEntry[] {
-  return meals.flatMap(ingredientEntriesForMeal);
+function shoppingEntriesFromMeals(meals: PlannedMeal[], scalePeopleCount = false): ShoppingIngredientEntry[] {
+  return meals.flatMap((meal) => ingredientEntriesForMeal(meal, scalePeopleCount));
 }
 
 export function buildPlannedMealKey(input: {
@@ -96,31 +142,34 @@ export function normalizeSelectedMealKeys(weekPlan: WeekPlan, selectedMealKeys: 
 }
 
 export function buildShoppingListGroups(entries: ShoppingIngredientEntry[]): ShoppingGroup[] {
-  const grouped = new Map<ShoppingCategory, Map<string, { unit: string; totalAmount: number }>>();
+  const grouped = new Map<ShoppingCategory, Map<string, { name: string; unit: string; totalAmount: number }>>();
 
   for (const ingredient of entries) {
+    const normalizedIngredient = normalizeShoppingIngredientEntry(ingredient);
     const categoryMap =
-      grouped.get(ingredient.category) ?? new Map<string, { unit: string; totalAmount: number }>();
-    const current = categoryMap.get(ingredient.name);
+      grouped.get(normalizedIngredient.category) ?? new Map<string, { name: string; unit: string; totalAmount: number }>();
+    const itemKey = `${normalizedIngredient.name}::${normalizedIngredient.unit}`;
+    const current = categoryMap.get(itemKey);
 
-    if (current && current.unit === ingredient.unit) {
-      current.totalAmount = Number((current.totalAmount + ingredient.amount).toFixed(1));
+    if (current) {
+      current.totalAmount = Number((current.totalAmount + normalizedIngredient.amount).toFixed(1));
     } else {
-      categoryMap.set(ingredient.name, {
-        unit: ingredient.unit,
-        totalAmount: ingredient.amount,
+      categoryMap.set(itemKey, {
+        name: normalizedIngredient.name,
+        unit: normalizedIngredient.unit,
+        totalAmount: normalizedIngredient.amount,
       });
     }
 
-    grouped.set(ingredient.category, categoryMap);
+    grouped.set(normalizedIngredient.category, categoryMap);
   }
 
   return [...grouped.entries()]
     .map(([category, items]) => ({
       category,
       items: [...items.entries()]
-        .map(([name, item]) => ({
-          name,
+        .map(([, item]) => ({
+          name: item.name,
           unit: item.unit,
           totalAmount: item.totalAmount,
         }))
@@ -156,6 +205,16 @@ export function buildShoppingListGroupsForWeekPlan(
           .map(({ meal }) => meal);
 
   return buildShoppingListGroups(shoppingEntriesFromMeals(meals));
+}
+
+export function buildShoppingListGroupsForPlannedDays(days: DayPlan[]) {
+  const meals = days.flatMap((day) =>
+    day.meals.filter(
+      (meal) => meal.isEnabled !== false && meal.includeInShoppingList !== false,
+    ),
+  );
+
+  return buildShoppingListGroups(shoppingEntriesFromMeals(meals, true));
 }
 
 export function countShoppingItems(groups: ShoppingGroup[]) {

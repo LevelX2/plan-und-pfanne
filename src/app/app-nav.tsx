@@ -12,16 +12,25 @@ export function AppNav({ currentPath }: AppNavProps) {
     <nav className={styles.nav}>
       <div className={styles.links}>
         <Link aria-current={currentPath === "/" ? "page" : undefined} href="/">
-          Dashboard
+          Aktueller Plan
+        </Link>
+        <Link aria-current={currentPath === "/planen" ? "page" : undefined} href="/planen">
+          Plan generieren
         </Link>
         <Link aria-current={currentPath === "/rezepte" ? "page" : undefined} href="/rezepte">
           Rezepte
+        </Link>
+        <Link aria-current={currentPath === "/tage" ? "page" : undefined} href="/tage">
+          Tagesdetail
         </Link>
         <Link
           aria-current={currentPath === "/einkaufsliste" ? "page" : undefined}
           href="/einkaufsliste"
         >
           Einkaufsliste
+        </Link>
+        <Link aria-current={currentPath === "/historie" ? "page" : undefined} href="/historie">
+          Historie
         </Link>
         <Link
           aria-current={currentPath === "/einstellungen" ? "page" : undefined}

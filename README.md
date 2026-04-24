@@ -1,22 +1,28 @@
 # Plan und Pfanne
 
-`Plan und Pfanne` ist eine installierbare Wochenplan- und Rezept-App für eine Person. Die App speichert Wochenplan, Einstellungen, Verlauf, Rezeptbestand und Einkaufsfortschritt auf dem Gerät und läuft als statisch exportierte PWA über GitHub Pages.
+`Plan und Pfanne` ist eine installierbare Tagesplan- und Rezept-App für glutenfreie Mahlzeiten. Die App speichert Tagespläne, Einstellungen, Rezeptzulassung und Historie lokal auf dem Gerät und läuft als statisch exportierte PWA über GitHub Pages.
 
 ## Produktmodell
 
 - direkte Nutzung ohne Kontoverwaltung
 - Speicherung auf dem Gerät über IndexedDB
-- installierbar auf Handy und Desktop über den Browser
-- zentrale Ansichten und Schreibzugriffe auch offline nutzbar
-- zusätzlicher Rezeptnachschub später per Import oder App-Update
+- Planung auf Tagesebene mit frei wählbaren Datumsbereichen
+- pro Datum maximal ein Plan
+- Personenzahl pro Plan und pro einzelner Mahlzeit
+- direkte Kochansicht aus dem Tagesdetail mit temporär skalierbarer Menge
+- Einkaufsliste aus einem gewählten Datumsbereich
+- Rezeptzulassung und Gewichtung je Mahlzeitentyp
 
-## Was aktuell bereits funktioniert
+## Was aktuell funktioniert
 
-- Dashboard mit aktiven Gerichten, Tageskarten und Wochenübersicht
-- Rezeptbibliothek mit aufklappbaren Details
-- Tagesansicht und Einkaufsliste
-- Planungsprofil mit direkter Neuberechnung der Woche
-- Speicherung von Auswahlzuständen und Einkaufshäkchen auf diesem Gerät
+- Aktueller Plan mit Tageskarten und Makroübersicht
+- Plan-Generator mit Startdatum, Enddatum, Personenzahl und Überschneidungswarnung
+- Tagesdetail mit Gerichtstausch, Personenzahl, Ausfall-Schalter, Einkaufslisten-Flag und zusätzlichen Snacks
+- Rezept-Kochansicht mit skalierten Zutaten und Zubereitungsschritten
+- Rezeptauswahl je Mahlzeitentyp mit Gewichtung `selten`, `normal`, `häufig`
+- Einkaufsliste mit Datumsbereich, aktiven Mahlzeiten und aggregierten Mengen
+- Historie als Tagesliste mit Kopieren historischer Zeiträume
+- Einstellungen für Standard-Personenzahl, Kalorienziel, Makros und Löschen alter Pläne
 
 ## Wichtige Grenzen
 

@@ -1,17 +1,17 @@
 # Index
 
 ## Einstieg
-- [[Projektueberblick]]: Zielbild, Nutzerfokus und grobe Richtung der glutenfreien Wochenplan-App.
+- [[Projektueberblick]]: Zielbild, Nutzerfokus und grobe Richtung der glutenfreien Tagesplanungs-App.
 - [[Aktueller Projektstatus]]: momentaner Stand von Repository, Wissensbasis und Umsetzung.
 - [[Quellenlage und Aktualitaet]]: Einordnung, welche Quellen bereits vorliegen und welche noch fehlen.
 - [[../Prozesse/Arbeitsworkflow Wissenspflege und Projektanfragen]]: alltäglicher Workflow für Quellenaufnahme, wiki-first Antworten und Rückführung von Erkenntnissen.
 
 ## Kernwissen
 - [[Projektueberblick]]: verdichteter Überblick über Produktziel, Nutzen und Projektgrenzen.
-- [[../Begriffe und Konzepte/Produktbild und Kernlogik]]: fachliche Grundstruktur für Rezepte, Tagesplanung, Wochenplanung und Einkaufslogik.
-- [[../Begriffe und Konzepte/Aktive Gerichte und selektive Einkaufsliste]]: konkretes Fachmodell für nutzerseitige Aktivierung geplanter Mahlzeiten und die davon abhängige Einkaufslisten-Sicht.
+- [[../Begriffe und Konzepte/Produktbild und Kernlogik]]: fachliche Grundstruktur für Rezepte, datumsbezogene Tagesplanung, Kochansicht und Einkaufslogik.
+- [[../Begriffe und Konzepte/Aktive Gerichte und selektive Einkaufsliste]]: abgelöstes Zwischenkonzept; aktuelle Relevanz liegt in den Flags `isEnabled` und `includeInShoppingList` pro geplanter Mahlzeit.
 - [[../Begriffe und Konzepte/Benutzerkonzept und Verifikation]]: aktueller Zuschnitt ohne Kontoverwaltung sowie die Einordnung früherer und möglicher späterer Zugriffsmodelle.
-- [[../Begriffe und Konzepte/Systembild und technischer Zuschnitt]]: aktueller technischer Aufbau mit Next.js, SQLite, PWA-Ansatz und Deployment-Zuschnitt.
+- [[../Begriffe und Konzepte/Systembild und technischer Zuschnitt]]: aktueller technischer Aufbau mit Next.js, IndexedDB, PWA-Ansatz und Static-Export-Deployment.
 - [[../Risiken und offene Punkte/Offene Fragen und Prüfbedarf]]: bestätigte Lücken, Widersprüche, konzeptionelle Prüfstellen und technische Nacharbeiten.
 - [[../Risiken und offene Punkte/Lokale Mobile-App vs gehosteter Betrieb]]: Abwägung zwischen rein lokalem Handy-Betrieb und gehosteter Web-/PWA-Variante.
 
@@ -32,3 +32,4 @@
 ## Workspace-Quellen
 - [[../../01 Rohquellen/repo-root/2026-04-22 Repository-Startquellen]]: erste ausgewertete Repository-Quellen beim Aufbau der Wissensbasis.
 - [[../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse]]: vertiefte Repository-Analyse mit Build-, Datenbank- und Routensichtung.
+- [[../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept]]: fachliche und technische Zielvorgabe für die Umstellung vom Wochenplanmodell auf datumsbezogene Tagesplanung.

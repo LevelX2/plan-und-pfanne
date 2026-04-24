@@ -8,7 +8,7 @@ export async function GET() {
     mode: "static-export",
     schedulerEnabled: false,
     message:
-      "Dieser Endpunkt plant keine Wochen mehr zentral. Die App erstellt Wochenpläne direkt beim Öffnen oder auf Knopfdruck.",
+      "Dieser Endpunkt plant nicht mehr zentral. Die App erstellt Tagespläne lokal für frei gewählte Zeiträume.",
     timestamp: buildTimestamp,
   });
 }

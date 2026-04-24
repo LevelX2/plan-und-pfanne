@@ -19,16 +19,10 @@
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.links::-webkit-scrollbar {
-  display: none;
+  overflow: visible;
 }
 
 .links a {
@@ -42,7 +36,7 @@
   font-weight: 600;
   color: #144c39;
   background: rgba(20, 76, 57, 0.08);
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   white-space: nowrap;
 }
 
@@ -56,5 +50,15 @@
     top: max(8px, env(safe-area-inset-top));
     align-items: flex-start;
     padding: 12px 14px;
+  }
+
+  .links {
+    gap: 8px;
+  }
+
+  .links a {
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 0.94rem;
   }
 }

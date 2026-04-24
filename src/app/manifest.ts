@@ -27,7 +27,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Plan und Pfanne",
     short_name: "Plan & Pfanne",
     description:
-      "Installierbare Koch- und Wochenplan-App mit offline verfügbaren Rezepten, Dashboard und Einkaufsliste.",
+      "Installierbare Koch- und Tagesplan-App mit offline verfügbaren Rezepten, Kochansicht und Einkaufsliste.",
     id: appStartUrl,
     start_url: appStartUrl,
     scope: appStartUrl,

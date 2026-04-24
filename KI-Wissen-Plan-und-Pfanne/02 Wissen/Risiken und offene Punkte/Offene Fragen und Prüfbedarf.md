@@ -1,53 +1,51 @@
 ---
 typ: risiko
 status: aktiv
-letzte_aktualisierung: 2026-04-23
+letzte_aktualisierung: 2026-04-24
 quellen:
-  - ../../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse.md
-  - ../../../01 Rohquellen/2026-04-23 Benutzerkonzept und nutzerscharfer Zugriff.md
-  - ../../../01 Rohquellen/2026-04-23 Aktive Gerichte im Wochenplan und selektive Einkaufsliste.md
+  - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../KODEX_STAND.md
   - ../../../README.md
-  - ../../../src/app/actions.ts
-  - ../../../src/lib/store.ts
+  - ../../../src/lib/local-db.ts
+  - ../../../src/lib/local-store.ts
+  - ../../../src/app/planen/page.tsx
+  - ../../../src/app/tage/page.tsx
+  - ../../../src/app/kochen/page.tsx
+  - ../../../src/app/einkaufsliste/shopping-list-client.tsx
 tags:
   - offen
   - pruefbedarf
   - risiko
+  - tagesplanung
 ---
 
 # Offene Fragen und Prüfbedarf
 
 ## Inzwischen geschlossene Punkte
-- Die zuvor fehlenden Routen `/einstellungen`, `/tage/[date]` und `/api/scheduler/weekly` sind inzwischen real umgesetzt.
-- `README.md` und `KODEX_STAND.md` wurden auf den aktuellen Produktstand nachgezogen.
-- Die SQLite-Datei im Projektverzeichnis ist nun als lokaler Laufzeit- und Entwicklungszustand eingeordnet; `data/*.sqlite` bleibt unversioniert.
-- Erwartete Formularfehler unter `/einstellungen` führen nicht mehr in harte Laufzeitabbrüche, sondern werden inline behandelt.
-- Für unerwartete Fehler und nicht gefundene Seiten gibt es nutzerfreundliche Fallback-Seiten.
-- Die Scheduler-Route ist in Production ohne `SCHEDULER_SECRET` nicht mehr offen erreichbar.
-- Der Zielmix `vegetarisch / Fisch / Fleisch` ist jetzt als gekoppelter Dreiregler, als persistente Einstellung und als weiche Heuristik für Mittag- und Abendessen umgesetzt.
+- Die zuvor starre Wochenplanung wurde fachlich und technisch auf datumsbezogene Tagesplanung umgestellt.
+- Der lokale PWA-Pfad mit IndexedDB und statischem Export bleibt der primäre Produktzuschnitt.
+- Freie Zeitraumgenerierung, Überschneidungswarnung, Tagesdetail, Mahlzeitenbearbeitung, Kochansicht, Einkaufsliste, Historie, Kopieren historischer Tage und Löschen alter Pläne sind im Workspace umgesetzt.
+- Rezeptzulassung je Mahlzeitentyp und Gewichtung `selten / normal / häufig` sind umgesetzt.
+- Das frühere Modell `aktive Gerichte` wurde durch die zwei Slot-Flags `isEnabled` und `includeInShoppingList` ersetzt.
+- Alte lokale Wochenplan-Testdaten müssen nicht migriert werden und werden beim IndexedDB-Upgrade bewusst verworfen.
+- Der Zielmix `vegetarisch / Fisch / Fleisch` bleibt als weiche Heuristik für Mittag- und Abendessen erhalten.
 
 ## Verbleibende Produktfragen
-- Welches Produktversprechen soll offline gelten:
-  - nur lesender Zugriff auf zuletzt geladene Inhalte
-  - oder mittelfristig eine breitere, echte Offline-App mit Änderungen und Synchronisation
-- Braucht die zufallsbasierte Wochenplanung später Reproduzierbarkeit, mehr Erklärbarkeit oder einen Vergleich zwischen altem und neuem Plan.
-- Soll die neue Scheduler-Route nur ein technischer Endpunkt bleiben oder als echter Cron- beziehungsweise Hosting-Trigger produktiv angebunden werden.
+- Ob und wann ein Export-, Backup- oder Gerätewechselpfad gebraucht wird, ist weiterhin offen.
+- Ob neue Rezepte später per Dateiimport, Feed, App-Update oder manuellem Editor ergänzt werden, ist noch nicht final entschieden.
+- Der aktuelle Rezeptpool reicht für praktische Planung, aber nicht für harte Garantien bei Makroverteilung oder vegetarisch/Fisch/Fleisch-Zielmix.
+- Für die Kochansicht ist aktuell bewusst festgelegt, dass Mengenänderungen temporär bleiben; ob später eine Übernahme in die Planung angeboten wird, ist eine mögliche Ausbaufrage.
 
 ## Technische Prüfstellen
-- Der aktuelle Workspace arbeitet für Einstellungen, Wochenplan und Einkaufsliste noch singleton-basiert ohne verifizierte Benutzerkonten. Für einen öffentlich erreichbaren Betrieb ist die Umstellung auf benutzerscharfen Zugriff priorisiert.
-- Der Service Worker cached breit genug für einen nützlichen Lesemodus, aber Cache-Invaliderung und Offline-Verhalten pro Route sind noch nicht explizit getestet.
-- Alle Hauptseiten laufen mit `force-dynamic`, obwohl der Build statische Artefakte für einzelne Assets erzeugt. Die beabsichtigte Caching- und Renderstrategie sollte bei weiterem Ausbau bewusst entschieden werden.
-- Die Scheduler-Route ist lokal und live verifiziert, aber der produktive Zielkontext für Secret-Verwaltung, Aufrufquelle und Monitoring ist noch nicht final entschieden.
-- Der aktuelle Demo-Rezeptpool ist für eine exakte Dreierverteilung unausgewogen:
-  - Snacks sind vollständig vegetarisch.
-  - Frühstücke enthalten nur sehr wenige Fisch- und Fleischoptionen.
-  - Abendessen sind deutlich fleischlastiger als vegetarisch.
-  Daraus folgt weiterhin, dass der umgesetzte Zielmix bewusst nur als Näherung und nicht als starre Prozentgarantie behandelt wird.
+- Der Service Worker cached die App-Shell und gleich-originäre `GET`-Requests; routegenaue Offline-Tests auf echten Mobilgeräten stehen weiterhin aus.
+- IndexedDB bleibt browser- und originabhängig. Manuelles Löschen, Speicherdruck oder ein Origin-Wechsel können lokale Daten entfernen.
+- Die querybasierten Detailrouten `/tage?date=...` und `/kochen?meal=...` passen zum Static Export, sollten bei weiterer Navigationserweiterung bewusst beibehalten werden.
+- Alte serverseitige Artefakte wie Auth-, SQLite- und Scheduler-Code liegen teilweise noch im Repository. Sie dürfen nicht versehentlich wieder zum produktiven Hauptpfad werden.
 - Der alte Ordner `C:\Users\Lui\OneDrive\Projekte\gluten freie Rezepte` ist weiterhin als OneDrive-Reparse-Restzustand sichtbar und nicht automatisch bereinigt.
 
-## Empfohlene nächste Wissens- oder Umsetzungsprüfungen
-1. Anmeldung, Verifikation und benutzerscharfen Datenzugriff auf Basis des neuen Benutzerkonzepts umsetzen.
-2. Offlinescope in Produkttexten und Wissensbasis weiter konkretisieren: lesender Modus gegen echte Offline-Synchronisation.
-3. Entscheiden, wie die Scheduler-Route produktiv ausgelöst, abgesichert und überwacht werden soll.
-4. Den alten OneDrive-Restordner kontrolliert bereinigen, sobald klar ist, dass kein externer Dateiplatzhalter oder Rückfallbedarf mehr besteht.
+## Empfohlene nächste Prüfungen
+1. Tagesplanung auf einem echten Smartphone als installierte PWA testen.
+2. Manuelle Produktfälle aus der Tageskonzept-Vorgabe durchspielen:
+   Generieren, Überschneidung, Bearbeitung, Snack, Deaktivierung, Kochansicht, Einkaufsliste, Historie, Kopieren und Löschen.
+3. Backup- und Exportbedarf für lokale App-Daten entscheiden.
+4. Alte serverseitige Kompatibilitätsartefakte später gezielt bereinigen, sobald klar ist, dass kein Rückfall auf den Serverpfad gebraucht wird.

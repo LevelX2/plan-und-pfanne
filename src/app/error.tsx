@@ -20,7 +20,7 @@ export default function AppError({ error, unstable_retry }: AppErrorProps) {
         <p className={styles.eyebrow}>Unerwarteter Fehler</p>
         <h1>Die Ansicht konnte gerade nicht geladen werden.</h1>
         <p className={styles.copy}>
-          Wahrscheinlich ist gerade beim Laden des Wochenplans oder der Daten etwas schiefgelaufen.
+          Wahrscheinlich ist gerade beim Laden des Tagesplans oder der Daten etwas schiefgelaufen.
           Du kannst es direkt erneut versuchen oder auf eine stabile Hauptseite zurückgehen.
         </p>
 

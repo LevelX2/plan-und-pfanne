@@ -1,20 +1,26 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-23
+letzte_aktualisierung: 2026-04-24
 quellen:
+  - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../README.md
   - ../../../next.config.ts
   - ../../../package.json
   - ../../../src/app/layout.tsx
   - ../../../src/app/manifest.ts
   - ../../../src/app/pwa-register.tsx
-  - ../../../src/app/page.tsx
-  - ../../../src/app/rezepte/page.tsx
+  - ../../../src/app/home-client.tsx
+  - ../../../src/app/planen/page.tsx
   - ../../../src/app/tage/page.tsx
+  - ../../../src/app/kochen/page.tsx
+  - ../../../src/app/einkaufsliste/shopping-list-client.tsx
+  - ../../../src/app/historie/page.tsx
+  - ../../../src/app/rezepte/recipes-client.tsx
   - ../../../src/lib/local-db.ts
   - ../../../src/lib/local-store.ts
-  - ../../../src/lib/offline-store.ts
+  - ../../../src/lib/planner.ts
+  - ../../../src/lib/week-plan-selection.ts
   - ../../../public/service-worker.js
   - ../../../.github/workflows/deploy-pages.yml
 tags:
@@ -22,6 +28,7 @@ tags:
   - architektur
   - nextjs
   - pwa
+  - tagesplanung
 ---
 
 # Systembild und technischer Zuschnitt
@@ -30,12 +37,13 @@ tags:
 - Next.js 16 mit App Router
 - React 19
 - TypeScript
+- statischer Export für GitHub Pages
 - lokale Persistenz über `IndexedDB`
-- Validierung mit `zod`
+- lokale Planungslogik ohne Serverpflicht
 
 ## Erkennbare Systembausteine
-- `src/app/`: statisch exportierbare Seiten, PWA-Registrierung und Legacy-Platzhalter für frühere Serverpfade
-- `src/lib/`: Fachlogik, lokale IndexedDB-Zugriffe, Hilfsfunktionen und Planungslogik
+- `src/app/`: statisch exportierbare Seiten, PWA-Registrierung und querybasierte Detailansichten
+- `src/lib/`: Fachlogik, lokale IndexedDB-Zugriffe, Seed-Daten, Einkaufslistenlogik und Planungsheuristik
 - `public/`: statische Assets, PWA-Dateien und Service Worker
 - `.github/workflows/`: Build- und Deploy-Pfad für GitHub Pages
 
@@ -46,43 +54,54 @@ tags:
 - `next.config.ts` nutzt `output: "export"`, `trailingSlash: true`, `images.unoptimized: true` und einen buildzeitlichen `basePath`
 - `.github/workflows/deploy-pages.yml` baut und veröffentlicht den Ordner `out`
 - Ziel-Origin für den aktuellen PWA-Pfad ist `https://levelx2.github.io/plan-und-pfanne/`
-- `npm run lint`, `npm run build` und ein Build mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` sind erfolgreich verifiziert
+- `npm run lint`, `npm run build` und ein Build mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` sind für den Tagesplanungsstand erfolgreich verifiziert
 
 ## Aktuelle Route- und Rendering-Lage
-- produktive Routen im Workspace:
+- produktive Hauptseiten im Workspace:
   - `/`
-  - `/rezepte`
+  - `/planen`
   - `/tage`
+  - `/kochen`
+  - `/rezepte`
   - `/einkaufsliste`
+  - `/historie`
   - `/einstellungen`
   - `/anmelden`
   - `/abmelden`
-  - `/api/health`
-  - `/api/auth/logout`
-  - `/api/scheduler/weekly`
-- Detailansichten für Rezepte und Tage laufen statisch über Query-Parameter:
-  `/rezepte?recipe=<id>` und `/tage?date=YYYY-MM-DD`
-- Die früheren dynamischen Seiten `/rezepte/[id]` und `/tage/[date]` wurden entfernt, damit der Static Export ohne parametrisierte Pfadgenerierung auskommt.
-- Die zentralen Produktseiten arbeiten clientseitig auf lokaler Datenbasis.
+- Detailansichten laufen statisch über Query-Parameter:
+  - `/tage?date=YYYY-MM-DD`
+  - `/kochen?meal=<plannedMealId>`
+- Die Produktseiten arbeiten clientseitig auf lokaler Datenbasis.
 - `anmelden`, `abmelden`, `auth-actions` und die API-Routen sind im aktuellen Zuschnitt nur noch Legacy- oder Platzhalterpfade und nicht mehr Teil eines echten Serverbetriebs.
 - App-weite Fallback-Seiten für unerwartete Fehler und nicht gefundene Routen sind vorhanden.
 
 ## Persistenzbild
 - `src/lib/local-db.ts` verwaltet die lokale App-Datenbank `gf-wochenplan-offline`.
-- Vorhandene Stores sind:
-  `snapshots`, `meta`, `settings`, `recipes`, `weekPlans` und `history`.
-- `src/lib/local-store.ts` seeded Rezepte, liest und speichert Einstellungen, erzeugt Wochenpläne lokal und schreibt Historieneinträge.
-- Wochenpläne werden lokal beim ersten Zugriff auf die aktuelle Woche automatisch erzeugt, falls noch keiner gespeichert ist.
-- `src/lib/offline-store.ts` bleibt für UI-nahe Snapshots wie aktive Gerichte und Einkaufs-Häkchen relevant und nutzt dafür dieselbe IndexedDB-Basis.
-- `src/lib/db.ts` und `src/lib/store.ts` liegen noch als frühere serverseitige Zwischenstufe im Repository, sind aber nicht mehr Teil des primären PWA-Laufzeitpfads.
+- Die Datenbank wurde für das Tageskonzept auf Version `3` angehoben.
+- Beim Upgrade von älteren lokalen Testständen werden die alten Wochenplan-Stores verworfen; es gibt bewusst keine Migration alter Testdaten.
+- Aktuelle Stores:
+  `snapshots`, `meta`, `settings`, `recipes`, `mealTypes`, `recipeDefaultMealTypeAssignments`, `userRecipeMealTypePreferences`, `plannedDays` und `plannedMeals`.
+- `plannedDays.date` ist eindeutig; pro Datum gibt es maximal einen Tagesplan.
+- `plannedMeals` speichert pro Slot Rezept, Mahlzeitentyp, Personenzahl, Aktivstatus, Einkaufslisten-Flag und Sortierung.
+- App-Standardzuordnungen für Rezepte und nutzerseitige Rezeptpräferenzen sind getrennt, damit neue Seed-Daten Nutzeranpassungen nicht überschreiben.
+- `src/lib/db.ts` und `src/lib/store.ts` liegen noch als frühere serverseitige Zwischenstufe beziehungsweise Kompatibilitätsschicht im Repository, sind aber nicht Teil des primären PWA-Laufzeitpfads.
+
+## Fachlicher Laufzeitfluss
+- Der Startzustand erzeugt keinen Plan automatisch.
+- Neue Pläne entstehen über `/planen` aus frei wählbarem Start- und Enddatum sowie einer Standard-Personenzahl.
+- Überschneidungen mit bestehenden Tagesplänen werden vor Generierung oder Kopieren bestätigt.
+- Tagesdetails unter `/tage` erlauben Rezepttausch, Personenzahl, Deaktivierung, Einkaufslisten-Flag und zusätzliche Snacks.
+- Die Kochansicht unter `/kochen` öffnet eine konkrete geplante Mahlzeit mit temporär skalierbarer Personenzahl.
+- Die Einkaufsliste aggregiert aktive und einkaufsrelevante Mahlzeiten eines frei gewählten Datumsbereichs.
+- Die Historie arbeitet als Tagesliste und kann historische Tage oder Zeiträume in neue Zielzeiträume kopieren.
 
 ## Offline- und PWA-Zuschnitt
 - Manifest und App-Icons sind vorhanden.
 - Ein Service Worker ist vorhanden.
 - Der Service Worker berücksichtigt den GitHub-Pages-Unterpfad und cached App-Shell sowie gleich-originäre `GET`-Requests.
 - Manifest, Service-Worker-Registrierung und Metadaten bilden `start_url`, `scope` und Asset-Pfade relativ zum konfigurierten `basePath`.
-- Einstellungen, Historie, Rezeptbestand und Wochenpläne werden lokal in IndexedDB gehalten und bleiben über App-Updates hinweg nutzbar, solange die Origin stabil bleibt.
-- Der reale Offlinescope umfasst jetzt die fachlich zentralen Produktseiten inklusive lokaler Schreibzugriffe für Einstellungen und Wochenregenerierung.
+- Einstellungen, Rezeptbestand, Rezeptpräferenzen, geplante Tage und geplante Mahlzeiten werden lokal gehalten und bleiben über App-Updates hinweg nutzbar, solange die Origin stabil bleibt.
+- Die Einkaufsliste wird clientseitig aus diesen lokalen Plandaten erzeugt; Einkaufs-Häkchen sind im aktuellen Tageskonzept keine dauerhafte Kernpersistenz.
 
 ## Technische Vorsichtspunkte
 - Wegen Next.js 16 sollen aktuelle lokale Next-Dokumente in `node_modules/next/dist/docs/` vor größeren Änderungen geprüft werden.

@@ -1,0 +1,69 @@
+.field {
+  display: grid;
+  gap: 10px;
+}
+
+.field label {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: rgba(19, 38, 29, 0.72);
+}
+
+.stepper {
+  display: inline-grid;
+  grid-template-columns: 38px minmax(146px, auto) 38px;
+  gap: 8px;
+  align-items: center;
+}
+
+.stepper input {
+  width: 100%;
+  min-width: 146px;
+  min-height: 42px;
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 252, 247, 0.9);
+  color: #13261d;
+  font: inherit;
+  padding: 0 12px;
+}
+
+.stepButton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  border-radius: 999px;
+  background: rgba(20, 76, 57, 0.08);
+  color: #13261d;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stepButton:focus-visible {
+  outline: 3px solid rgba(208, 110, 47, 0.4);
+  outline-offset: 2px;
+}
+
+.stepButton:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+@media (max-width: 460px) {
+  .stepper {
+    grid-template-columns: 38px minmax(0, 1fr) 38px;
+    width: 100%;
+  }
+
+  .stepper input {
+    min-width: 0;
+  }
+}

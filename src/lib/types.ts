@@ -1,5 +1,7 @@
 export type MealType = "breakfast" | "lunch" | "dinner" | "snack";
 
+export type FrequencyWeight = "rare" | "normal" | "often";
+
 export type RecipeMixCategory = "vegetarian" | "fish" | "meat";
 
 export type ShoppingCategory =
@@ -29,6 +31,7 @@ export type Recipe = {
   proteinG: number;
   carbsG: number;
   fatG: number;
+  baseServings?: number;
   ingredients: Ingredient[];
   instructions: string[];
   tags: string[];
@@ -40,6 +43,9 @@ export type UserSettings = {
   macroCarbsPct: number;
   macroFatPct: number;
   macroProteinPct: number;
+  defaultPeopleCount: number;
+  proteinTargets: ProteinTargetPerson[];
+  includeSnackByDefault: boolean;
   mealsPerDay: number;
   glutenFreeOnly: boolean;
   vegetarianSharePct: number;
@@ -47,6 +53,13 @@ export type UserSettings = {
   meatSharePct: number;
   excludedIngredients: string[];
   maxRecipeRepeatsPerWeek: number;
+};
+
+export type ProteinTargetPerson = {
+  id: string;
+  label: string;
+  bodyWeightKg: number;
+  proteinGPerKg: number;
 };
 
 export type MacroTotals = {
@@ -64,14 +77,58 @@ export type DailyTargets = MacroTotals & {
   };
 };
 
+export type MealTypeDefinition = {
+  id: string;
+  key: MealType;
+  label: string;
+  sortOrder: number;
+};
+
+export type RecipeMealTypeDefaultAssignment = {
+  id: string;
+  recipeId: string;
+  mealType: MealType;
+  defaultEnabled: boolean;
+};
+
+export type RecipeMealTypePreference = {
+  id: string;
+  recipeId: string;
+  mealType: MealType;
+  enabledForPlanning: boolean;
+  frequencyWeight: FrequencyWeight;
+  updatedAt: string;
+};
+
+export type EffectiveRecipeMealTypePreference = {
+  recipe: Recipe;
+  mealType: MealType;
+  defaultEnabled: boolean;
+  enabledForPlanning: boolean;
+  frequencyWeight: FrequencyWeight;
+  updatedAt: string | null;
+};
+
+export type PlannedDaySourceType = "generated" | "copied" | "manual";
+
 export type PlannedMeal = {
+  id?: string;
+  plannedDayId?: string;
+  date?: string;
   mealType: MealType;
   portionFactor: number;
   recipe: Recipe;
   calculated: MacroTotals;
+  peopleCount?: number;
+  isEnabled?: boolean;
+  includeInShoppingList?: boolean;
+  sortOrder?: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type DayPlan = {
+  id?: string;
   date: string;
   weekdayLabel: string;
   totals: MacroTotals;
@@ -84,6 +141,13 @@ export type DayPlan = {
   score: number;
   withinTolerance: boolean;
   meals: PlannedMeal[];
+  sourceType?: PlannedDaySourceType;
+  sourcePeriodStart?: string;
+  sourcePeriodEnd?: string;
+  copiedFromStart?: string | null;
+  copiedFromEnd?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type WeekPlan = {
@@ -95,6 +159,34 @@ export type WeekPlan = {
   averageCarbsPct: number;
   averageFatPct: number;
   days: DayPlan[];
+};
+
+export type PlanRange = WeekPlan;
+
+export type PlannedDayRecord = {
+  id: string;
+  date: string;
+  sourceType: PlannedDaySourceType;
+  sourcePeriodStart: string;
+  sourcePeriodEnd: string;
+  copiedFromStart: string | null;
+  copiedFromEnd: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PlannedMealRecord = {
+  id: string;
+  plannedDayId: string;
+  date: string;
+  mealType: MealType;
+  recipeId: string;
+  peopleCount: number;
+  isEnabled: boolean;
+  includeInShoppingList: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type ShoppingListItem = {

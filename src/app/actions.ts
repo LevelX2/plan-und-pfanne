@@ -44,7 +44,7 @@ export async function regenerateCurrentWeekAction(): Promise<RegenerateWeekFormS
   return {
     status: "success",
     message:
-      "Diese Aktion wird hier nicht mehr verwendet. Nutze stattdessen die direkte Wochenplanung in der App.",
+      "Diese Aktion wird hier nicht mehr verwendet. Nutze stattdessen die direkte Tagesplanung in der App.",
   };
 }
 

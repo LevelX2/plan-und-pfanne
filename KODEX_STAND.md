@@ -3,78 +3,81 @@
 ## Projekt
 
 - Projektordner: `C:\Users\Lui\OneDrive\Projekte\plan-und-pfanne`
-- Ziel: glutenfreie Wochenplan-App mit Tagesoptimierung auf Makro-Zielwerte
-- Produktmodus aktuell: `Single-User ohne Login`
-- Datenstrategie aktuell: eingebauter glutenfreier Start-Rezeptbestand plus lokaler SQLite-Laufzeitzustand
+- Ziel: glutenfreie Tagesplan-App mit Rezepten, Kochansicht und Einkaufsliste
+- Produktmodus aktuell: lokale PWA ohne Login
+- Datenstrategie aktuell: eingebauter glutenfreier Start-Rezeptbestand plus IndexedDB auf dem Gerät
 
 ## Was im Workspace real vorhanden ist
 
 - Next.js 16 mit App Router
 - React 19
 - TypeScript
-- SQLite ueber `better-sqlite3`
+- IndexedDB für produktive lokale App-Daten
 - Validierung mit `zod`
 - PWA-Grundlage mit Manifest, Icons und Service Worker
+- Legacy-Servermodule mit SQLite liegen noch im Repository, sind aber nicht der produktive PWA-Hauptpfad
 
 ## Produktive Routen
 
 - `/`
+- `/planen`
+- `/tage?date=YYYY-MM-DD`
+- `/kochen?meal=<plannedMealId>`
 - `/rezepte`
-- `/rezepte/[id]`
-- `/tage/[date]`
 - `/einkaufsliste`
+- `/historie`
 - `/einstellungen`
+- `/anmelden`
+- `/abmelden`
 - `/api/health`
 - `/api/scheduler/weekly`
 
 ## Fachliche Kernbereiche
 
-### `src/lib/db.ts`
+### `src/lib/local-db.ts`
 
-- initialisiert SQLite
-- legt Tabellen fuer Einstellungen, Rezepte, Wochenplaene, Tagesplaene und Mahlzeiten an
-- seeded Standard-Einstellungen und Demo-Rezepte
-- nutzt `data/planner.sqlite` als lokale Laufzeitdatenbank
+- verwaltet die lokale IndexedDB-Datenbank
+- hält Stores für Einstellungen, Rezepte, Mahlzeitentypen, Rezeptzulassungen, Tagespläne, geplante Mahlzeiten, Meta und Snapshots
+- verwirft alte Wochenplan-Testdaten durch das neue Schema
 
-### `src/lib/store.ts`
+### `src/lib/local-store.ts`
 
-- liest Einstellungen und Rezepte
-- filtert den Rezeptpool
-- erzeugt und speichert Wochenplaene
-- leitet Tagesansichten und Einkaufslisten ab
-- stellt eine Scheduler-Funktion fuer die naechste Woche bereit
+- seeded Rezepte und Standardzuordnungen
+- liest und speichert Einstellungen
+- verwaltet Rezeptzulassung und Gewichtung je Mahlzeitentyp
+- erzeugt freie Tagesplan-Zeiträume
+- prüft Überschneidungen
+- aktualisiert einzelne Mahlzeiten
+- kopiert historische Tage und löscht alte Pläne
 
-### `src/app/actions.ts`
+### `src/lib/planner.ts`
 
-- Server Action fuer manuelle Regenerierung
-- Server Action fuer das Speichern der Einstellungen inklusive Ruecksprung nach `/einstellungen`
+- optimiert auf Tagesebene gegen das Makroziel
+- nutzt Rezeptzulassung je Mahlzeitentyp
+- berücksichtigt Gewichtungen als weiche Scoring-Faktoren
+- hält Makros als Ein-Personen-Tagesorientierung, während Personenzahlen Zutaten und Einkaufsliste skalieren
 
 ## UI-Stand
 
-- Dashboard zeigt aktuelle Woche, Tageskarten, Makro-Abweichungen und Planungsprofil
-- Dashboard erlaubt zusätzlich das Aktivieren und Deaktivieren einzelner geplanter Mahlzeiten sowie Schnellaktionen pro Tag und fuer die ganze Woche
-- Rezeptbibliothek ist gruppiert und offline lesbar
-- Rezept-Detailseiten sind vorhanden
-- Tagesseiten sind vorhanden und mit dem Dashboard verknuepft
-- Einkaufsliste ist vorhanden, unterstuetzt `aktive Gerichte` sowie `alle geplanten Gerichte` und speichert Abhakstatus lokal pro Listenkontext
-- Einstellungsseite ist vorhanden und regeneriert die Woche beim Speichern
-
-## Scheduler-Stand
-
-- Route `/api/scheduler/weekly` ist umgesetzt
-- `force=1` erzwingt die Generierung ausserhalb des Sonntags
-- optionaler Schutz ueber `SCHEDULER_SECRET`
+- Aktueller Plan zeigt geplante Tage, Mahlzeiten und Makros
+- Generator erzeugt frei wählbare Datumsbereiche mit Überschneidungswarnung
+- Tagesdetail erlaubt Gerichtstausch, Personenzahl, Ausfall-Schalter, Einkaufslisten-Flag und zusätzliche Snacks
+- Kochansicht öffnet konkrete geplante Mahlzeiten mit temporär skalierbarer Personenzahl
+- Rezeptseite pflegt Rezeptzulassung und Gewichtung je Mahlzeitentyp
+- Einkaufsliste aggregiert aktive Mahlzeiten aus einem Datumsbereich
+- Historie zeigt Tageslisten und kopiert Quellzeiträume in neue Zielzeiträume
+- Einstellungen pflegen Standard-Personenzahl, Kalorien, Makros und löschen alte Pläne
 
 ## Build- und Laufzeitlage
 
 - `npm run lint` erfolgreich verifiziert
 - `npm run build` erfolgreich verifiziert
-- `next.config.ts` nutzt `output: "standalone"` und `serverExternalPackages: ["better-sqlite3"]`
-- die fruehere Turbopack-NFT-Warnung zur Dateinachverfolgung rund um den Datenbankpfad tritt nach engerem Pfadscoping in `src/lib/db.ts` nicht mehr auf
-- ein lokal laufender Standalone-Prozess auf `.next/standalone/server.js` kann Builds blockieren, wenn er parallel auf den frischen Build-Output zugreift
+- GitHub-Pages-Build mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` erfolgreich verifiziert
+- `next.config.ts` nutzt `output: "export"`, `trailingSlash: true`, `images.unoptimized: true` und einen buildzeitlichen `basePath`
 
 ## Wichtige Einordnung
 
-- `README.md` und Produktstand sind wieder grob konsistent
-- `data/planner.sqlite` ist kein versioniertes Demo-Artefakt, sondern lokaler Entwicklungs- und Nutzerzustand
-- der alte Ordner `C:\Users\Lui\OneDrive\Projekte\gluten freie Rezepte` wirkt aktuell wie ein leerer OneDrive-Reparse-Restzustand, nicht wie eine aktiv gepflegte zweite Arbeitskopie
+- Die App plant nicht mehr als starres Wochenmodell, sondern als flexible Tagesplanung.
+- Pro Datum gibt es maximal einen Plan.
+- Alte lokale Wochenplan-Testdaten sind nicht erhaltenswert und werden nicht migriert.
+- Lokale Daten bleiben an dieselbe App-Origin gebunden.
