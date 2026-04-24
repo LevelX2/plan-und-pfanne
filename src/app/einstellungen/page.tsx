@@ -104,7 +104,7 @@ export default function SettingsPage() {
         setLoadError(
           error instanceof Error
             ? error.message
-            : "Die lokalen Einstellungen konnten nicht geladen werden.",
+            : "Die Einstellungen konnten nicht geladen werden.",
         );
       })
       .finally(() => {
@@ -135,7 +135,7 @@ export default function SettingsPage() {
         <section className={styles.hero}>
           <div className={styles.heroText}>
             <p className={styles.eyebrow}>Planungsprofil</p>
-            <h1>Deine lokalen Einstellungen werden geladen.</h1>
+            <h1>Deine Einstellungen werden geladen.</h1>
             <p className={styles.lead}>
               Kalorienziel, Makros, Zielmix und Ausschlüsse kommen direkt aus dem Gerätespeicher.
             </p>
@@ -143,9 +143,9 @@ export default function SettingsPage() {
 
           <aside className={styles.heroPanel}>
             <div>
-              <p className={styles.sectionKicker}>Lokale PWA</p>
-              <h2>Bereite Planungsprofil vor</h2>
-              <p>Die App initialisiert dein lokales Profil und die aktuelle Woche ohne Login.</p>
+              <p className={styles.sectionKicker}>App-Start</p>
+              <h2>Planungsprofil vorbereiten</h2>
+              <p>Die App lädt dein Planungsprofil und die aktuelle Woche.</p>
             </div>
           </aside>
         </section>
@@ -161,17 +161,17 @@ export default function SettingsPage() {
         <section className={styles.hero}>
           <div className={styles.heroText}>
             <p className={styles.eyebrow}>Planungsprofil</p>
-            <h1>Die lokalen Einstellungen konnten nicht geladen werden.</h1>
+            <h1>Die Einstellungen konnten nicht geladen werden.</h1>
             <p className={styles.lead}>
-              {loadError ?? "Bitte prüfe den lokalen Store oder initialisiere die App-Daten erneut."}
+              {loadError ?? "Bitte prüfe den App-Speicher oder initialisiere die App-Daten erneut."}
             </p>
           </div>
 
           <aside className={styles.heroPanel}>
             <div>
               <p className={styles.sectionKicker}>Status</p>
-              <h2>Lokaler Start fehlgeschlagen</h2>
-              <p>Ohne lokale Daten kann das Planungsprofil auf diesem Gerät nicht verwendet werden.</p>
+              <h2>Start fehlgeschlagen</h2>
+              <p>Ohne gespeicherte Daten kann das Planungsprofil nicht verwendet werden.</p>
             </div>
           </aside>
         </section>
@@ -196,11 +196,11 @@ export default function SettingsPage() {
       <section className={styles.hero}>
         <div className={styles.heroText}>
           <p className={styles.eyebrow}>Planungsprofil</p>
-          <h1>Dein Wochenplan soll lokal zu deinem Alltag passen.</h1>
+          <h1>Dein Wochenplan soll zu deinem Alltag passen.</h1>
           <p className={styles.lead}>
             Hier steuerst du Kalorienziel, Makroverteilung, Mahlzeitenrhythmus, Zielmix für Mittag
-            und Abend sowie Ausschlüsse. Beim Speichern wird die aktuelle Woche direkt auf diesem
-            Gerät mit den neuen Vorgaben neu erzeugt.
+            und Abend sowie Ausschlüsse. Beim Speichern wird die aktuelle Woche direkt mit den
+            neuen Vorgaben neu erzeugt.
           </p>
         </div>
 
@@ -209,7 +209,7 @@ export default function SettingsPage() {
             <p className={styles.sectionKicker}>Aktiver Rahmen</p>
             <h2>{formatCalories(settings.calorieTarget)} pro Tag</h2>
             <p>
-              Glutenfrei bleibt fest gesetzt. Der Zielmix wirkt lokal als weiche Verteilung für
+              Glutenfrei bleibt fest gesetzt. Der Zielmix wirkt als weiche Verteilung für
               Mittagessen und Abendessen im Wochenplan.
             </p>
           </div>
@@ -249,7 +249,7 @@ export default function SettingsPage() {
             <h2>Planungswerte anpassen</h2>
             <p className={styles.hint}>
               Makroverteilung und Zielmix müssen jeweils zusammen 100 % ergeben. Ausgeschlossene
-              Zutaten trennst du mit Kommas. Nach dem Speichern wird die aktuelle Woche lokal neu
+              Zutaten trennst du mit Kommas. Nach dem Speichern wird die aktuelle Woche neu
               geplant.
             </p>
 
@@ -266,7 +266,7 @@ export default function SettingsPage() {
         <aside className={styles.sideColumn}>
           <article className={styles.summaryCard}>
             <p className={styles.sectionKicker}>Aktive Regeln</p>
-            <h2>Was der lokale Planer gerade beachtet</h2>
+            <h2>Was der Planer gerade beachtet</h2>
             <dl className={styles.summaryList}>
               <div>
                 <dt>Glutenfrei</dt>
@@ -296,26 +296,26 @@ export default function SettingsPage() {
 
           <article className={styles.statusCard}>
             <p className={styles.sectionKicker}>Sofortaktion</p>
-            <h2>Diese Woche lokal neu berechnen</h2>
+            <h2>Diese Woche neu planen</h2>
             <p>
-              Wenn du nur einen frischen Wochenvorschlag möchtest, kannst du die aktuelle Woche
-              hier auch ohne Netz direkt auf dem Gerät neu erzeugen.
+              Wenn du einen frischen Wochenvorschlag möchtest, kannst du die aktuelle Woche hier
+              jederzeit neu erzeugen. Dafür braucht die App keine Verbindung.
             </p>
             <RegenerateWeekForm
               buttonClassName={styles.secondaryButton}
               errorMessageClassName={styles.actionFeedbackError}
-              idleLabel="Woche lokal neu generieren"
+              idleLabel="Woche neu planen"
               layoutClassName={styles.actionStack}
               onSuccess={async () => {
-                await refreshPageData("Woche lokal neu generiert");
+                await refreshPageData("Woche neu geplant");
               }}
-              pendingLabel="Wird lokal neu geplant ..."
+              pendingLabel="Plant Woche neu ..."
               successMessageClassName={styles.actionFeedbackSuccess}
             />
           </article>
 
           <article className={styles.infoCard}>
-            <p className={styles.sectionKicker}>Lokaler Status</p>
+            <p className={styles.sectionKicker}>App-Status</p>
             <h2>Was zuletzt auf diesem Gerät passiert ist</h2>
             <ul className={styles.mealList}>
               <li>
@@ -338,7 +338,7 @@ export default function SettingsPage() {
               </li>
               <li>
                 <div>
-                  <span>Verlaufseinträge lokal</span>
+                  <span>Verlaufseinträge</span>
                   <strong>{recentHistory.length}</strong>
                 </div>
               </li>
@@ -352,7 +352,7 @@ export default function SettingsPage() {
 
           <article className={styles.infoCard}>
             <p className={styles.sectionKicker}>Auswirkung</p>
-            <h2>Welche Bereiche sich lokal mit ändern</h2>
+            <h2>Welche Bereiche sich mit ändern</h2>
             <ul className={styles.mealList}>
               <li>
                 <div>

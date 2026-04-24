@@ -58,7 +58,7 @@ export async function requestLoginCodeAction(
   return {
     status: "code-sent",
     message:
-      "Für die lokale PWA ist keine Anmeldung mehr nötig. Nutze den Hinweis unten und öffne anschließend direkt das Dashboard.",
+      "Diese Seite wird nicht mehr verwendet. Öffne stattdessen direkt das Dashboard.",
     email: parsed.data.email,
     displayName: safeDisplayName,
     nextPath,
@@ -87,6 +87,6 @@ export async function verifyLoginCodeAction(
   return {
     status: "error",
     message:
-      "Die frühere Code-Bestätigung wurde für GitHub Pages abgeschaltet. Öffne stattdessen direkt das Dashboard im lokalen Modus.",
+      "Die frühere Code-Bestätigung wird nicht mehr verwendet. Öffne stattdessen direkt das Dashboard.",
   };
 }

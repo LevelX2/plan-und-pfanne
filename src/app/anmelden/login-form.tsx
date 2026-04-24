@@ -10,18 +10,17 @@ export function LoginForm({ nextPath }: LoginFormProps) {
     <div className={styles.grid}>
       <section className={styles.card}>
         <div className={styles.cardHeader}>
-          <p className={styles.eyebrow}>Lokaler Modus</p>
-          <h2>Direkt starten statt einloggen</h2>
+          <p className={styles.eyebrow}>Hinweis</p>
+          <h2>Zum Dashboard wechseln</h2>
           <p>
-            Für GitHub Pages und den lokalen PWA-Betrieb haben wir den früheren Login deaktiviert.
-            Die App soll mittelfristig vollständig mit lokalen Gerätedaten laufen.
+            Eine Anmeldung ist in der aktuellen App nicht vorgesehen. Wenn du hier gelandet bist,
+            kannst du direkt zurück ins Dashboard springen.
           </p>
         </div>
 
         <div className={styles.form}>
           <p className={styles.statusSuccess}>
-            Dieser Bereich bleibt vorerst als Legacy-Hinweis bestehen, damit alte Links nicht ins
-            Leere laufen.
+            Dieser Pfad bleibt nur erreichbar, damit ältere Verweise weiter funktionieren.
           </p>
           <Link className={styles.submitButton} href={nextPath}>
             Zum Dashboard
@@ -31,18 +30,18 @@ export function LoginForm({ nextPath }: LoginFormProps) {
 
       <aside className={styles.sideCard}>
         <div className={styles.cardHeader}>
-          <p className={styles.eyebrow}>Migration</p>
-          <h2>Was sich geändert hat</h2>
+          <p className={styles.eyebrow}>Orientierung</p>
+          <h2>Wofür der Pfad noch da ist</h2>
           <p>
-            Der servergebundene Login wurde aus dem GitHub-Pages-Zielpfad entfernt, damit der
-            statische Export nicht an Cookies, Sessions oder Mailversand hängt.
+            Manche alten Lesezeichen oder direkte Verweise können noch hier landen. Deshalb bleibt
+            diese Seite erreichbar.
           </p>
         </div>
 
         <ul>
-          <li>Installationen laufen künftig über GitHub Pages unter einem stabilen Unterpfad.</li>
-          <li>Service Worker und Manifest berücksichtigen jetzt den GitHub-Pages-Basis-Pfad.</li>
-          <li>Formulare für echte lokale Speicherung folgen mit dem clientseitigen Datenmodell.</li>
+          <li>Die App startet direkt im Dashboard.</li>
+          <li>Wochenplan, Rezepte und Einkaufsliste sind ohne Umweg erreichbar.</li>
+          <li>Von hier aus kannst du jederzeit sofort zurückspringen.</li>
         </ul>
       </aside>
     </div>

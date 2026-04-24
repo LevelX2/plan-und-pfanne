@@ -7,7 +7,7 @@ export async function GET() {
     ok: true,
     mode: "static-export",
     message:
-      "Die frühere Logout-API bleibt auf GitHub Pages nur noch als statischer Legacy-Hinweis bestehen.",
+      "Dieser Endpunkt wird von der aktuellen App nicht mehr verwendet und bleibt nur aus Kompatibilitätsgründen erreichbar.",
     timestamp: buildTimestamp,
   });
 }

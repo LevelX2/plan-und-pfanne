@@ -1,29 +1,29 @@
 # Plan und Pfanne
 
-`Plan und Pfanne` wird aktuell auf eine lokale, statisch exportierbare PWA für GitHub Pages umgestellt.
+`Plan und Pfanne` ist eine installierbare Wochenplan- und Rezept-App für eine Person. Die App speichert Wochenplan, Einstellungen, Verlauf, Rezeptbestand und Einkaufsfortschritt auf dem Gerät und läuft als statisch exportierte PWA über GitHub Pages.
 
-Der Zielpfad ist:
+## Produktmodell
 
-- Auslieferung als installierbare PWA über GitHub Pages
-- stabile App-Origin unter `https://<owner>.github.io/<repo>/`
-- lokale Nutzung auf dem Handy
-- keine Pflicht zu Benutzerkonten, Sessions oder serverseitigen APIs im Pages-Zielpfad
+- direkte Nutzung ohne Kontoverwaltung
+- Speicherung auf dem Gerät über IndexedDB
+- installierbar auf Handy und Desktop über den Browser
+- zentrale Ansichten und Schreibzugriffe auch offline nutzbar
+- zusätzlicher Rezeptnachschub später per Import oder App-Update
 
-## Aktueller Zuschnitt des Pages-Zielpfads
+## Was aktuell bereits funktioniert
 
-Der GitHub-Pages-Build ist jetzt auf `Next.js static export` zugeschnitten:
+- Dashboard mit aktiven Gerichten, Tageskarten und Wochenübersicht
+- Rezeptbibliothek mit aufklappbaren Details
+- Tagesansicht und Einkaufsliste
+- Planungsprofil mit direkter Neuberechnung der Woche
+- Speicherung von Auswahlzuständen und Einkaufshäkchen auf diesem Gerät
 
-- `output: "export"` in `next.config.ts`
-- `trailingSlash: true` für statische Verzeichnisrouten
-- `basePath` über `NEXT_PUBLIC_BASE_PATH`, damit die App sauber unter `/<repo>/` läuft
-- PWA-Manifest, Service Worker und Registrierung berücksichtigen diesen Unterpfad
-- GitHub Actions baut und deployt nach `out/`
+## Wichtige Grenzen
 
-Wichtig:
-
-- Der frühere servergebundene Login ist im Pages-Zielpfad bewusst entschärft.
-- Die früheren API-Routen liefern dort nur noch statische Legacy-Hinweise.
-- Die vollständige lokale Datenhaltung wird in weiteren Schritten clientseitig ausgebaut.
+- Die Daten bleiben an dieses Gerät und dieselbe App-Origin gebunden.
+- Es gibt aktuell keinen Export-, Backup- oder Gerätewechselpfad.
+- Neue Rezepte kommen im aktuellen Stand über eingebauten Startbestand; ein Dateiimport oder Feed ist noch nicht umgesetzt.
+- Frühere Routen wie `/anmelden`, `/abmelden` und einige `/api/*`-Pfade bleiben nur aus Kompatibilitätsgründen erreichbar und gehören nicht mehr zum normalen Produktfluss.
 
 ## Lokale Entwicklung
 
@@ -40,7 +40,15 @@ npm run dev:handy
 
 Dann die lokale IPv4-Adresse im Browser des Handys öffnen, zum Beispiel `http://192.168.178.23:3000`.
 
-## Statischen Build lokal prüfen
+## Build und Vorschau
+
+Der GitHub-Pages-Build ist auf `Next.js static export` zugeschnitten:
+
+- `output: "export"` in `next.config.ts`
+- `trailingSlash: true` für statische Verzeichnisrouten
+- `basePath` über `NEXT_PUBLIC_BASE_PATH`, damit die App sauber unter `/<repo>/` läuft
+- PWA-Manifest, Service Worker und Registrierung berücksichtigen diesen Unterpfad
+- GitHub Actions baut und deployt nach `out/`
 
 ```bash
 npm run lint
@@ -50,7 +58,7 @@ npm run preview
 
 `npm run preview` serviert den Inhalt aus `out/` und entspricht damit dem GitHub-Pages-Zielpfad deutlich besser als ein klassischer Next-Server.
 
-## GitHub Pages aktivieren
+## Deployment über GitHub Pages
 
 In GitHub:
 
@@ -62,9 +70,9 @@ In GitHub:
 
 Der Workflow liegt unter [.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml).
 
-## Direkte Live-URL
+## Live-URL
 
-Die aktuell deployte Test- und Live-URL für dieses Repository ist:
+Die aktuell deployte URL für dieses Repository ist:
 
 - `https://levelx2.github.io/plan-und-pfanne/`
 
@@ -72,7 +80,7 @@ Direkt öffnen:
 
 - [Plan und Pfanne auf GitHub Pages](https://levelx2.github.io/plan-und-pfanne/)
 
-## Basis-Pfad und URL
+## Basis-Pfad und App-Origin
 
 Standardmäßig baut der Workflow für eine GitHub-Projektseite:
 
@@ -88,7 +96,7 @@ Optional können später Repository-Variablen gesetzt werden:
 - `PAGES_BASE_PATH`
 - `PAGES_SITE_URL`
 
-Damit lässt sich ein späterer Wechsel auf eine eigene Domain vorbereiten, ohne den Workflow neu zu schreiben.
+Damit lässt sich ein späterer Wechsel auf eine eigene Domain vorbereiten, ohne den Workflow neu zu schreiben. Weil die App-Daten an dieselbe Origin gebunden sind, sollte ein solcher Wechsel bewusst geplant werden.
 
 ## PWA-Verhalten unter GitHub Pages
 
@@ -99,12 +107,6 @@ Die PWA ist auf den GitHub-Pages-Unterpfad zugeschnitten:
 - `public/service-worker.js` leitet Cache-Scope und Offline-Fallbacks dynamisch aus `self.registration.scope` ab
 
 Dadurch bleiben Manifest, Service Worker und Offline-Fallbacks auch unter `/<repo>/` konsistent.
-
-## Bekannte Grenzen des aktuellen Migrationsstands
-
-- Die Seiten für Einstellungen und Wochen-Neugenerierung zeigen im Pages-Zielpfad derzeit noch transparente Legacy-Hinweise statt echter lokaler Persistenz.
-- Die früheren Routen `/anmelden`, `/abmelden` und `/api/*` bleiben als kompatible Hinweisrouten erhalten, übernehmen aber keine echte Serverfunktion mehr.
-- Für den vollständigen Static-Export müssen dynamische Seiten außerhalb dieses Plattformbereichs weiterhin auf statische Parameter oder andere exportfähige Pfade zugeschnitten werden.
 
 ## Relevante Dateien für diesen Plattformpfad
 

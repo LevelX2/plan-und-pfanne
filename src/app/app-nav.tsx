@@ -3,27 +3,11 @@
 import Link from "next/link";
 import styles from "./app-nav.module.css";
 
-export type AppNavUser = {
-  email: string;
-  displayName: string | null;
-};
-
 type AppNavProps = {
   currentPath: string;
-  user?: AppNavUser | null;
-};
-
-function labelForUser(user?: AppNavUser | null) {
-  if (!user) {
-    return "Lokale PWA";
-  }
-
-  return user.displayName?.trim() || user.email;
 }
 
-export function AppNav({ currentPath, user }: AppNavProps) {
-  const hasUser = Boolean(user?.email);
-
+export function AppNav({ currentPath }: AppNavProps) {
   return (
     <nav className={styles.nav}>
       <div className={styles.links}>
@@ -45,19 +29,6 @@ export function AppNav({ currentPath, user }: AppNavProps) {
         >
           Einstellungen
         </Link>
-      </div>
-
-      <div className={styles.account}>
-        <div className={styles.accountMeta}>
-          <strong>{labelForUser(user)}</strong>
-          <span>{hasUser ? user?.email : "Deine Daten bleiben auf diesem Gerät."}</span>
-        </div>
-
-        {hasUser ? (
-          <Link className={styles.logoutLink} href="/abmelden">
-            Abmelden
-          </Link>
-        ) : null}
       </div>
     </nav>
   );

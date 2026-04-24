@@ -33,7 +33,7 @@ function resolveLocalStoreFunction<TArgs extends unknown[], TResult>(names: stri
     }
   }
 
-  throw new Error(`Lokaler Store unterstützt ${names.join(" / ")} noch nicht.`);
+  throw new Error(`Der App-Speicher unterstützt ${names.join(" / ")} noch nicht.`);
 }
 
 function ensureLocalAppData() {
@@ -60,11 +60,11 @@ function successMessageFromResult(result: unknown) {
     }
   }
 
-  return "Die aktuelle Woche wurde lokal neu geplant.";
+  return "Die aktuelle Woche wurde neu geplant.";
 }
 
 function errorMessageFromError(error: unknown) {
-  return error instanceof Error ? error.message : "Die Woche konnte lokal nicht neu geplant werden.";
+  return error instanceof Error ? error.message : "Die Woche konnte nicht neu geplant werden.";
 }
 
 export function RegenerateWeekForm({

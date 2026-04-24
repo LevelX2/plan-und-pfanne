@@ -47,7 +47,7 @@ function normalizeBasePath(value: string | undefined) {
   return `/${trimmed.replace(/^\/+|\/+$/g, "")}`;
 }
 
-const APP_ICON_SRC = `${normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH)}/icon-192.png`;
+const DASHBOARD_BRAND_SRC = `${normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH)}/brand-mark-dashboard.png`;
 
 type RecipeCounts = {
   breakfast: number;
@@ -260,7 +260,7 @@ function resolveLocalStoreFunction<TArgs extends unknown[], TResult>(names: stri
     }
   }
 
-  throw new Error(`Lokaler Store unterstützt ${names.join(" / ")} noch nicht.`);
+  throw new Error(`Der App-Speicher unterstützt ${names.join(" / ")} noch nicht.`);
 }
 
 function ensureLocalAppData() {
@@ -316,14 +316,14 @@ function extractTimestamp(value: unknown, keys: string[]) {
 function buildStatusEntries(snapshot: HomeSnapshot): LocalStatusEntry[] {
   const entries: LocalStatusEntry[] = [
     {
-      label: "Woche lokal erstellt",
+      label: "Woche erstellt",
       value: formatSavedAt(snapshot.weekPlan.generatedAt),
       hint: "Dieser Stand stammt direkt aus dem Gerätespeicher.",
     },
     {
       label: "Zuletzt geladen",
       value: formatSavedAt(snapshot.loadedAt),
-      hint: "Die App liest Dashboard und Einstellungen lokal auf diesem Gerät.",
+      hint: "Dashboard und Einstellungen wurden aus dem Gerätespeicher geladen.",
     },
   ];
 
@@ -349,7 +349,7 @@ function buildStatusEntries(snapshot: HomeSnapshot): LocalStatusEntry[] {
     entries.push({
       label: "Rezeptbestand ergänzt",
       value: formatSavedAt(importTimestamp),
-      hint: "Nur sichtbar, wenn der lokale Store einen Importzeitpunkt liefert.",
+      hint: "Nur sichtbar, wenn ein Importzeitpunkt vorliegt.",
     });
   }
 
@@ -378,17 +378,17 @@ async function loadHomeSnapshot() {
 
   const settings = unwrapSettings(rawSettings);
   if (!settings) {
-    throw new Error("Lokale Einstellungen konnten nicht geladen werden.");
+    throw new Error("Die Einstellungen konnten nicht geladen werden.");
   }
 
   const weekPlan = unwrapWeekPlan(rawWeekPlan);
   if (!weekPlan) {
-    throw new Error("Der lokale Wochenplan konnte nicht geladen werden.");
+    throw new Error("Der Wochenplan konnte nicht geladen werden.");
   }
 
   const recipes = unwrapRecipes(rawRecipes);
   if (!recipes) {
-    throw new Error("Der lokale Rezeptbestand konnte nicht gelesen werden.");
+    throw new Error("Der Rezeptbestand konnte nicht gelesen werden.");
   }
 
   return {
@@ -460,7 +460,7 @@ export function HomeClient() {
         }
 
         const message =
-          error instanceof Error ? error.message : "Das lokale Dashboard konnte nicht geladen werden.";
+          error instanceof Error ? error.message : "Das Dashboard konnte nicht geladen werden.";
         setLoadError(message);
       })
       .finally(() => {
@@ -575,7 +575,7 @@ export function HomeClient() {
       createUserScopedStorageKey(storageNamespace, "home-snapshot-v3"),
       snapshot,
     ).catch((error) => {
-      console.error("Das lokale Dashboard konnte nicht zwischengespeichert werden.", error);
+      console.error("Das Dashboard konnte nicht zwischengespeichert werden.", error);
     });
   }, [snapshot, storageNamespace]);
 
@@ -586,19 +586,18 @@ export function HomeClient() {
         <section className={styles.hero}>
           <div className={styles.heroText}>
             <p className={styles.eyebrow}>Plan und Pfanne</p>
-            <h1>Dein lokales Dashboard wird vorbereitet.</h1>
+            <h1>Dein Dashboard wird vorbereitet.</h1>
             <p className={styles.lead}>
-              Einstellungen, Wochenplan und Rezeptbestand werden direkt aus dem Gerätespeicher
-              geladen.
+              Einstellungen, Wochenplan und Rezeptbestand werden aus dem Gerätespeicher geladen.
             </p>
           </div>
 
           <div className={styles.heroPanel}>
-            <p className={styles.panelLabel}>Lokale App</p>
-            <h2>Initialisiere Daten auf diesem Gerät</h2>
+            <p className={styles.panelLabel}>App-Start</p>
+            <h2>Daten auf diesem Gerät vorbereiten</h2>
             <p className={styles.panelCopy}>
-              Die App seedet den lokalen Bestand und bereitet die aktuelle Woche für die Nutzung
-              ohne Login und ohne Serverabgleich vor.
+              Die App füllt den Startbestand und bereitet die aktuelle Woche für die erste Nutzung
+              vor.
             </p>
           </div>
         </section>
@@ -613,17 +612,17 @@ export function HomeClient() {
         <section className={styles.hero}>
           <div className={styles.heroText}>
             <p className={styles.eyebrow}>Plan und Pfanne</p>
-            <h1>Das lokale Dashboard konnte nicht geladen werden.</h1>
+            <h1>Das Dashboard konnte nicht geladen werden.</h1>
             <p className={styles.lead}>
-              {loadError ?? "Bitte prüfe den lokalen Store oder initialisiere die App-Daten erneut."}
+              {loadError ?? "Bitte prüfe den App-Speicher oder initialisiere die App-Daten erneut."}
             </p>
           </div>
 
           <div className={styles.heroPanel}>
             <p className={styles.panelLabel}>Status</p>
-            <h2>Lokaler Start fehlgeschlagen</h2>
+            <h2>Start fehlgeschlagen</h2>
             <p className={styles.panelCopy}>
-              Ohne lokale Daten kann die App keinen Wochenplan auf diesem Gerät darstellen.
+              Ohne gespeicherte Daten kann die App keinen Wochenplan anzeigen.
             </p>
           </div>
         </section>
@@ -664,29 +663,28 @@ export function HomeClient() {
         <div className={`${styles.heroText} ${!isIntroExpanded ? styles.heroTextCollapsed : ""}`}>
           <div className={styles.heroTitleRow}>
             <Image
-              alt=""
-              aria-hidden="true"
-              className={styles.heroAppIcon}
-              height={52}
-              src={APP_ICON_SRC}
-              width={52}
+              alt="Plan und Pfanne"
+              className={styles.heroBrandImage}
+              height={420}
+              priority
+              src={DASHBOARD_BRAND_SRC}
+              width={420}
             />
-            <h1 className={styles.heroAppName}>Plan und Pfanne</h1>
+            <h1 className={styles.heroVisuallyHidden}>Plan und Pfanne</h1>
           </div>
           {isIntroExpanded ? (
             <p className={styles.lead}>
-              Plan und Pfanne ist deine lokale Koch- und Planungszentrale für den Alltag. Die App
-              speichert deinen Wochenplan, aktivierte Gerichte, persönlichen Ziele, Einkaufshäkchen
-              und den aktuellen Rezeptbestand direkt auf diesem Gerät, damit du auch ohne Login und
-              ohne ständigen Serverkontakt weiterarbeiten kannst. Auf der Startseite siehst du auf
-              einen Blick, welche Tage schon aktiv geplant sind, wie gut Kalorien und Makros zu
-              deinem Ziel passen und welche Gerichte wirklich in die Einkaufsliste einfließen. In
-              der Rezeptübersicht kannst du den Bestand kompakt durchsuchen und einzelne Gerichte
-              nur dann aufklappen, wenn du Zutaten oder Zubereitung brauchst. Die Einkaufsliste
-              konzentriert sich anschließend wahlweise nur auf deine aktiven Gerichte oder auf die
-              komplette Woche, damit du beim Einkaufen und Kochen genau den Ausschnitt vor dir
-              hast, der gerade sinnvoll ist. Neue Rezepte kannst du später per Import oder über
-              eine Quelle ergänzen.
+              Plan und Pfanne ist deine Koch- und Planungszentrale für den Alltag. Die App speichert
+              Wochenplan, aktivierte Gerichte, persönliche Ziele, Einkaufshäkchen und den aktuellen
+              Rezeptbestand auf diesem Gerät, damit du auch unterwegs und offline weiterarbeiten
+              kannst. Auf der Startseite siehst du auf einen Blick, welche Tage schon aktiv geplant
+              sind, wie gut Kalorien und Makros zu deinem Ziel passen und welche Gerichte wirklich
+              in die Einkaufsliste einfließen. In der Rezeptübersicht kannst du den Bestand kompakt
+              durchsuchen und einzelne Gerichte nur dann aufklappen, wenn du Zutaten oder
+              Zubereitung brauchst. Die Einkaufsliste konzentriert sich anschließend wahlweise nur
+              auf deine aktiven Gerichte oder auf die komplette Woche, damit du beim Einkaufen und
+              Kochen genau den Ausschnitt vor dir hast, der gerade sinnvoll ist. Weitere Rezepte
+              kannst du später per Import oder über eine Quelle ergänzen.
             </p>
           ) : null}
           <button
@@ -708,7 +706,7 @@ export function HomeClient() {
             {" "}Mix: {settings.vegetarianSharePct}/{settings.fishSharePct}/{settings.meatSharePct}.
           </p>
           <p className={styles.panelLabel}>
-            Zuletzt lokal neu geplant: {formatSavedAt(weekPlan.generatedAt)}
+            Zuletzt neu geplant: {formatSavedAt(weekPlan.generatedAt)}
           </p>
 
           <div className={styles.heroActions}>
@@ -716,10 +714,10 @@ export function HomeClient() {
               <RegenerateWeekForm
                 buttonClassName={styles.primaryButton}
                 errorMessageClassName={styles.actionFeedbackError}
-                idleLabel="Woche lokal neu generieren"
+                idleLabel="Woche neu planen"
                 layoutClassName={styles.regenerateAction}
                 onSuccess={refreshHomeSnapshot}
-                pendingLabel="Wird lokal neu geplant ..."
+                pendingLabel="Plant Woche neu ..."
                 successMessageClassName={styles.actionFeedbackSuccess}
               />
               <Link className={styles.secondaryButton} href="/rezepte">
@@ -730,7 +728,7 @@ export function HomeClient() {
               <span>{weekPlan.days.length} Tage geplant</span>
               <span>{allShoppingItemCount} Einkaufspositionen gesamt</span>
               <span>
-                {recipeMixPool ? `${recipeMixPool.total} Mix-Rezepte steuerbar` : "Lokaler Rezeptpool aktiv"}
+                {recipeMixPool ? `${recipeMixPool.total} Mix-Rezepte steuerbar` : "Rezeptpool aktiv"}
               </span>
               <span>
                 {selectedMealCount === 0
@@ -744,19 +742,19 @@ export function HomeClient() {
 
       <section className={styles.offlineCard}>
         <div>
-          <p className={styles.sectionKicker}>Lokaler Betrieb</p>
-          <h2>{isOffline ? "Gerät offline, Planung läuft weiter" : "Lokal gespeichert und updatebereit"}</h2>
+          <p className={styles.sectionKicker}>Speicherung und Verbindung</p>
+          <h2>{isOffline ? "Offline weiterplanen" : "Auf diesem Gerät gespeichert"}</h2>
           <p className={styles.offlineCopy}>
             {isOffline
-              ? "Die lokale Datenbank bleibt nutzbar: Woche planen, aktive Gerichte pflegen und Einstellungen anpassen funktioniert auch ohne Verbindung. Nur Rezeptimporte oder neue App-Versionen warten auf später."
-              : "Die App arbeitet bereits lokal auf diesem Gerät. Solange du online bist, kannst du zusätzlich neue Rezeptquellen abrufen oder eine frisch veröffentlichte Version übernehmen."}
+              ? "Wochenplan, aktive Gerichte, Einkaufshäkchen und Einstellungen bleiben auch ohne Verbindung nutzbar. Nur Rezeptimporte oder neue App-Versionen warten auf später."
+              : "Die App speichert Wochenplan, Einstellungen und Einkaufshäkchen auf diesem Gerät. Solange du online bist, kannst du zusätzlich neue Rezeptquellen abrufen oder eine frisch veröffentlichte Version übernehmen."}
           </p>
         </div>
         <div className={styles.offlineMeta}>
           <span className={isOffline ? styles.statusWarn : styles.statusGood}>
-            {isOffline ? "offline, aber voll lokal nutzbar" : "online, lokale Daten aktuell geladen"}
+            {isOffline ? "offline nutzbar" : "bereit und auf diesem Gerät gespeichert"}
           </span>
-          <p>Zuletzt lokal neu geplant: {formatSavedAt(weekPlan.generatedAt)}</p>
+          <p>Zuletzt neu geplant: {formatSavedAt(weekPlan.generatedAt)}</p>
           <p>Zuletzt auf diesem Gerät geladen: {formatSavedAt(loadedAt)}</p>
         </div>
       </section>
@@ -796,7 +794,7 @@ export function HomeClient() {
               </div>
               <p className={styles.sectionHint}>
                 Jede Karte zeigt Tagessumme, Makroabweichung und die geplanten Mahlzeiten aus dem
-                lokalen Wochenplan. Aktiviere hier die Gerichte, die du wirklich kochen möchtest.
+                aktuellen Wochenplan. Aktiviere hier die Gerichte, die du wirklich kochen möchtest.
               </p>
             </div>
 
@@ -1006,15 +1004,15 @@ export function HomeClient() {
               </li>
             </ul>
             <Link className={styles.textLink} href="/rezepte">
-              Alle lokal verfügbaren Rezepte mit Zutaten und Zubereitung ansehen
+              Alle Rezepte mit Zutaten und Zubereitung ansehen
             </Link>
             <Link className={styles.textLink} href="/einstellungen">
-              Planungsprofil lokal anpassen
+              Planungsprofil anpassen
             </Link>
           </article>
 
           <article className={styles.sectionCard}>
-            <p className={styles.sectionKicker}>Lokaler Verlauf</p>
+            <p className={styles.sectionKicker}>Verlauf</p>
             <h2>Was auf diesem Gerät zuletzt passiert ist</h2>
             <ul className={styles.todoList}>
               {statusEntries.map((entry) => (
@@ -1028,15 +1026,14 @@ export function HomeClient() {
           </article>
 
           <article className={styles.sectionCard}>
-            <p className={styles.sectionKicker}>Unterwegs nutzbar</p>
-            <h2>Was lokal auf dem Handy funktioniert</h2>
+            <p className={styles.sectionKicker}>Auf diesem Gerät</p>
+            <h2>Was die App schon direkt speichert</h2>
             <ul className={styles.todoList}>
-              <li>Wochenplan mit Tageskarten und Mahlzeiten</li>
-              <li>Aktive Gerichtsauswahl pro Woche im Gerätespeicher</li>
-              <li>Planungsprofil lokal speichern und direkt neu anwenden</li>
-              <li>Einkaufsliste mit lokalem Abhaken</li>
-              <li>Woche jederzeit lokal neu generieren</li>
-              <li>Neue Rezepte später per Import oder Feed ergänzen</li>
+              <li>Wochenplan mit Tageskarten, Mahlzeiten und Tagessummen</li>
+              <li>Aktive Gerichte, Planungsprofil und Einkaufshäkchen bleiben auf diesem Gerät erhalten</li>
+              <li>Woche jederzeit neu planen und sofort weiterverwenden</li>
+              <li>Rezeptbibliothek mit Zutaten, Zubereitung und aufklappbaren Details</li>
+              <li>Als nächster Schritt: weitere Rezepte per Import oder Quelle ergänzen</li>
             </ul>
           </article>
 

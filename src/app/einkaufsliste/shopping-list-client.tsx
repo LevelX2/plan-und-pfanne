@@ -42,7 +42,7 @@ async function loadCurrentWeekPlanFromLocalStore() {
   }
 
   if (typeof api.getCurrentLocalWeekPlan !== "function") {
-    throw new Error("Der lokale Wochenplan ist noch nicht verfügbar.");
+    throw new Error("Der Wochenplan ist noch nicht verfügbar.");
   }
 
   return api.getCurrentLocalWeekPlan();
@@ -341,7 +341,7 @@ export function ShoppingListClient() {
         setLoadError(
           error instanceof Error
             ? error.message
-            : "Die lokale Einkaufsliste konnte nicht geladen werden.",
+            : "Die Einkaufsliste konnte nicht geladen werden.",
         );
       } finally {
         if (!cancelled) {
@@ -365,25 +365,25 @@ export function ShoppingListClient() {
 
       <section className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Mobile Einkaufsliste</p>
-          <h1>Deine Woche ist lokal als Einkaufsliste bereit.</h1>
+          <p className={styles.eyebrow}>Einkaufsliste</p>
+          <h1>Deine Woche ist als Einkaufsliste bereit.</h1>
           <p className={styles.lead}>
             Öffne diese Seite auf dem Handy und hake die Zutaten direkt beim Einkaufen ab. Der
-            Fortschritt bleibt zusammen mit deiner aktiven Auswahl nur auf diesem Gerät gespeichert.
+            Fortschritt bleibt zusammen mit deiner aktiven Auswahl auf diesem Gerät gespeichert.
           </p>
         </div>
 
         <div className={styles.heroStat}>
           <span>
-            {isLoading ? "Lokale Datenbank wird vorbereitet" : weekPlan ? "Aktive Woche" : "Noch kein Plan"}
+            {isLoading ? "Daten werden vorbereitet" : weekPlan ? "Aktive Woche" : "Noch kein Plan"}
           </span>
           <strong>
-            {weekPlan ? formatDateRange(weekPlan.startDate, weekPlan.endDate) : "Lokal"}
+            {weekPlan ? formatDateRange(weekPlan.startDate, weekPlan.endDate) : "Noch keine Woche"}
           </strong>
           <p>
             {weekPlan
               ? `${totalMeals} geplante Gerichte. Wechsle unten zwischen aktivem Kochfokus und kompletter Woche.`
-              : "Sobald ein lokaler Wochenplan vorhanden ist, erscheint hier automatisch deine Einkaufsliste."}
+              : "Sobald ein Wochenplan vorhanden ist, erscheint hier automatisch deine Einkaufsliste."}
           </p>
         </div>
       </section>
@@ -391,10 +391,10 @@ export function ShoppingListClient() {
       {isLoading ? (
         <section className={styles.listSection}>
           <section className={styles.emptyState}>
-            <p className={styles.sectionKicker}>Lokale Initialisierung</p>
+            <p className={styles.sectionKicker}>App-Start</p>
             <h2>Die Einkaufsliste wird vorbereitet.</h2>
             <p>
-              Beim ersten Start kann die lokale Datenbank kurz befüllt oder auf eine neue Version
+              Beim ersten Start kann der Gerätespeicher kurz befüllt oder auf eine neue Version
               migriert werden.
             </p>
           </section>
@@ -415,9 +415,9 @@ export function ShoppingListClient() {
         <section className={styles.listSection}>
           <section className={styles.emptyState}>
             <p className={styles.sectionKicker}>Noch kein Wochenplan</p>
-            <h2>Es ist noch keine lokale Woche hinterlegt.</h2>
+            <h2>Es ist noch keine Woche hinterlegt.</h2>
             <p>
-              Öffne zuerst das Dashboard oder lass den lokalen Seed-Lauf einen Wochenplan anlegen.
+              Öffne zuerst das Dashboard oder lass die App einen Wochenplan anlegen.
             </p>
           </section>
         </section>

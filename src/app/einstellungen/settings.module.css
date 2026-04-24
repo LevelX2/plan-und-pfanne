@@ -8,20 +8,38 @@
 }
 
 .topNav {
+  position: sticky;
+  top: max(10px, env(safe-area-inset-top));
+  z-index: 40;
   display: flex;
+  flex-wrap: nowrap;
   gap: 10px;
-  max-width: 1320px;
+  width: min(100%, 1320px);
   margin: 0 auto 18px;
-  flex-wrap: wrap;
+  padding: 10px;
+  overflow-x: auto;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(245, 241, 232, 0.88), rgba(245, 241, 232, 0.72));
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 40px rgba(19, 38, 29, 0.08);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.topNav::-webkit-scrollbar {
+  display: none;
 }
 
 .topNav a {
+  flex: 0 0 auto;
   padding: 10px 14px;
   border-radius: 999px;
   background: rgba(255, 252, 247, 0.78);
   border: 1px solid rgba(19, 38, 29, 0.08);
   box-shadow: 0 14px 34px rgba(19, 38, 29, 0.08);
   font-size: 0.94rem;
+  white-space: nowrap;
 }
 
 .hero,

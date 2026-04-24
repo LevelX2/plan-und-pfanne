@@ -8,7 +8,7 @@ export async function GET() {
     mode: "static-export",
     schedulerEnabled: false,
     message:
-      "Der serverseitige Wochen-Scheduler ist im GitHub-Pages-Zielpfad deaktiviert. Neue lokale Planungsaktionen folgen später direkt im Gerät.",
+      "Dieser Endpunkt plant keine Wochen mehr zentral. Die App erstellt Wochenpläne direkt beim Öffnen oder auf Knopfdruck.",
     timestamp: buildTimestamp,
   });
 }

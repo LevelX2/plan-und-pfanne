@@ -28,7 +28,11 @@ tags:
 
 # Umstiegspfad auf lokale PWA
 
-## Zielbild
+## Einordnung
+Diese Seite ist kein aktueller Produktleittext mehr, sondern eine historische Migrationsdokumentation.
+Sie beschreibt den Umstieg von der früheren serverzentrierten App auf den heute primären PWA-Zuschnitt und bleibt als Referenz für Origin-Fragen, Migrationsschritte und noch offene Restarbeiten relevant.
+
+## Historisches Zielbild des Umstiegs
 `Plan und Pfanne` soll als lokale PWA auf dem Handy laufen:
 - App-Logik clientseitig
 - Nutzdaten lokal auf dem Gerät

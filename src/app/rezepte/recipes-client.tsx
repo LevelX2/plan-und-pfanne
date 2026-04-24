@@ -59,7 +59,7 @@ async function listRecipesFromLocalStore() {
   }
 
   if (typeof api.listLocalRecipes !== "function") {
-    throw new Error("Die lokale Rezeptquelle ist noch nicht verfügbar.");
+    throw new Error("Die Rezeptquelle ist noch nicht verfügbar.");
   }
 
   return api.listLocalRecipes();
@@ -117,7 +117,7 @@ export function RecipesClient() {
         setLoadError(
           error instanceof Error
             ? error.message
-            : "Die lokalen Rezepte konnten nicht geladen werden.",
+            : "Der Rezeptbestand konnte nicht geladen werden.",
         );
       } finally {
         if (!cancelled) {
@@ -194,18 +194,18 @@ export function RecipesClient() {
 
       <section className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Lokale Rezeptbibliothek</p>
-          <h1>Deine Rezepte liegen direkt auf dem Handy.</h1>
+          <p className={styles.eyebrow}>Rezeptbibliothek</p>
+          <h1>Deine Rezepte sind sofort griffbereit.</h1>
           <p className={styles.lead}>
-            Die PWA liest den Rezeptbestand aus der lokalen App-Datenbank. Neue Versionen der App
-            oder spätere Importfunktionen können diesen Bestand erweitern, ohne dass du dafür eine
-            Benutzerverwaltung brauchst.
+            Die App liest den Rezeptbestand aus ihrem Gerätespeicher. Neue App-Versionen oder
+            spätere Importfunktionen können diesen Bestand erweitern, ohne dass dein bisheriger
+            Verlauf verloren geht.
           </p>
         </div>
         <div className={styles.heroStat}>
-          <span>{isOffline ? "Offline-Modus" : isLoading ? "Lokale Daten werden geladen" : "Bereit"}</span>
+          <span>{isOffline ? "Offline-Modus" : isLoading ? "Daten werden geladen" : "Bereit"}</span>
           <strong>{recipes.length}</strong>
-          <p>Rezepte in deiner lokalen Bibliothek</p>
+          <p>Rezepte in deiner Bibliothek</p>
         </div>
       </section>
 
@@ -222,11 +222,11 @@ export function RecipesClient() {
 
         <div className={styles.installMeta}>
           <span className={isOffline ? styles.statusOffline : styles.statusOnline}>
-            {isOffline ? "offline verfügbar" : "lokal aktuell"}
+            {isOffline ? "offline verfügbar" : "auf diesem Gerät gespeichert"}
           </span>
           <p>
             Neue Rezepte kommen künftig über App-Updates oder einen Import. Deine vorhandenen
-            lokalen Daten bleiben dabei erhalten.
+            Daten auf diesem Gerät bleiben dabei erhalten.
           </p>
         </div>
       </section>
@@ -234,10 +234,10 @@ export function RecipesClient() {
       {isLoading ? (
         <section className={styles.groupStack}>
           <article className={styles.groupCard}>
-            <p className={styles.sectionKicker}>Lokale Initialisierung</p>
+            <p className={styles.sectionKicker}>App-Start</p>
             <h2>Die Rezeptdaten werden vorbereitet.</h2>
             <p className={styles.description}>
-              Beim ersten Start kann die lokale Datenbank kurz befüllt oder migriert werden.
+              Beim ersten Start kann der Gerätespeicher kurz befüllt oder migriert werden.
             </p>
           </article>
         </section>
@@ -257,9 +257,9 @@ export function RecipesClient() {
         <section className={styles.groupStack}>
           <article className={styles.groupCard}>
             <p className={styles.sectionKicker}>Noch leer</p>
-            <h2>Es sind noch keine lokalen Rezepte vorhanden.</h2>
+            <h2>Es sind noch keine Rezepte vorhanden.</h2>
             <p className={styles.description}>
-              Sobald die App Seed-Daten oder einen Import bereitstellt, tauchen die Rezepte hier
+              Sobald die App Startdaten oder einen Import bereitstellt, tauchen die Rezepte hier
               automatisch auf.
             </p>
           </article>

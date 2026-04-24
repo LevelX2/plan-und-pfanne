@@ -1,8 +1,11 @@
 .nav {
+  position: sticky;
+  top: max(10px, env(safe-area-inset-top));
+  z-index: 40;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   padding: 16px 20px;
   border-radius: 18px;
@@ -13,13 +16,22 @@
 
 .links {
   display: flex;
-  flex-wrap: wrap;
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: nowrap;
   gap: 10px;
   align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.links a,
-.logoutLink {
+.links::-webkit-scrollbar {
+  display: none;
+}
+
+.links a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -30,6 +42,8 @@
   font-weight: 600;
   color: #144c39;
   background: rgba(20, 76, 57, 0.08);
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .links a[aria-current="page"] {
@@ -37,46 +51,10 @@
   color: #fff;
 }
 
-.account {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.accountMeta {
-  display: grid;
-  gap: 2px;
-  text-align: right;
-}
-
-.accountMeta strong {
-  font-size: 0.95rem;
-  color: #133b2d;
-}
-
-.accountMeta span {
-  font-size: 0.82rem;
-  color: #4d6c62;
-}
-
-.logoutLink {
-  background: rgba(154, 71, 23, 0.08);
-  color: #9a4717;
-}
-
 @media (max-width: 720px) {
   .nav {
+    top: max(8px, env(safe-area-inset-top));
     align-items: flex-start;
-  }
-
-  .account {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .accountMeta {
-    text-align: left;
+    padding: 12px 14px;
   }
 }

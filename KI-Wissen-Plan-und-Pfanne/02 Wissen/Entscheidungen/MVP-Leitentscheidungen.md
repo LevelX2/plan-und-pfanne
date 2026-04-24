@@ -17,13 +17,14 @@ tags:
 ## Bisher erkennbare Leitentscheidungen
 - Glutenfreiheit als harte fachliche Bedingung
 - Planung auf Tagesebene statt bloßer Einzelrezept-Sammlung
-- eingebauter Demo-Rezeptbestand als Startdatenbasis
-- Architektur soll später für PWA, Hosting und möglichen Mehrnutzerbetrieb erweiterbar bleiben
-- Öffentlicher Betrieb setzt auf verpflichtende Anmeldung, passwortlose E-Mail-Verifikation und benutzerscharfe Planungsdaten
+- eingebauter Rezeptbestand als Startdatenbasis
+- installierbare PWA als primärer Produktpfad
+- Datenhaltung auf dem Gerät statt Kontologik im normalen App-Fluss
+- Rezeptnachschub später optional über Import oder App-Update
 
 ## Historische Einordnung
-- Der Workspace kam aus einem früheren Single-User-MVP ohne Login.
-- Diese frühere Annahme gilt nicht mehr als sinnvolles Zielbild für öffentlich erreichbaren Betrieb und ist im aktuellen Workspace bereits technisch abgelöst.
+- Der Workspace enthielt zwischenzeitlich auch einen serverzentrierten Zwischenstand mit Login, Sessions und nutzerbezogenen Daten.
+- Diese Zwischenstufe ist nicht mehr das aktuelle Produktmodell, bleibt aber als technischer Vorzustand im Repository und in Teilen der Dokumentation sichtbar.
 
 ## Einordnung
 Diese Entscheidungen sind aus dem aktuellen Dokumentationsstand ableitbar. Sie gelten als belastbare Arbeitsannahmen, sollten aber bei größeren Produktänderungen ausdrücklich aktualisiert oder bestätigt werden.

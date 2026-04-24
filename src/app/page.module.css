@@ -8,19 +8,38 @@
 }
 
 .topNav {
+  position: sticky;
+  top: max(10px, env(safe-area-inset-top));
+  z-index: 40;
   display: flex;
+  flex-wrap: nowrap;
   gap: 10px;
-  max-width: 1320px;
+  width: min(100%, 1320px);
   margin: 0 auto 18px;
+  padding: 10px;
+  overflow-x: auto;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(245, 241, 232, 0.88), rgba(245, 241, 232, 0.72));
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 40px rgba(19, 38, 29, 0.08);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.topNav::-webkit-scrollbar {
+  display: none;
 }
 
 .topNav a {
+  flex: 0 0 auto;
   padding: 10px 14px;
   border-radius: 999px;
   background: rgba(255, 252, 247, 0.78);
   border: 1px solid rgba(19, 38, 29, 0.08);
   box-shadow: 0 14px 34px rgba(19, 38, 29, 0.08);
   font-size: 0.94rem;
+  white-space: nowrap;
 }
 
 .hero {
@@ -75,22 +94,27 @@
 }
 
 .heroTitleRow {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  width: fit-content;
+  max-width: 100%;
 }
 
-.heroAppIcon {
-  width: clamp(2.8rem, 7vw, 3.4rem);
+.heroBrandImage {
+  display: block;
+  width: clamp(12.5rem, 36vw, 21rem);
   height: auto;
-  border-radius: 14px;
-  box-shadow: 0 14px 28px rgba(9, 32, 24, 0.22);
-  flex: 0 0 auto;
+  filter: drop-shadow(0 18px 34px rgba(9, 32, 24, 0.26));
 }
 
-.heroAppName {
-  max-width: none;
-  margin: 0;
+.heroVisuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .lead {
@@ -382,23 +406,27 @@
 .statusGood,
 .statusWarn,
 .statusIdle {
-  min-height: 32px;
-  padding: 0 12px;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid transparent;
 }
 
 .statusGood {
   background: rgba(20, 140, 86, 0.14);
   color: #116541;
+  border-color: rgba(17, 101, 65, 0.12);
 }
 
 .statusWarn {
   background: rgba(208, 110, 47, 0.16);
   color: #9a4717;
+  border-color: rgba(154, 71, 23, 0.12);
 }
 
 .statusIdle {
   background: rgba(19, 38, 29, 0.08);
   color: rgba(19, 38, 29, 0.72);
+  border-color: rgba(19, 38, 29, 0.08);
 }
 
 .statusCount {
@@ -408,8 +436,9 @@
   min-height: 32px;
   padding: 0 12px;
   border-radius: 999px;
-  background: rgba(19, 38, 29, 0.06);
-  color: rgba(19, 38, 29, 0.76);
+  border: 1px dashed rgba(19, 38, 29, 0.16);
+  background: rgba(19, 38, 29, 0.03);
+  color: rgba(19, 38, 29, 0.68);
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -426,9 +455,9 @@
   min-width: 0;
   padding: 10px 12px;
   border-radius: 16px;
-  border: 1px solid rgba(19, 38, 29, 0.1);
-  background: rgba(255, 252, 247, 0.92);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  background: rgba(19, 38, 29, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .dayTotals strong {
@@ -482,10 +511,16 @@
 .toggleButton {
   appearance: none;
   border: 1px solid rgba(19, 38, 29, 0.12);
-  background: rgba(255, 252, 247, 0.82);
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(245, 239, 229, 0.94));
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 10px 20px rgba(19, 38, 29, 0.08);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
 }
 
 .secondaryChipButton,
@@ -501,24 +536,44 @@
   color: #13261d;
 }
 
+.secondaryChipButton:hover,
+.selectionLinkButton:hover,
+.dayMiniButton:hover,
+.toggleButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(19, 38, 29, 0.12);
+}
+
+.secondaryChipButton:active,
+.selectionLinkButton:active,
+.dayMiniButton:active,
+.toggleButton:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(19, 38, 29, 0.08);
+}
+
 .macroBadge {
   min-height: 34px;
   padding: 0 12px;
+  border: 1px solid transparent;
 }
 
 .macroGood {
   background: rgba(20, 140, 86, 0.14);
   color: #116541;
+  border-color: rgba(17, 101, 65, 0.1);
 }
 
 .macroOkay {
   background: rgba(221, 171, 55, 0.18);
   color: #926e08;
+  border-color: rgba(146, 110, 8, 0.1);
 }
 
 .macroOff {
   background: rgba(180, 71, 39, 0.16);
   color: #9e3518;
+  border-color: rgba(158, 53, 24, 0.1);
 }
 
 .mealList,
@@ -574,12 +629,13 @@
 }
 
 .toggleButtonActive {
-  background: rgba(20, 140, 86, 0.14);
+  background: linear-gradient(180deg, rgba(20, 140, 86, 0.2), rgba(20, 140, 86, 0.12));
   color: #116541;
-  border-color: rgba(17, 101, 65, 0.14);
+  border-color: rgba(17, 101, 65, 0.2);
 }
 
 .toggleButtonInactive {
+  background: linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(243, 238, 229, 0.94));
   color: rgba(19, 38, 29, 0.76);
 }
 
@@ -671,6 +727,12 @@
     padding: 18px 14px 28px;
   }
 
+  .topNav {
+    top: max(8px, env(safe-area-inset-top));
+    padding: 8px;
+    border-radius: 20px;
+  }
+
   .heroText,
   .heroPanel,
   .sectionCard,
@@ -705,6 +767,14 @@
 
   .heroText h1 {
     max-width: none;
+  }
+
+  .heroTitleRow {
+    width: fit-content;
+  }
+
+  .heroBrandImage {
+    width: clamp(11rem, 52vw, 16rem);
   }
 
   .heroToggleButton {

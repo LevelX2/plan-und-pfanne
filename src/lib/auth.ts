@@ -40,7 +40,7 @@ function sanitizeNextPath(nextPath: string | null | undefined) {
 const LOCAL_PWA_USER: AuthenticatedUser = {
   id: 1,
   email: "lokal@plan-und-pfanne.app",
-  displayName: "Lokaler Modus",
+  displayName: "Plan und Pfanne",
 };
 
 export async function requestLoginCode(input: {

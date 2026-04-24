@@ -44,7 +44,7 @@ export async function regenerateCurrentWeekAction(): Promise<RegenerateWeekFormS
   return {
     status: "success",
     message:
-      "Die GitHub-Pages-Version nutzt aktuell einen statisch exportierten Stand. Die direkte lokale Neugenerierung folgt mit dem clientseitigen Datenmodell.",
+      "Diese Aktion wird hier nicht mehr verwendet. Nutze stattdessen die direkte Wochenplanung in der App.",
   };
 }
 
@@ -106,7 +106,7 @@ export async function saveSettingsAction(
   return {
     status: "error",
     message:
-      "Die lokale dauerhafte Speicherung für Einstellungen wird im nächsten Migrationsschritt direkt auf dem Gerät umgesetzt. Der aktuelle GitHub-Pages-Stand zeigt hier noch einen statischen Legacy-Hinweis.",
+      "Dieses Formular wird hier nicht mehr verwendet. Änderungen speicherst du direkt in der aktuellen Einstellungsseite der App.",
     fieldErrors: {},
   };
 }

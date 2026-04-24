@@ -95,7 +95,7 @@ function DayPageContent() {
         }
 
         setLoadError(
-          error instanceof Error ? error.message : "Die lokale Tagesansicht konnte nicht geladen werden.",
+          error instanceof Error ? error.message : "Die Tagesansicht konnte nicht geladen werden.",
         );
       } finally {
         if (!cancelled) {
@@ -126,11 +126,11 @@ function DayPageContent() {
       <section className={styles.hero}>
         <div className={styles.heroText}>
           <p className={styles.eyebrow}>Tagesansicht</p>
-          <h1>{selectedDay ? selectedDay.weekdayLabel : "Lokale Wochenplanung"}</h1>
+          <h1>{selectedDay ? selectedDay.weekdayLabel : "Aktuelle Wochenplanung"}</h1>
           <p className={styles.lead}>
             {selectedDay
-              ? `${formatDateGerman(selectedDay.date)} mit ${selectedDay.meals.length} geplanten Mahlzeiten. Hier siehst du Tagessumme, Makroverteilung und die direkten Sprünge in deine lokale Rezeptbibliothek.`
-              : "Diese Ansicht liest den aktuell lokal gespeicherten Wochenplan und zeigt dir einen Tag daraus statisch exportierbar in der PWA an."}
+              ? `${formatDateGerman(selectedDay.date)} mit ${selectedDay.meals.length} geplanten Mahlzeiten. Hier siehst du Tagessumme, Makroverteilung und die direkten Sprünge in deine Rezeptbibliothek.`
+              : "Diese Ansicht zeigt dir einen Tag aus deinem aktuell gespeicherten Wochenplan."}
           </p>
         </div>
 
@@ -146,8 +146,8 @@ function DayPageContent() {
             </h2>
             <p>
               {weekPlan
-                ? "Der Tageswert wird aus dem lokal gespeicherten Wochenplan geladen."
-                : "Sobald lokal ein Wochenplan vorhanden ist, kannst du hier zwischen den Tagen springen."}
+                ? "Der Tageswert wird aus dem gespeicherten Wochenplan geladen."
+                : "Sobald ein Wochenplan vorhanden ist, kannst du hier zwischen den Tagen springen."}
             </p>
           </div>
 
@@ -173,10 +173,10 @@ function DayPageContent() {
       {isLoading ? (
         <section className={styles.contentGrid}>
           <article className={styles.sectionCard}>
-            <p className={styles.sectionKicker}>Lokale Initialisierung</p>
+            <p className={styles.sectionKicker}>App-Start</p>
             <h2>Die Tagesansicht wird vorbereitet.</h2>
             <p className={styles.weekHint}>
-              Beim ersten Start kann die lokale Datenbank kurz befüllt oder auf eine neue Version
+              Beim ersten Start kann der Gerätespeicher kurz befüllt oder auf eine neue Version
               migriert werden.
             </p>
           </article>
@@ -197,9 +197,9 @@ function DayPageContent() {
         <section className={styles.contentGrid}>
           <article className={styles.sectionCard}>
             <p className={styles.sectionKicker}>Noch kein Tag verfügbar</p>
-            <h2>Es wurde noch kein lokaler Tagesplan gefunden.</h2>
+            <h2>Es wurde noch kein Tagesplan gefunden.</h2>
             <p className={styles.weekHint}>
-              Öffne zuerst das Dashboard oder lass den lokalen Seed-Lauf einen Wochenplan anlegen.
+              Öffne zuerst das Dashboard oder lass die App einen Wochenplan anlegen.
             </p>
           </article>
         </section>
@@ -235,8 +235,7 @@ function DayPageContent() {
               <p className={styles.sectionKicker}>Woche im Überblick</p>
               <h2>Springe direkt zwischen den Tagen</h2>
               <p className={styles.weekHint}>
-                Diese Tagesseite ist als statisch exportierbare PWA-Route aufgebaut und liest den
-                gewünschten Tag über einen Query-Parameter aus der lokalen Datenbank.
+                Springe hier direkt zwischen den Tagen deiner aktuellen Woche.
               </p>
               <ul className={styles.weekStrip}>
                 {availableDates.map((weekDate) => {

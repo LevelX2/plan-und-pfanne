@@ -158,21 +158,54 @@ function distributeWeighted(values: Array<{ key: MixKey; weight: number }>, tota
   return result;
 }
 
-function rebalanceMix(current: MixState, changedKey: MixKey, nextValue: number): MixState {
-  const clampedValue = clampPercent(nextValue);
-  const remaining = 100 - clampedValue;
-  const otherKeys = mixKeys.filter((key) => key !== changedKey);
+function rebalanceFromLeadingVegetarian(current: MixState, nextValue: number): MixState {
+  const vegetarianSharePct = clampPercent(nextValue);
+  const remaining = 100 - vegetarianSharePct;
   const redistributed = distributeWeighted(
-    otherKeys.map((key) => ({ key, weight: current[key] })),
+    [
+      { key: "fishSharePct", weight: current.fishSharePct },
+      { key: "meatSharePct", weight: current.meatSharePct },
+    ],
     remaining,
   );
 
   return {
-    vegetarianSharePct:
-      changedKey === "vegetarianSharePct" ? clampedValue : redistributed.vegetarianSharePct,
-    fishSharePct: changedKey === "fishSharePct" ? clampedValue : redistributed.fishSharePct,
-    meatSharePct: changedKey === "meatSharePct" ? clampedValue : redistributed.meatSharePct,
+    vegetarianSharePct,
+    fishSharePct: redistributed.fishSharePct,
+    meatSharePct: redistributed.meatSharePct,
   };
+}
+
+function rebalanceRemainingMix(
+  current: MixState,
+  changedKey: Exclude<MixKey, "vegetarianSharePct">,
+  nextValue: number,
+): MixState {
+  const vegetarianSharePct = clampPercent(current.vegetarianSharePct);
+  const remaining = Math.max(0, 100 - vegetarianSharePct);
+  const changedValue = Math.max(0, Math.min(remaining, Math.round(nextValue)));
+
+  if (changedKey === "fishSharePct") {
+    return {
+      vegetarianSharePct,
+      fishSharePct: changedValue,
+      meatSharePct: remaining - changedValue,
+    };
+  }
+
+  return {
+    vegetarianSharePct,
+    fishSharePct: remaining - changedValue,
+    meatSharePct: changedValue,
+  };
+}
+
+function rebalanceMix(current: MixState, changedKey: MixKey, nextValue: number): MixState {
+  if (changedKey === "vegetarianSharePct") {
+    return rebalanceFromLeadingVegetarian(current, nextValue);
+  }
+
+  return rebalanceRemainingMix(current, changedKey, nextValue);
 }
 
 function toFieldErrors(error: z.ZodError): SettingsFieldErrors {
@@ -268,7 +301,7 @@ export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
         regenerateCurrentWeekPlan: true,
       });
 
-      const successMessage = "Einstellungen lokal gespeichert und Woche neu geplant.";
+      const successMessage = "Einstellungen gespeichert und Woche neu geplant.";
       await onSaved?.(successMessage);
 
       setState({
@@ -282,7 +315,7 @@ export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
         message:
           error instanceof Error
             ? error.message
-            : "Die Einstellungen konnten lokal nicht gespeichert werden.",
+            : "Die Einstellungen konnten nicht gespeichert werden.",
         status: "error",
       });
     } finally {
@@ -439,7 +472,8 @@ export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
           </div>
 
           <p className={styles.mixHint}>
-            Der lokale Planer nutzt diese Verteilung als Zielmix für Mittagessen und Abendessen.
+            Der Planer nutzt diese Verteilung als Zielmix für Mittagessen und Abendessen.
+            Vegetarisch bleibt dabei führend, Fisch und Fleisch teilen den verbleibenden Anteil.
             Frühstück und Snack laufen weiterhin über den allgemeinen Rezeptpool.
           </p>
 
@@ -459,7 +493,7 @@ export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
                 <input
                   className={styles.mixSlider}
                   id={key}
-                  max={100}
+                  max={key === "vegetarianSharePct" ? 100 : 100 - mix.vegetarianSharePct}
                   min={0}
                   onChange={(event) => {
                     const nextValue = Number(event.currentTarget.value);
@@ -512,7 +546,7 @@ export function SettingsForm({ onSaved, settings }: SettingsFormProps) {
 
       <div className={styles.actionRow}>
         <button className={styles.primaryButton} disabled={isPending} type="submit">
-          {isPending ? "Speichert lokal und plant neu ..." : "Änderungen speichern und Woche neu planen"}
+          {isPending ? "Speichert und plant neu ..." : "Änderungen speichern und Woche neu planen"}
         </button>
       </div>
     </form>

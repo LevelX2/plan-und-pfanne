@@ -20,14 +20,15 @@ tags:
 
 ## Zielbild
 - eine alltagstaugliche App für glutenfreie Essensplanung
-- Fokus auf einfache Nutzung im Single-User-MVP ohne Login
+- Fokus auf direkte Nutzung durch eine Person ohne Kontoverwaltung
 - Wochenplanung auf Basis vorhandener Rezepte statt freier Mahlzeitenerfassung
-- perspektivisch installierbar auf dem Handy und offline nutzbar für zentrale Ansichten
+- installierbar auf dem Handy und für zentrale Ansichten offline nutzbar
 
 ## Nutzer- und Produktfokus
-- Zielnutzer ist aktuell ein einzelner Benutzer im privaten oder haushaltsnahen Kontext.
+- Zielnutzer ist aktuell eine einzelne Person im privaten oder haushaltsnahen Kontext.
 - Glutenfreiheit ist keine bloße Empfehlung, sondern fachlich als harte Filterbedingung angelegt.
 - Die Planung ist tagesorientiert und will Makro-Zielwerte im Verhältnis `30 / 30 / 40` bestmöglich treffen.
+- Die App speichert Wochenplan, Einstellungen, Verlauf und Einkaufsfortschritt auf dem Gerät.
 
 ## Aktuell erkennbare Produktbausteine
 - Rezeptbibliothek
@@ -38,10 +39,10 @@ tags:
 - PWA- und Offline-Grundlage
 
 ## Projektgrenzen im aktuellen Stand
-- Kein Mehrnutzerbetrieb
-- Kein Login
-- Noch keine belastbar dokumentierte Cloud-Synchronisation
-- Offline-Fähigkeit laut README bisher nur teilweise vorbereitet
+- Kein Mehrnutzerbetrieb und keine Kontoverwaltung im primären Produktfluss
+- Noch kein Export-, Backup- oder Gerätewechselpfad
+- Noch kein produktiver Dateiimport oder Feed für neue Rezepte
+- Kein Mehrgeräteabgleich
 
 ## Verwandte Seiten
 - [[Aktueller Projektstatus]]

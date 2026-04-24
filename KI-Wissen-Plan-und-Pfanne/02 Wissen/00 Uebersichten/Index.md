@@ -10,7 +10,7 @@
 - [[Projektueberblick]]: verdichteter Überblick über Produktziel, Nutzen und Projektgrenzen.
 - [[../Begriffe und Konzepte/Produktbild und Kernlogik]]: fachliche Grundstruktur für Rezepte, Tagesplanung, Wochenplanung und Einkaufslogik.
 - [[../Begriffe und Konzepte/Aktive Gerichte und selektive Einkaufsliste]]: konkretes Fachmodell für nutzerseitige Aktivierung geplanter Mahlzeiten und die davon abhängige Einkaufslisten-Sicht.
-- [[../Begriffe und Konzepte/Benutzerkonzept und Verifikation]]: Zielbild für verpflichtende Anmeldung, passwortlose Verifikation und benutzerscharfe Planungsdaten.
+- [[../Begriffe und Konzepte/Benutzerkonzept und Verifikation]]: aktueller Zuschnitt ohne Kontoverwaltung sowie die Einordnung früherer und möglicher späterer Zugriffsmodelle.
 - [[../Begriffe und Konzepte/Systembild und technischer Zuschnitt]]: aktueller technischer Aufbau mit Next.js, SQLite, PWA-Ansatz und Deployment-Zuschnitt.
 - [[../Risiken und offene Punkte/Offene Fragen und Prüfbedarf]]: bestätigte Lücken, Widersprüche, konzeptionelle Prüfstellen und technische Nacharbeiten.
 - [[../Risiken und offene Punkte/Lokale Mobile-App vs gehosteter Betrieb]]: Abwägung zwischen rein lokalem Handy-Betrieb und gehosteter Web-/PWA-Variante.
@@ -19,7 +19,7 @@
 - [[../Entscheidungen/MVP-Leitentscheidungen]]: bisher erkennbare Leitentscheidungen für MVP und Ausbau.
 - [[../Prozesse/Arbeitsworkflow Wissenspflege und Projektanfragen]]: Standardablauf für Projektarbeit und Wissenspflege.
 - [[../Prozesse/Lokaler Start von Entwicklung und Test]]: lokale Startbefehle, Handy-Test und wichtige Startpfade.
-- [[../Prozesse/Umstiegspfad auf lokale PWA]]: konkreter Migrationsplan von serverzentrierter App zu lokaler PWA mit stabilem Origin-Konzept.
+- [[../Prozesse/Umstiegspfad auf lokale PWA]]: historische Migrationsdokumentation zum bereits eingeschlagenen PWA-Umstieg und zur Origin-Festlegung.
 
 ## Quellenbewertungen
 - [[../Quellenbewertungen/README Bewertung]]: Übersicht über bewertete Quellen und deren Verlässlichkeit.

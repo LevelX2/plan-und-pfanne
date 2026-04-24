@@ -8,14 +8,13 @@ export default function LoginPage() {
       <div className={styles.shell}>
         <section className={styles.hero}>
           <p className={styles.eyebrow}>Plan und Pfanne</p>
-          <h1>Die lokale PWA braucht keine Anmeldung mehr.</h1>
+          <h1>Diese Seite wird nicht mehr verwendet.</h1>
           <p className={styles.lead}>
-            GitHub Pages liefert die App jetzt als statische, lokale Web-App aus. Benutzerkonten,
-            Sessions und E-Mail-Codes sind in diesem Modus bewusst abgeschaltet.
+            Plan und Pfanne öffnet direkt das Dashboard. Dieser frühere Anmeldepfad bleibt nur
+            erhalten, damit ältere Links und Lesezeichen nicht ins Leere laufen.
           </p>
           <p className={styles.statusSuccess}>
-            Öffne direkt das Dashboard. Die lokale Datenhaltung wird schrittweise auf dem Gerät
-            ausgebaut.
+            Du kannst direkt mit der App weiterarbeiten.
           </p>
           <p>
             <Link href="/">Zum Dashboard</Link>

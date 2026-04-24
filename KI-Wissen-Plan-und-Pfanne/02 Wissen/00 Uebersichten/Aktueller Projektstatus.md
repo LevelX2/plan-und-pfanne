@@ -34,7 +34,7 @@ tags:
 ## Umgesetzt
 - Produktnahe App-Routen sind statisch exportierbar vorhanden:
   `/`, `/rezepte`, `/tage`, `/einkaufsliste`, `/einstellungen`, `/anmelden`, `/abmelden`, `/api/health`, `/api/auth/logout` und `/api/scheduler/weekly`.
-- Das eigentliche Produktmodell ist jetzt `lokale PWA auf einem Gerät` statt `gehostete Mehrbenutzer-App`.
+- Das eigentliche Produktmodell ist jetzt eine installierbare App für eine Person mit Daten auf dem Gerät.
 - Dashboard, Rezepte, Tagesansicht, Einkaufsliste und Einstellungen lesen und schreiben ihre Fachdaten lokal über `IndexedDB`.
 - `src/lib/local-db.ts` und `src/lib/local-store.ts` bilden die neue lokale Persistenzschicht für:
   `settings`, `recipes`, `weekPlans`, `history`, `meta` und `snapshots`.
@@ -48,7 +48,7 @@ tags:
   `output: "export"`, `trailingSlash: true`, `images.unoptimized: true` und buildzeitlicher `basePath`.
 - Manifest, Service Worker und PWA-Registrierung berücksichtigen den GitHub-Pages-Unterpfad.
 - Ein GitHub-Actions-Workflow für Pages ist vorhanden und baut die App mit `NEXT_PUBLIC_BASE_PATH` und `NEXT_PUBLIC_SITE_URL`.
-- Die Login-, Logout-, Auth- und Scheduler-Pfade sind im aktuellen Zuschnitt nur noch buildfreundliche Legacy-Hinweise oder statische Platzhalter.
+- Die Login-, Logout-, Auth- und Scheduler-Pfade sind im aktuellen Zuschnitt nur noch buildfreundliche Hinweisseiten oder statische Platzhalter.
 - `npm run lint` lief am 2026-04-23 erfolgreich durch.
 - `npm run build` lief am 2026-04-23 erfolgreich durch.
 - `npm run build` mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` und `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` lief am 2026-04-23 ebenfalls erfolgreich durch.
@@ -57,7 +57,7 @@ tags:
 - Die lokale Datenhaltung deckt bereits Einstellungen, Historie, Seed-Rezepte und Wochenplanung ab; ein echter Rezeptimport oder Feed-Abgleich ist noch nicht umgesetzt.
 - Export, Wiederherstellung und Gerätewechsel sind noch nicht als Produktfunktion vorhanden.
 - Die früheren serverseitigen Module wie `src/lib/store.ts` und `src/lib/db.ts` liegen noch im Repository, sind aber nicht mehr Teil des neuen primären Laufzeitpfads.
-- Die Legacy-Seiten `/anmelden` und `/abmelden` erklären den Richtungswechsel, statt komplett entfernt zu sein.
+- Die Hinweisseiten `/anmelden` und `/abmelden` bleiben aus Kompatibilitätsgründen erhalten.
 
 ## Offen
 - Dateiimport oder Feed-Mechanik für neue Rezepte fehlt noch.

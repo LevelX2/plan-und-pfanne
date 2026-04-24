@@ -1,18 +1,13 @@
 import Link from "next/link";
 
-type LogoutClientProps = {
-  storageNamespace: string;
-};
-
-export function LogoutClient({ storageNamespace }: LogoutClientProps) {
+export function LogoutClient() {
   return (
     <div>
-      <h2>Legacy-Link aktiv</h2>
+      <h2>Weiter mit der App</h2>
       <p>
-        Die frühere Session-Abmeldung wird nicht mehr gebraucht. Lokale Daten bleiben auf dem Gerät
-        und werden künftig direkt in der PWA verwaltet.
+        Deine Daten bleiben auf diesem Gerät gespeichert, bis du sie in der App oder im Browser
+        gezielt entfernst.
       </p>
-      <p>Technischer Legacy-Namespace: {storageNamespace}</p>
       <p>
         <Link href="/">Zur Startseite</Link>
       </p>

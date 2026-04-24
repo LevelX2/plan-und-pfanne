@@ -52,7 +52,7 @@ Die Anwendung verbindet Rezeptverwaltung mit automatisierter Wochenplanung. Die 
 
 ## Rezeptanforderungen
 - Glutenfreiheit ist als harte Filterbedingung vorgesehen.
-- Der MVP arbeitet zunächst mit einem eingebauten Demo-Rezeptbestand.
+- Der MVP arbeitet zunächst mit einem eingebauten Rezeptbestand.
 - Extern recherchierte Rezepte werden derzeit als kuratierte Seed-Datensätze in den Repository-Bestand zurückgeführt, nicht als lose Laufzeitimporte.
 - Rezepte enthalten Makros, Zutaten, Zubereitung, Tags und die Kennzeichnung `glutenFree = true`.
 
@@ -70,8 +70,9 @@ Die Anwendung verbindet Rezeptverwaltung mit automatisierter Wochenplanung. Die 
 - `maxRecipeRepeatsPerWeek` beeinflusst Wiederholungsstrafen zusätzlich.
 
 ## Zielmix vegetarisch, Fisch und Fleisch
-- Die Bedienung erfolgt im aktuellen Workspace über drei gekoppelte Regler im Einstellungsformular.
-- Beim Verschieben eines Reglers werden die beiden übrigen automatisch neu verteilt, damit zusammen immer `100 %` erhalten bleiben.
+- Die Bedienung erfolgt im aktuellen Workspace über drei gekoppelte Regler im Einstellungsformular, wobei `Vegetarisch` führend bleibt.
+- Beim Verschieben von `Vegetarisch` werden `Fisch` und `Fleisch` automatisch auf den verbleibenden Anteil verteilt, damit zusammen immer `100 %` erhalten bleiben.
+- Beim Verschieben von `Fisch` oder `Fleisch` bleibt der vegetarische Anteil unverändert; nur die beiden restlichen Anteile teilen dann den verbleibenden Rest neu auf.
 - Die aktuelle Datenbank speichert dafür persistente Prozentwerte; bestehende lokale Datenbanken werden beim Start automatisch migriert.
 - Der Planer behandelt den Mix bewusst als weiches Ziel statt als harten Filter, damit auch bei unausgewogenem Rezeptpool weiterhin ein Wochenplan erzeugbar bleibt.
 - Im Dashboard und in den Einstellungen wird der aktive Mix als Teil des Planungsprofils sichtbar angezeigt.
@@ -91,7 +92,7 @@ Die Anwendung verbindet Rezeptverwaltung mit automatisierter Wochenplanung. Die 
   - alle geplanten Gerichte der Woche
   - nur aktiv ausgewählte Gerichte
 - Wenn keine Gerichte aktiv sind und die Sicht auf aktive Gerichte steht, erscheint ein expliziter Leerzustand statt einer leeren, missverständlichen Zutatenliste.
-- Die aktive Auswahl und der Listenmodus werden derzeit lokal pro Woche im Browser gespeichert; eine benutzerscharfe serverseitige Persistenz ist noch nicht umgesetzt.
+- Die aktive Auswahl und der Listenmodus werden pro Woche im Gerätespeicher gehalten und beim erneuten Öffnen der App wiederhergestellt.
 
 ## Offene Verifikation
 - Die heuristische Planung ist verifiziert, aber ihre gewünschte Produktqualität und Erklärbarkeit sind noch nicht fachlich bewertet.

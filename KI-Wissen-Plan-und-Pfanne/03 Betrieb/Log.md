@@ -349,3 +349,57 @@
 - GitHub zeigte dafür bereits Warnungen zur bevorstehenden Node-20-Ablösung auf den Runnern an.
 - Der Workflow verwendet jetzt die neueren offiziellen Major-Tags `actions/configure-pages@v6`, `actions/setup-node@v6` und `actions/upload-pages-artifact@v5`.
 - Die Build-Node für das Projekt bleibt dabei bewusst vorerst auf `20`, damit das Update der Workflow-Action-Runtimes nicht unnötig mit einer separaten App-Node-Umstellung vermischt wird.
+
+## [2026-04-23] umsetzung | Sidebar-Karte zum lokalen Betrieb fachlich präzisiert
+- Die frühere Dashboard-Karte `Unterwegs nutzbar` suggerierte noch einen Teilumfang lokaler Funktionen, obwohl der aktuelle Stand der App vollständig lokal auf dem Gerät arbeitet.
+- `src/app/home-client.tsx` beschreibt diese Karte jetzt als `Lokal auf dem Gerät` mit dem Fokus auf bereits komplett lokal laufende Funktionen:
+  Wochenplan, aktive Gerichte, Planungsprofil, Einkaufshäkchen und Rezeptbibliothek.
+- Der einzige bewusst nach vorne gerichtete Punkt bleibt jetzt als Ausblick formuliert:
+  zusätzliche Rezepte später per Import oder weitere Quelle ergänzen.
+
+## [2026-04-23] umsetzung | Hero-Branding und Hauptnavigation auf Mobilgeräten verbessert
+- Der Dashboard-Hero verbindet App-Icon und Namen jetzt nicht mehr nur technisch nebeneinander, sondern als gestaltetes Brand-Lockup mit Badge, Akzentlinie und zusammenhängendem Wordmark.
+- `src/app/page.module.css` modelliert dafür eine dekorative Titelkapsel; `src/app/home-client.tsx` rendert Icon und Namen jetzt als zusammenhängende Markenfläche.
+- Die lokale Hauptnavigation auf dem Dashboard und in den Einstellungen ist jetzt sticky, horizontal scrollbar und bricht auf schmalen iPhone-Breiten nicht mehr unschön ab.
+- Die gemeinsame `AppNav` für Rezeptbibliothek, Einkaufsliste und weitere Ansichten nutzt jetzt ebenfalls eine sticky Chip-Leiste mit horizontalem Scrollen; auf kleinen Geräten wird die untergeordnete Account-Meta zugunsten der Tab-Bedienung ausgeblendet.
+
+## [2026-04-23] umsetzung | Hero-Wortmarke näher an der Bildreferenz ausgerichtet
+- Der Titelbereich im Dashboard orientiert sich jetzt stärker an der gelieferten Bildreferenz:
+  helle Markenplakette, dunkle Hauptwörter `Plan` und `Pfanne`, orange hervorgehobenes `und` sowie die kleine Bogen-Punkt-Signatur darunter.
+- `src/app/home-client.tsx` rendert die Wortmarke dafür jetzt in getrennten Textsegmenten statt als durchgehenden String.
+- `src/app/page.module.css` ersetzt die frühere lineare Akzentfläche durch eine ruhigere, ikonähnliche Markenplatte mit typografischem Fokus.
+
+## [2026-04-23] umsetzung | Neuer App-Icon-Satz aus aktualisierter Bildvorlage übernommen
+- Die neue vom Nutzer gelieferte Icon-Vorlage ersetzt jetzt den bisherigen App-Icon-Satz.
+- Aktualisiert wurden `src/app/icon.png`, `src/app/apple-icon.png`, `src/app/favicon.ico`, `public/icon-192.png` und `public/icon-512.png`.
+- Dadurch zeigen Browser-Tab, Installationsdialog, Apple-Icon, Manifest-Icons und der Hero wieder konsistent dieselbe aktuelle Markenillustration.
+
+## [2026-04-23] umsetzung | Produktsprache auf ein einziges App-Modell bereinigt
+- Produktnahe Texte auf Dashboard, Einstellungen, Rezeptbibliothek, Tagesansicht und Einkaufsliste sprechen jetzt konsistent von `der App` statt von einem vermeintlichen lokalen Modus.
+- `src/app/app-nav.tsx` wurde auf reine Produktnavigation ohne pseudo-kontobezogene Meta-Anzeige reduziert.
+- Die Pfade `/anmelden`, `/abmelden`, Auth-Hinweise und statischen API-Platzhalter wurden sprachlich neutralisiert:
+  Sie bleiben aus Kompatibilitätsgründen erreichbar, erklären aber keine laufende Migration mehr.
+- `README.md`, `Projektueberblick.md`, `MVP-Leitentscheidungen.md`, `Produktbild und Kernlogik.md`, `Aktive Gerichte und selektive Einkaufsliste.md`, `Index.md` und die Prozessseite `Umstiegspfad auf lokale PWA.md` wurden auf den aktuellen Einzel-App-Zuschnitt nachgezogen.
+- Die Prozessseite `Umstiegspfad auf lokale PWA.md` ist jetzt ausdrücklich als historische Migrationsdokumentation eingeordnet und nicht mehr als aktueller Produktzieltext formuliert.
+
+## [2026-04-23] umsetzung | Hero zeigt jetzt nur noch das vollständige Markenicon
+- Der Dashboard-Hero rendert die Marke nicht mehr aus Icon, Einzelschriftzug und dekorativen Linien nachgebaut.
+- Stattdessen zeigt `src/app/home-client.tsx` jetzt nur noch das vollständige neue Markenicon selbst.
+- `src/app/page.module.css` reduziert den Titelbereich dafür auf eine reine Icon-Fläche mit Schatten; der Markenname bleibt nur noch unsichtbar für die Semantik erhalten.
+
+## [2026-04-23] umsetzung | Dashboard-Hero auf eigenes High-Res-Markenasset umgestellt
+- Für den Dashboard-Hero wird die Marke nicht mehr aus dem kleinen `192px`-PWA-Icon hochskaliert.
+- Stattdessen liegt mit `public/brand-mark-dashboard.png` jetzt ein eigenes hochauflösendes Markenasset im Projekt, das direkt im Hero gerendert wird.
+- `src/app/home-client.tsx` nutzt dafür jetzt diesen separaten Pfad; `src/app/page.module.css` zeigt die Marke im eingeklappten Hero bewusst etwas größer.
+- Der restliche App-Icon-Satz (`src/app/icon.png`, `src/app/apple-icon.png`, `src/app/favicon.ico`, `public/icon-192.png`, `public/icon-512.png`) wurde aus derselben neuen Vorlage mit aktualisiert.
+
+## [2026-04-24] umsetzung | Zielmix-Regler verankert und Tageskarten optisch klarer getrennt
+- `src/app/einstellungen/settings-form.tsx` behandelt `Vegetarisch` jetzt als führenden Anteil im Zielmix:
+  Änderungen an `Fisch` oder `Fleisch` lassen den ersten Regler unangetastet und verteilen nur noch den verbleibenden Rest.
+- Der Hinweistex im Einstellungsformular erklärt diese Führungslogik jetzt direkt an der Zielmix-Karte.
+- `src/app/page.module.css` trennt auf dem Dashboard Anzeige und Aktion deutlicher:
+  Status- und Summenfelder wirken flacher und sachlicher, während Tag-Aktionen, Auswahlknöpfe und Aktiv-Toggles wieder sichtbar als klickbare Elemente auftreten.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `http://localhost:3000/` erfolgreich mit Status `200`,
+  `http://localhost:3000/einstellungen/` erfolgreich mit Status `200`.

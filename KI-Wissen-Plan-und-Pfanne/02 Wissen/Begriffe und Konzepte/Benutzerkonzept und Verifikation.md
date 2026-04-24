@@ -25,7 +25,7 @@ tags:
 # Benutzerkonzept, Verifikation und Datenzugriff
 
 ## Anlass
-Der aktuelle Produktzuschnitt ist nicht mehr `gehostete Mehrbenutzer-App`, sondern `lokale PWA für eine Person auf einem Gerät`.
+Der aktuelle Produktzuschnitt ist eine installierbare App für eine Person mit Daten auf dem Gerät.
 
 Damit verschiebt sich auch das Benutzerkonzept:
 - keine Pflicht-Anmeldung
@@ -40,7 +40,7 @@ Damit verschiebt sich auch das Benutzerkonzept:
 - Der Rezeptbestand ist im aktuellen Stand ebenfalls lokal und wird zunächst aus Seed-Daten befüllt.
 
 ## Verifikation im aktuellen Produktmodell
-Im lokalen PWA-Modell gibt es innerhalb der App derzeit keine eigentliche Benutzerverifikation.
+Im aktuellen Produktmodell gibt es innerhalb der App derzeit keine eigentliche Benutzerverifikation.
 
 Stattdessen gilt:
 - die App-Origin auf GitHub Pages ist die technische Identität der installierten PWA
@@ -51,16 +51,16 @@ Stattdessen gilt:
 - `src/lib/auth.ts` liefert im aktuellen Zuschnitt nur noch einen lokalen Platzhalter-Nutzer:
   `lokal@plan-und-pfanne.app`
 - `requestLoginCode`, `verifyLoginCode`, Logout und Session-Prüfungen sind bewusst entschärft und bauen keinen echten Login mehr auf.
-- `/anmelden` und `/abmelden` erklären den Richtungswechsel zur lokalen PWA, statt einen produktiven Auth-Flow auszuführen.
+- `/anmelden` und `/abmelden` bleiben als neutrale Kompatibilitätsseiten erhalten, statt einen produktiven Auth-Flow auszuführen.
 - Dashboard, Einstellungen, Rezepte, Tage und Einkaufsliste arbeiten ohne Pflicht-Login.
 - Die fachlichen Daten liegen im lokalen Store statt in benutzerscharfer Serverpersistenz.
 
-## Datenzugriff im lokalen Modus
+## Datenzugriff im aktuellen Zuschnitt
 - Einstellungen, Wochenpläne, Historie und lokale Rezeptdaten liegen in IndexedDB.
 - Aktive Gerichte und Einkaufs-Häkchen werden zusätzlich lokal pro Woche und Kontext gespeichert.
 - Der aktuelle Zugriffsschutz ist damit nicht kontobasiert, sondern geräte- und originbasiert.
 
-## Was der lokale Modus bewusst nicht bietet
+## Was der aktuelle Zuschnitt bewusst nicht bietet
 - keine Mehrgeräte-Synchronisation
 - keine serverseitige Trennung mehrerer Nutzer
 - kein Teilen über Accounts oder Einladungen

@@ -25,7 +25,7 @@ Der erzeugte Wochenplan bleibt vollständig erhalten. Zusätzlich soll der Nutze
 ## Fachliche Grundentscheidung
 - Es gibt weiterhin genau einen Wochenplan pro Woche.
 - `Aktive Gerichte` sind kein zweiter Wochenplan und kein Filter auf den Planbestand.
-- Die aktive Auswahl ist ein separater Nutzerzustand über bereits geplanten Mahlzeiten.
+- Die aktive Auswahl ist ein separater App-Zustand über bereits geplanten Mahlzeiten.
 - Dadurch bleiben Wochenübersicht, Tagesansichten, Einkaufslogik und spätere Persistenz logisch sauber getrennt.
 
 ## Ebene der Auswahl
@@ -96,17 +96,16 @@ Der erzeugte Wochenplan bleibt vollständig erhalten. Zusätzlich soll der Nutze
   - oder nur die aktiv ausgewählten Mahlzeiten
 - Damit bleibt die bestehende Rundungs- und Gruppierungslogik wiederverwendbar.
 
-## Persistenzempfehlung
-### Kurzfristig im aktuellen MVP
-- Die Auswahl aktiver Gerichte und der zuletzt verwendete Sichtmodus der Einkaufsliste können lokal im Browser gespeichert werden.
-- Der Schlüssel soll mindestens die Woche enthalten, zum Beispiel über `startDate`.
-- Sinnvoll ist eine Trennung zwischen:
+## Persistenz im aktuellen Produktmodell
+- Die Auswahl aktiver Gerichte und der zuletzt verwendete Sichtmodus der Einkaufsliste werden im aktuellen Workspace auf dem Gerät gespeichert.
+- Der Schlüssel enthält mindestens die Woche, zum Beispiel über `startDate`.
+- Sinnvoll bleibt eine Trennung zwischen:
   - Auswahlzustand der Woche
   - Abhakzustand einer konkreten Listenansicht
 
-### Später bei benutzerscharfem Zugriff
-- Die aktive Auswahl sollte benutzerscharf serverseitig persistiert werden.
-- Dann gehört sie fachlich zum Nutzerkontext einer bestimmten Woche.
+## Spätere Alternativen
+- Falls das Produkt später Mehrgeräte-Nutzung oder Kontologik bekommt, kann dieselbe Auswahl zusätzlich an einen Nutzerkontext gebunden werden.
+- Diese spätere Erweiterung ändert nichts an der fachlichen Trennung zwischen vollständigem Wochenplan, aktiver Auswahl und Sichtmodus.
 
 ## Reset- und Änderungsregeln
 - Bei Neugenerierung einer Woche wird die aktive Auswahl zurückgesetzt.
@@ -136,9 +135,9 @@ Der erzeugte Wochenplan bleibt vollständig erhalten. Zusätzlich soll der Nutze
 7. Abhakstatus der Einkaufsliste an Woche plus Modus koppeln.
 
 ## Nutzen für spätere Ausbaustufen
-- kompatibel mit benutzerscharfer Speicherung
 - kompatibel mit Offline-Snapshots
 - anschlussfähig für spätere Funktionen wie:
   - `heute kochen`
   - `bereits gekocht`
   - vorbereitete Einkaufsmodi pro Haushalt oder Einkaufstag
+  - optionalen Export, Import oder späteren Geräteabgleich
