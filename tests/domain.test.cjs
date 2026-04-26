@@ -52,6 +52,7 @@ const {
   proteinGramsForPerson,
 } = require("../src/lib/protein-targets.ts");
 const { calculateTargets, evaluateMeals, multiplyRecipe } = require("../src/lib/planner.ts");
+const { seedRecipes } = require("../src/lib/data/seed-recipes.ts");
 const { buildShoppingListGroupsForPlannedDays } = require("../src/lib/week-plan-selection.ts");
 
 function settings(overrides = {}) {
@@ -227,4 +228,26 @@ test("planned-day shopping list scales people counts and normalizes eggs", () =>
   assert.equal(eggGroup.items.length, 1);
   assert.deepEqual(eggGroup.items[0], { name: "Eier", unit: "Stk", totalAmount: 10 });
   assert.deepEqual(dairyGroup.items[0], { name: "Quark", unit: "g", totalAmount: 200 });
+});
+
+test("seed recipe pool contains additional recipes and detailed preparation steps", () => {
+  assert.equal(seedRecipes.length, 94);
+
+  const recipeCounts = seedRecipes.reduce((counts, currentRecipe) => {
+    counts[currentRecipe.mealType] += 1;
+    return counts;
+  }, { breakfast: 0, lunch: 0, dinner: 0, snack: 0 });
+
+  assert.deepEqual(recipeCounts, {
+    breakfast: 22,
+    lunch: 24,
+    dinner: 25,
+    snack: 23,
+  });
+
+  for (const currentRecipe of seedRecipes) {
+    assert.equal(currentRecipe.instructions[0].startsWith("Vorbereitung:"), true);
+    assert.equal(currentRecipe.instructions.at(-1).startsWith("Abschluss:"), true);
+    assert.equal(currentRecipe.instructions.length >= 4, true);
+  }
 });

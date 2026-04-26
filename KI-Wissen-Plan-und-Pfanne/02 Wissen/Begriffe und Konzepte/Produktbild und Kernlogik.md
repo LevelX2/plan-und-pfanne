@@ -14,6 +14,8 @@ quellen:
   - ../../../src/app/rezepte/recipes-client.tsx
   - ../../../src/lib/data/demo-recipes.ts
   - ../../../src/lib/data/imported-recipes.ts
+  - ../../../src/lib/data/additional-recipes.ts
+  - ../../../src/lib/data/detailed-instructions.ts
 tags:
   - fachlogik
   - rezepte
@@ -48,15 +50,17 @@ Jede geplante Mahlzeit trägt:
 - Sortierung innerhalb des Tages
 
 ## Aktueller Rezeptpool
-- 74 Seed-Rezepte sind im aktuellen Datenbestand vorhanden.
+- 94 Seed-Rezepte sind im aktuellen Datenbestand vorhanden.
 - Darunter sind 28 zusätzliche glutenfreie Rezepte, die am 2026-04-23 aus externen Webquellen strukturiert in den Seed-Bestand übernommen wurden.
+- Am 2026-04-26 wurden 20 weitere eigene glutenfreie Seed-Rezepte ergänzt.
 - Verteilung nach primärem Mahlzeitentyp:
-  - 17 Frühstücke
-  - 19 Mittagessen
-  - 20 Abendessen
-  - 18 Snacks
+  - 22 Frühstücke
+  - 24 Mittagessen
+  - 25 Abendessen
+  - 23 Snacks
 - Standard-Snacks enthalten jetzt unter anderem Proteinshakes und glutenfreie Proteinriegel-Varianten mit 30 %, 40 %, 50 % und 60 % Eiweißanteil.
 - Glutenfreiheit ist im Seed-Bestand durchgängig gesetzt.
+- Die Zubereitungsschritte werden beim Seed-Export zentral um Vorbereitung, genauere Arbeitshinweise und Abschluss-Hinweise ergänzt, sodass Kochansicht und Rezeptdetails ausführlichere Schritte anzeigen.
 
 ## Rezeptzulassung und Gewichtung
 - Die App verwendet nicht automatisch alle Rezepte für jeden Mahlzeitentyp.

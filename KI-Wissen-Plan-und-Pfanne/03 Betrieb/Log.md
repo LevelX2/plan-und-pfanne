@@ -512,3 +512,17 @@
   `npm test` erfolgreich,
   `npm run lint` erfolgreich,
   Screenshots im In-App-Browser erzeugt und visuell geprüft.
+
+## [2026-04-26] inhalt | Rezeptpool erweitert und Zubereitungsschritte ausgebaut
+- `src/lib/data/additional-recipes.ts` ergänzt 20 neue glutenfreie Seed-Rezepte:
+  5 Frühstücke, 5 Mittagessen, 5 Abendessen und 5 Snacks.
+- Der Seed-Rezeptpool umfasst damit 94 Rezepte mit folgender Verteilung:
+  22 Frühstücke, 24 Mittagessen, 25 Abendessen und 23 Snacks.
+- `src/lib/data/detailed-instructions.ts` reichert alle Seed-Rezepte beim Export um ausführlichere Zubereitungsschritte an:
+  Vorbereitung, genauere Arbeitshinweise je Zubereitungsart und Abschluss-Hinweise.
+- `tests/domain.test.cjs` prüft Rezeptanzahl, Mahlzeitentyp-Verteilung und die vorhandenen Detail-Schritte im Seed-Pool.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.
+  Beim ersten Buildlauf verwies eine stale `.next/dev`-Typdatei noch auf bereits gelöschte Routen; nach kontrolliertem Löschen des generierten `.next`-Ordners lief der Build erfolgreich.
