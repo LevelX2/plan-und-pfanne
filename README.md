@@ -45,7 +45,7 @@ Der aktuelle Plan zeigt Tageskarten mit Kalorien, Makros und aktiven Mahlzeiten.
 - Die Daten bleiben an dieses Gerät und dieselbe App-Origin gebunden.
 - Es gibt aktuell keinen Export-, Backup- oder Gerätewechselpfad.
 - Neue Rezepte kommen im aktuellen Stand über eingebauten Startbestand; ein Dateiimport oder Feed ist noch nicht umgesetzt.
-- Frühere Routen wie `/anmelden`, `/abmelden` und einige `/api/*`-Pfade bleiben nur aus Kompatibilitätsgründen erreichbar und gehören nicht mehr zum normalen Produktfluss.
+- Es gibt keinen Login-, Logout- oder zentralen API-/Scheduler-Pfad mehr im Produkt.
 
 ## Lokale Entwicklung
 

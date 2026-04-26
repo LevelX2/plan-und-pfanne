@@ -526,3 +526,13 @@
   `npm run lint` erfolgreich,
   `npm run build` erfolgreich.
   Beim ersten Buildlauf verwies eine stale `.next/dev`-Typdatei noch auf bereits gelöschte Routen; nach kontrolliertem Löschen des generierten `.next`-Ordners lief der Build erfolgreich.
+
+## [2026-04-26] bereinigung | Frühere Login- und API-Kompatibilität entfernt
+- Die früheren Routen `/anmelden`, `/abmelden`, `/api/health`, `/api/auth/logout` und `/api/scheduler/weekly` wurden aus dem App-Routing entfernt.
+- Die zugehörigen Auth-Platzhalter `src/app/auth-actions.ts`, `src/app/auth-form-state.ts` und `src/lib/auth.ts` wurden gelöscht.
+- `README.md`, `KODEX_STAND.md`, Projektstatus, Systembild, Benutzerkonzept und offene Punkte wurden auf den neuen Stand ohne Login-, Logout- oder API-Kompatibilität nachgezogen.
+- Ein aktueller Kompatibilitätsbedarf für diese Pfade besteht nicht mehr, weil die App lokal als PWA ohne Kontoverwaltung und ohne zentralen Scheduler arbeitet.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `npm run build` nach Entfernen des stale `.next`-Caches erfolgreich.

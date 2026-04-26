@@ -15,7 +15,8 @@
 - IndexedDB für produktive lokale App-Daten
 - Validierung mit `zod`
 - PWA-Grundlage mit Manifest, Icons und Service Worker
-- Legacy-Servermodule mit SQLite liegen noch im Repository, sind aber nicht der produktive PWA-Hauptpfad
+- Frühere Login-, Logout- und API-Routen sind entfernt; die App läuft ohne Kontoverwaltung und ohne zentralen Scheduler.
+- Legacy-Servermodule mit SQLite liegen noch im Repository, sind aber nicht der produktive PWA-Hauptpfad.
 
 ## Produktive Routen
 
@@ -27,10 +28,6 @@
 - `/einkaufsliste`
 - `/historie`
 - `/einstellungen`
-- `/anmelden`
-- `/abmelden`
-- `/api/health`
-- `/api/scheduler/weekly`
 
 ## Fachliche Kernbereiche
 
@@ -63,7 +60,7 @@
 - Generator erzeugt frei wählbare Datumsbereiche mit Überschneidungswarnung
 - Tagesdetail erlaubt Gerichtstausch, Personenzahl, Ausfall-Schalter, Einkaufslisten-Flag und zusätzliche Snacks
 - Kochansicht öffnet konkrete geplante Mahlzeiten mit temporär skalierbarer Personenzahl
-- Rezeptseite pflegt Rezeptzulassung und Gewichtung je Mahlzeitentyp
+- Rezeptseite pflegt Rezeptzulassung, Suche, Details und Gewichtung je Mahlzeitentyp
 - Einkaufsliste aggregiert aktive Mahlzeiten aus einem Datumsbereich
 - Historie zeigt Tageslisten und kopiert Quellzeiträume in neue Zielzeiträume
 - Einstellungen pflegen Standard-Personenzahl, Kalorien, Makros und löschen alte Pläne
@@ -74,6 +71,7 @@
 - `npm run build` erfolgreich verifiziert
 - GitHub-Pages-Build mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` erfolgreich verifiziert
 - `next.config.ts` nutzt `output: "export"`, `trailingSlash: true`, `images.unoptimized: true` und einen buildzeitlichen `basePath`
+- Die frühere Kompatibilität für `/anmelden`, `/abmelden` und statische `/api/*`-Platzhalter wurde entfernt.
 
 ## Wichtige Einordnung
 

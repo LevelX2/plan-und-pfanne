@@ -1,7 +1,7 @@
 ---
 typ: risiko
 status: aktiv
-letzte_aktualisierung: 2026-04-24
+letzte_aktualisierung: 2026-04-26
 quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../KODEX_STAND.md
@@ -40,7 +40,7 @@ tags:
 - Der Service Worker cached die App-Shell und gleich-originäre `GET`-Requests; routegenaue Offline-Tests auf echten Mobilgeräten stehen weiterhin aus.
 - IndexedDB bleibt browser- und originabhängig. Manuelles Löschen, Speicherdruck oder ein Origin-Wechsel können lokale Daten entfernen.
 - Die querybasierten Detailrouten `/tage?date=...` und `/kochen?meal=...` passen zum Static Export, sollten bei weiterer Navigationserweiterung bewusst beibehalten werden.
-- Alte serverseitige Artefakte wie Auth-, SQLite- und Scheduler-Code liegen teilweise noch im Repository. Sie dürfen nicht versehentlich wieder zum produktiven Hauptpfad werden.
+- Alte serverseitige Artefakte wie SQLite- und ältere Wochenplan-Codepfade liegen teilweise noch im Repository. Sie dürfen nicht versehentlich wieder zum produktiven Hauptpfad werden.
 - Der alte Ordner `C:\Users\Lui\OneDrive\Projekte\gluten freie Rezepte` ist weiterhin als OneDrive-Reparse-Restzustand sichtbar und nicht automatisch bereinigt.
 
 ## Empfohlene nächste Prüfungen
@@ -48,4 +48,4 @@ tags:
 2. Manuelle Produktfälle aus der Tageskonzept-Vorgabe durchspielen:
    Generieren, Überschneidung, Bearbeitung, Snack, Deaktivierung, Kochansicht, Einkaufsliste, Historie, Kopieren und Löschen.
 3. Backup- und Exportbedarf für lokale App-Daten entscheiden.
-4. Alte serverseitige Kompatibilitätsartefakte später gezielt bereinigen, sobald klar ist, dass kein Rückfall auf den Serverpfad gebraucht wird.
+4. Ungenutzte alte Server-/Wochenplanmodule später gezielt bereinigen, sobald klar ist, dass kein Rückfall auf den Serverpfad gebraucht wird.

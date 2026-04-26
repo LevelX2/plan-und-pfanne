@@ -29,7 +29,8 @@ tags:
 - Die App ist fachlich vom starren Wochenplanmodell auf ein flexibles Tagesplanmodell umgestellt.
 - Pro Datum gibt es maximal einen lokalen Tagesplan; ein Planzeitraum ist Herkunfts- beziehungsweise Erstellungsinformation.
 - Produktive statisch exportierbare Routen sind vorhanden:
-  `/`, `/planen`, `/tage`, `/kochen`, `/rezepte`, `/einkaufsliste`, `/historie`, `/einstellungen`, `/anmelden`, `/abmelden`, `/api/health`, `/api/auth/logout` und `/api/scheduler/weekly`.
+  `/`, `/planen`, `/tage`, `/kochen`, `/rezepte`, `/einkaufsliste`, `/historie` und `/einstellungen`.
+- Frühere Login-, Logout- und statische API-Platzhalterrouten wurden entfernt; es gibt keinen aktuellen Kompatibilitätsbedarf für diese Pfade.
 - Die lokale Persistenz nutzt IndexedDB mit Stores für:
   `settings`, `recipes`, `mealTypes`, `recipeDefaultMealTypeAssignments`, `userRecipeMealTypePreferences`, `plannedDays`, `plannedMeals`, `meta` und `snapshots`.
 - Alte Wochenplan-Testdaten werden mit dem neuen lokalen Schema nicht migriert.
@@ -55,7 +56,7 @@ tags:
 - Export- und Backup-Pfad für lokale Daten fehlt weiterhin.
 - Ein produktnaher Geräte- und Update-Test auf iPhone und Android steht noch aus.
 - Browser- oder Komponenten-Tests für komplette UI-Flows wie Überschneidungswarnung, Tagesdetail-Bearbeitung, Kochansicht und Historie-Kopieren fehlen weiterhin.
-- Eine spätere Bereinigung der Legacy-Servermodule kann separat erfolgen.
+- Eine spätere Bereinigung der noch ungenutzten Legacy-Servermodule kann separat erfolgen.
 
 ## Wichtige Grenzen
 - Die Planung bleibt heuristisch und zufallsbasiert; identische Einstellungen führen nicht zwingend zu reproduzierbaren Ergebnissen.

@@ -1,18 +1,12 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-24
+letzte_aktualisierung: 2026-04-26
 quellen:
-  - ../../../src/lib/auth.ts
-  - ../../../src/app/actions.ts
-  - ../../../src/app/auth-actions.ts
-  - ../../../src/app/anmelden/page.tsx
-  - ../../../src/app/abmelden/page.tsx
   - ../../../src/app/page.tsx
   - ../../../src/app/home-client.tsx
   - ../../../src/app/einstellungen/page.tsx
   - ../../../src/app/einkaufsliste/page.tsx
-  - ../../../src/app/api/auth/logout/route.ts
   - ../../../src/lib/local-store.ts
 tags:
   - benutzer
@@ -48,10 +42,8 @@ Stattdessen gilt:
 - der Besitz des Geräts beziehungsweise des installierten Browser-Profils ersetzt die frühere Session-Logik
 
 ## Umgesetzter Workspace-Stand
-- `src/lib/auth.ts` liefert im aktuellen Zuschnitt nur noch einen lokalen Platzhalter-Nutzer:
-  `lokal@plan-und-pfanne.app`
-- `requestLoginCode`, `verifyLoginCode`, Logout und Session-Prüfungen sind bewusst entschärft und bauen keinen echten Login mehr auf.
-- `/anmelden` und `/abmelden` bleiben als neutrale Kompatibilitätsseiten erhalten, statt einen produktiven Auth-Flow auszuführen.
+- Frühere Login-, Logout- und Auth-Platzhalter wurden aus dem App-Routing entfernt.
+- Es gibt keinen aktuellen Kompatibilitätsbedarf für `/anmelden`, `/abmelden` oder frühere statische Auth-/Scheduler-API-Pfade.
 - Dashboard, Einstellungen, Rezepte, Tage und Einkaufsliste arbeiten ohne Pflicht-Login.
 - Die fachlichen Daten liegen im lokalen Store statt in benutzerscharfer Serverpersistenz.
 

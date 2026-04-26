@@ -1,7 +1,7 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-24
+letzte_aktualisierung: 2026-04-26
 quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../README.md
@@ -66,13 +66,11 @@ tags:
   - `/einkaufsliste`
   - `/historie`
   - `/einstellungen`
-  - `/anmelden`
-  - `/abmelden`
 - Detailansichten laufen statisch über Query-Parameter:
   - `/tage?date=YYYY-MM-DD`
   - `/kochen?meal=<plannedMealId>`
 - Die Produktseiten arbeiten clientseitig auf lokaler Datenbasis.
-- `anmelden`, `abmelden`, `auth-actions` und die API-Routen sind im aktuellen Zuschnitt nur noch Legacy- oder Platzhalterpfade und nicht mehr Teil eines echten Serverbetriebs.
+- Frühere Login-, Logout- und API-Platzhalterrouten wurden entfernt; der aktuelle Produktfluss hat keine Kontoverwaltung und keinen zentralen Scheduler.
 - App-weite Fallback-Seiten für unerwartete Fehler und nicht gefundene Routen sind vorhanden.
 
 ## Persistenzbild
@@ -84,7 +82,7 @@ tags:
 - `plannedDays.date` ist eindeutig; pro Datum gibt es maximal einen Tagesplan.
 - `plannedMeals` speichert pro Slot Rezept, Mahlzeitentyp, Personenzahl, Aktivstatus, Einkaufslisten-Flag und Sortierung.
 - App-Standardzuordnungen für Rezepte und nutzerseitige Rezeptpräferenzen sind getrennt, damit neue Seed-Daten Nutzeranpassungen nicht überschreiben.
-- `src/lib/db.ts` und `src/lib/store.ts` liegen noch als frühere serverseitige Zwischenstufe beziehungsweise Kompatibilitätsschicht im Repository, sind aber nicht Teil des primären PWA-Laufzeitpfads.
+- `src/lib/db.ts` und `src/lib/store.ts` liegen noch als frühere serverseitige Zwischenstufe im Repository, sind aber nicht Teil des primären PWA-Laufzeitpfads.
 
 ## Fachlicher Laufzeitfluss
 - Der Startzustand erzeugt keinen Plan automatisch.
