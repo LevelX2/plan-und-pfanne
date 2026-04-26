@@ -106,6 +106,77 @@
   margin: 0 auto;
 }
 
+.searchPanel {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.5fr) minmax(280px, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  max-width: 1320px;
+  margin: 0 auto 20px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  box-shadow: 0 18px 46px rgba(19, 38, 29, 0.07);
+  background: rgba(255, 252, 247, 0.84);
+  backdrop-filter: blur(12px);
+}
+
+.searchPanel label {
+  display: grid;
+  gap: 6px;
+}
+
+.searchPanel label strong {
+  font-size: 1.05rem;
+}
+
+.searchField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.searchField input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(19, 38, 29, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 252, 247, 0.94);
+  color: #13261d;
+  font: inherit;
+  padding: 0 14px;
+}
+
+.searchField button,
+.recipeDetailTrigger,
+.recipeDetailTab,
+.recipeDetailTabActive {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.searchField button,
+.recipeDetailTrigger {
+  min-height: 42px;
+  border-radius: 14px;
+  background: rgba(208, 110, 47, 0.12);
+  color: #9a4717;
+  padding: 0 14px;
+}
+
+.searchMeta,
+.emptyState {
+  color: rgba(19, 38, 29, 0.68);
+  line-height: 1.55;
+}
+
+.searchMeta {
+  text-align: right;
+}
+
 .installCard {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
@@ -391,6 +462,33 @@
   padding: 0 20px 20px;
 }
 
+.recipeDetailTrigger {
+  width: fit-content;
+}
+
+.recipeDetailTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recipeDetailTab,
+.recipeDetailTabActive {
+  min-height: 40px;
+  border-radius: 14px;
+  padding: 0 14px;
+}
+
+.recipeDetailTab {
+  background: rgba(20, 76, 57, 0.07);
+  color: rgba(19, 38, 29, 0.74);
+}
+
+.recipeDetailTabActive {
+  background: #144c39;
+  color: #f8f4ee;
+}
+
 .recipePreview {
   display: grid;
   gap: 14px;
@@ -503,8 +601,13 @@
   .detailHero,
   .detailGrid,
   .recipeDetails,
+  .searchPanel,
   .installCard {
     grid-template-columns: 1fr;
+  }
+
+  .searchMeta {
+    text-align: left;
   }
 }
 
@@ -530,6 +633,11 @@
   .groupButton,
   .recipeTop {
     align-items: start;
+  }
+
+  .searchField {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .groupButton {

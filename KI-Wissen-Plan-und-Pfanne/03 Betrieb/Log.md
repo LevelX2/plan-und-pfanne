@@ -491,3 +491,13 @@
   `npm run lint` erfolgreich,
   `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` mit `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich gebaut.
 - Ein erster Buildversuch scheiterte mit `EBUSY` auf `.next/server/pages-manifest.json`; nach kontrolliertem Löschen des generierten `.next`-Ordners lief der Build erfolgreich.
+
+## [2026-04-26] nachbesserung | Rezeptsuche und Rezeptdetails ergänzt
+- Die Rezeptseite enthält jetzt eine Suche über Rezeptname, Beschreibung, Mahlzeitentyp, Eiweißquelle, Tags, Zutaten, Zutatenkategorien und Zubereitungsschritte.
+- Suchtreffer werden in den Mahlzeitentyp-Gruppen direkt sichtbar gemacht.
+- Rezeptdetails sind jetzt auch aus der Planungszulassungs-Liste erreichbar.
+- Geöffnete Rezeptdetails starten mit `Zubereitung` und können auf `Zutaten` umgeschaltet werden.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.

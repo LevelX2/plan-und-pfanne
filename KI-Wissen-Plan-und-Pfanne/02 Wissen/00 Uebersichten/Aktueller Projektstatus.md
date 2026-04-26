@@ -1,7 +1,7 @@
 ---
 typ: status
 status: aktiv
-letzte_aktualisierung: 2026-04-24
+letzte_aktualisierung: 2026-04-26
 quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../README.md
@@ -37,7 +37,7 @@ tags:
 - Das Tagesdetail erlaubt Gerichtstausch, Personenzahl je Mahlzeit, Deaktivieren, Einkaufslisten-Flag und zusätzliche Snacks.
 - Jede aktive geplante Mahlzeit kann direkt in eine Rezept-Kochansicht geöffnet werden.
 - Die Kochansicht übernimmt die geplante Personenzahl und erlaubt temporäres Skalieren, ohne die Planung zurückzuschreiben.
-- Die Rezeptseite pflegt Rezeptzulassung und Gewichtung je Mahlzeitentyp.
+- Die Rezeptseite pflegt Rezeptzulassung und Gewichtung je Mahlzeitentyp, bietet eine Rezeptsuche über Zutaten und Zubereitungstexte und zeigt Rezeptdetails mit Umschaltung zwischen Zubereitung und Zutaten.
 - Mittagessen und Abendessen sind standardmäßig gegenseitig zulässig; Frühstück und Snack bleiben standardmäßig getrennt.
 - Die Einkaufsliste wird aus einem frei gewählten Datumsbereich erzeugt und berücksichtigt aktive Mahlzeiten mit Einkaufslisten-Flag.
 - Die Historie zeigt geplante Tage und kann Quellzeiträume in neue Zielzeiträume kopieren.

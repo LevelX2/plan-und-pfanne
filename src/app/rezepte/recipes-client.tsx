@@ -24,6 +24,8 @@ type RecipeState = {
   preferences: EffectiveRecipeMealTypePreference[];
 };
 
+type RecipeDetailTab = "preparation" | "ingredients";
+
 async function loadRecipeState(): Promise<RecipeState> {
   const [recipes, preferences] = await Promise.all([
     listLocalRecipes({ applySettings: false }),
@@ -40,17 +42,39 @@ export function RecipesClient() {
   const [state, setState] = useState<RecipeState>({ recipes: [], preferences: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [openRecipeId, setOpenRecipeId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [openRecipeKey, setOpenRecipeKey] = useState<string | null>(null);
+  const [recipeDetailTabs, setRecipeDetailTabs] = useState<Record<string, RecipeDetailTab>>({});
   const [openPlanningMealTypes, setOpenPlanningMealTypes] = useState<MealType[]>([]);
   const [openLibraryMealTypes, setOpenLibraryMealTypes] = useState<MealType[]>([]);
+  const normalizedSearchQuery = normalizeSearch(searchQuery);
+  const matchingRecipeIds = useMemo(() => {
+    if (!normalizedSearchQuery) {
+      return new Set(state.recipes.map((recipe) => recipe.id));
+    }
+
+    const searchTerms = normalizedSearchQuery.split(" ").filter(Boolean);
+
+    return new Set(
+      state.recipes
+        .filter((recipe) => recipeMatchesSearch(recipe, searchTerms))
+        .map((recipe) => recipe.id),
+    );
+  }, [normalizedSearchQuery, state.recipes]);
+  const filteredRecipes = useMemo(
+    () => state.recipes.filter((recipe) => matchingRecipeIds.has(recipe.id)),
+    [matchingRecipeIds, state.recipes],
+  );
   const groupedRecipes = useMemo(
     () =>
       mealTypes.map((mealType) => ({
         mealType,
-        recipes: state.recipes.filter((recipe) => recipe.mealType === mealType),
+        recipes: filteredRecipes.filter((recipe) => recipe.mealType === mealType),
+        totalRecipes: state.recipes.filter((recipe) => recipe.mealType === mealType).length,
       })),
-    [state.recipes],
+    [filteredRecipes, state.recipes],
   );
+  const hasSearch = normalizedSearchQuery.length > 0;
 
   async function refresh() {
     const nextState = await loadRecipeState();
@@ -106,6 +130,81 @@ export function RecipesClient() {
       : [...mealTypes, mealType];
   }
 
+  function getDetailTab(recipeId: string) {
+    return recipeDetailTabs[recipeId] ?? "preparation";
+  }
+
+  function setDetailTab(recipeId: string, tab: RecipeDetailTab) {
+    setRecipeDetailTabs((current) => ({
+      ...current,
+      [recipeId]: tab,
+    }));
+  }
+
+  function toggleRecipeDetails(recipeKey: string, recipeId: string) {
+    setOpenRecipeKey((current) => (current === recipeKey ? null : recipeKey));
+    setDetailTab(recipeId, "preparation");
+  }
+
+  function renderRecipeDetails(recipe: Recipe) {
+    const activeTab = getDetailTab(recipe.id);
+
+    return (
+      <div className={styles.recipeExpandedContent}>
+        <p className={styles.description}>{recipe.description}</p>
+        <div className={styles.recipeDetailTabs} role="tablist" aria-label={`Rezeptdetails für ${recipe.name}`}>
+          <button
+            aria-selected={activeTab === "preparation"}
+            className={activeTab === "preparation" ? styles.recipeDetailTabActive : styles.recipeDetailTab}
+            onClick={() => setDetailTab(recipe.id, "preparation")}
+            role="tab"
+            type="button"
+          >
+            Zubereitung
+          </button>
+          <button
+            aria-selected={activeTab === "ingredients"}
+            className={activeTab === "ingredients" ? styles.recipeDetailTabActive : styles.recipeDetailTab}
+            onClick={() => setDetailTab(recipe.id, "ingredients")}
+            role="tab"
+            type="button"
+          >
+            Zutaten
+          </button>
+        </div>
+
+        {activeTab === "preparation" ? (
+          <div className={styles.recipeDetailColumn}>
+            <p className={styles.sectionKicker}>Zubereitung</p>
+            <ol className={styles.instructions}>
+              {recipe.instructions.map((step, index) => (
+                <li key={`${recipe.id}-step-${index + 1}`}>
+                  <span className={styles.stepNumber}>{index + 1}</span>
+                  <p>{step}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ) : (
+          <div className={styles.recipeDetailColumn}>
+            <p className={styles.sectionKicker}>Zutaten</p>
+            <ul className={styles.ingredientList}>
+              {recipe.ingredients.map((ingredient) => (
+                <li key={`${recipe.id}-${ingredient.name}`}>
+                  <div>
+                    <strong>{ingredient.name}</strong>
+                    <span>{ingredient.category}</span>
+                  </div>
+                  <span>{formatShoppingQuantity(ingredient.amount, ingredient.unit)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <main className={styles.page}>
       <AppNav currentPath="/rezepte" />
@@ -126,6 +225,32 @@ export function RecipesClient() {
         </div>
       </section>
 
+      <section className={styles.searchPanel} aria-label="Rezepte suchen">
+        <label htmlFor="recipe-search">
+          <span className={styles.sectionKicker}>Suche</span>
+          <strong>Rezept oder Zutat finden</strong>
+        </label>
+        <div className={styles.searchField}>
+          <input
+            id="recipe-search"
+            onChange={(event) => setSearchQuery(event.currentTarget.value)}
+            placeholder="z. B. Hüttenkäse, Lachs, Bowl oder Frühstück"
+            type="search"
+            value={searchQuery}
+          />
+          {searchQuery ? (
+            <button onClick={() => setSearchQuery("")} type="button">
+              löschen
+            </button>
+          ) : null}
+        </div>
+        <p className={styles.searchMeta}>
+          {isLoading
+            ? "Rezepte werden geladen."
+            : `${filteredRecipes.length} von ${state.recipes.length} Rezepten passen zur Suche.`}
+        </p>
+      </section>
+
       {loadError ? (
         <section className={styles.groupStack}>
           <article className={styles.groupCard}>
@@ -139,16 +264,18 @@ export function RecipesClient() {
       {!loadError ? (
         <section className={styles.groupStack}>
           {mealTypes.map((mealType) => {
-            const preferences = state.preferences.filter((preference) => preference.mealType === mealType);
+            const allPreferences = state.preferences.filter((preference) => preference.mealType === mealType);
+            const preferences = allPreferences.filter((preference) => matchingRecipeIds.has(preference.recipe.id));
             const enabledCount = preferences.filter((preference) => preference.enabledForPlanning).length;
             const isGroupOpen = openPlanningMealTypes.includes(mealType);
+            const showGroupContent = isGroupOpen || hasSearch;
             const groupId = `planning-${mealType}`;
 
             return (
-              <article className={`${styles.groupCard} ${isGroupOpen ? styles.groupCardExpanded : ""}`} key={mealType}>
+              <article className={`${styles.groupCard} ${showGroupContent ? styles.groupCardExpanded : ""}`} key={mealType}>
                 <button
                   aria-controls={groupId}
-                  aria-expanded={isGroupOpen}
+                  aria-expanded={showGroupContent}
                   className={styles.groupButton}
                   onClick={() =>
                     setOpenPlanningMealTypes((current) => toggleMealType(current, mealType))
@@ -156,17 +283,21 @@ export function RecipesClient() {
                   type="button"
                 >
                   <div>
-                    <p className={styles.sectionKicker}>{enabledCount} zugelassen</p>
+                    <p className={styles.sectionKicker}>
+                      {hasSearch ? `${preferences.length} Treffer` : `${enabledCount} zugelassen`}
+                    </p>
                     <h2>{formatMealType(mealType)}</h2>
                   </div>
                   <span className={styles.groupButtonMeta}>
-                    <span>{preferences.length} Optionen</span>
-                    <span className={styles.groupAction}>{isGroupOpen ? "zuklappen" : "aufklappen"}</span>
-                    <span className={styles.toggleIcon}>{isGroupOpen ? "-" : "+"}</span>
+                    <span>{hasSearch ? `${allPreferences.length} Optionen gesamt` : `${preferences.length} Optionen`}</span>
+                    <span className={styles.groupAction}>
+                      {hasSearch ? "Treffer sichtbar" : showGroupContent ? "zuklappen" : "aufklappen"}
+                    </span>
+                    <span className={styles.toggleIcon}>{showGroupContent ? "-" : "+"}</span>
                   </span>
                 </button>
 
-                {isGroupOpen ? (
+                {showGroupContent ? (
                   <div className={styles.recipeGrid} id={groupId}>
                     {preferences.map((preference) => (
                       <article className={styles.recipeCard} key={`${preference.recipe.id}-${mealType}`}>
@@ -220,9 +351,27 @@ export function RecipesClient() {
                               </select>
                             </label>
                           </div>
+                          <button
+                            aria-expanded={openRecipeKey === `planning-${mealType}-${preference.recipe.id}`}
+                            className={styles.recipeDetailTrigger}
+                            onClick={() =>
+                              toggleRecipeDetails(`planning-${mealType}-${preference.recipe.id}`, preference.recipe.id)
+                            }
+                            type="button"
+                          >
+                            {openRecipeKey === `planning-${mealType}-${preference.recipe.id}`
+                              ? "Details schließen"
+                              : "Zubereitung anzeigen"}
+                          </button>
                         </div>
+                        {openRecipeKey === `planning-${mealType}-${preference.recipe.id}`
+                          ? renderRecipeDetails(preference.recipe)
+                          : null}
                       </article>
                     ))}
+                    {preferences.length === 0 ? (
+                      <p className={styles.emptyState}>Keine passenden Rezepte in diesem Mahlzeitentyp.</p>
+                    ) : null}
                   </div>
                 ) : null}
               </article>
@@ -232,101 +381,105 @@ export function RecipesClient() {
       ) : null}
 
       <section className={styles.groupStack}>
-        {groupedRecipes.map((group) => (
-          <article
-            className={`${styles.groupCard} ${openLibraryMealTypes.includes(group.mealType) ? styles.groupCardExpanded : ""}`}
-            key={`library-${group.mealType}`}
-          >
-            <button
-              aria-controls={`library-${group.mealType}`}
-              aria-expanded={openLibraryMealTypes.includes(group.mealType)}
-              className={styles.groupButton}
-              onClick={() =>
-                setOpenLibraryMealTypes((current) => toggleMealType(current, group.mealType))
-              }
-              type="button"
+        {groupedRecipes.map((group) => {
+          const isGroupOpen = openLibraryMealTypes.includes(group.mealType);
+          const showGroupContent = isGroupOpen || hasSearch;
+
+          return (
+            <article
+              className={`${styles.groupCard} ${showGroupContent ? styles.groupCardExpanded : ""}`}
+              key={`library-${group.mealType}`}
             >
-              <div>
-                <p className={styles.sectionKicker}>{group.recipes.length} Rezepte</p>
-                <h2>{formatMealType(group.mealType)} in der Bibliothek</h2>
-              </div>
-              <span className={styles.groupButtonMeta}>
-                <span className={styles.groupAction}>
-                  {openLibraryMealTypes.includes(group.mealType) ? "zuklappen" : "aufklappen"}
+              <button
+                aria-controls={`library-${group.mealType}`}
+                aria-expanded={showGroupContent}
+                className={styles.groupButton}
+                onClick={() =>
+                  setOpenLibraryMealTypes((current) => toggleMealType(current, group.mealType))
+                }
+                type="button"
+              >
+                <div>
+                  <p className={styles.sectionKicker}>
+                    {hasSearch ? `${group.recipes.length} Treffer` : `${group.recipes.length} Rezepte`}
+                  </p>
+                  <h2>{formatMealType(group.mealType)} in der Bibliothek</h2>
+                </div>
+                <span className={styles.groupButtonMeta}>
+                  {hasSearch ? <span>{group.totalRecipes} Rezepte gesamt</span> : null}
+                  <span className={styles.groupAction}>
+                    {hasSearch ? "Treffer sichtbar" : showGroupContent ? "zuklappen" : "aufklappen"}
+                  </span>
+                  <span className={styles.toggleIcon}>{showGroupContent ? "-" : "+"}</span>
                 </span>
-                <span className={styles.toggleIcon}>
-                  {openLibraryMealTypes.includes(group.mealType) ? "-" : "+"}
-                </span>
-              </span>
-            </button>
+              </button>
 
-            {openLibraryMealTypes.includes(group.mealType) ? (
-              <div className={styles.recipeGrid} id={`library-${group.mealType}`}>
-                {group.recipes.map((recipe) => {
-                  const isOpen = openRecipeId === recipe.id;
+              {showGroupContent ? (
+                <div className={styles.recipeGrid} id={`library-${group.mealType}`}>
+                  {group.recipes.map((recipe) => {
+                    const recipeKey = `library-${recipe.id}`;
+                    const isOpen = openRecipeKey === recipeKey;
 
-                  return (
-                    <article className={`${styles.recipeCard} ${isOpen ? styles.recipeCardExpanded : ""}`} key={recipe.id}>
-                      <button
-                        aria-expanded={isOpen}
-                        className={styles.recipeButton}
-                        onClick={() => setOpenRecipeId(isOpen ? null : recipe.id)}
-                        type="button"
-                      >
-                        <div className={styles.recipeTop}>
-                          <div className={styles.recipeHeading}>
-                            <h3>{recipe.name}</h3>
-                            <div className={styles.recipeSummaryRow}>
-                              <span className={styles.summaryPill}>{formatCalories(recipe.calories)}</span>
-                              <span className={styles.summaryPill}>{formatGrams(recipe.proteinG)} Protein</span>
-                              <span className={styles.summaryPill}>{recipe.prepTimeMinutes} Min.</span>
+                    return (
+                      <article className={`${styles.recipeCard} ${isOpen ? styles.recipeCardExpanded : ""}`} key={recipe.id}>
+                        <button
+                          aria-expanded={isOpen}
+                          className={styles.recipeButton}
+                          onClick={() => toggleRecipeDetails(recipeKey, recipe.id)}
+                          type="button"
+                        >
+                          <div className={styles.recipeTop}>
+                            <div className={styles.recipeHeading}>
+                              <h3>{recipe.name}</h3>
+                              <div className={styles.recipeSummaryRow}>
+                                <span className={styles.summaryPill}>{formatCalories(recipe.calories)}</span>
+                                <span className={styles.summaryPill}>{formatGrams(recipe.proteinG)} Protein</span>
+                                <span className={styles.summaryPill}>{recipe.prepTimeMinutes} Min.</span>
+                              </div>
                             </div>
+                            <span className={styles.toggleIcon}>{isOpen ? "-" : "+"}</span>
                           </div>
-                          <span className={styles.toggleIcon}>{isOpen ? "-" : "+"}</span>
-                        </div>
-                      </button>
+                        </button>
 
-                      {isOpen ? (
-                        <div className={styles.recipeExpandedContent}>
-                          <p className={styles.description}>{recipe.description}</p>
-                          <div className={styles.recipeDetails}>
-                            <div className={styles.recipeDetailColumn}>
-                              <p className={styles.sectionKicker}>Zutaten</p>
-                              <ul className={styles.ingredientList}>
-                                {recipe.ingredients.map((ingredient) => (
-                                  <li key={`${recipe.id}-${ingredient.name}`}>
-                                    <div>
-                                      <strong>{ingredient.name}</strong>
-                                      <span>{ingredient.category}</span>
-                                    </div>
-                                    <span>{formatShoppingQuantity(ingredient.amount, ingredient.unit)}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            <div className={styles.recipeDetailColumn}>
-                              <p className={styles.sectionKicker}>Zubereitung</p>
-                              <ol className={styles.instructions}>
-                                {recipe.instructions.map((step, index) => (
-                                  <li key={`${recipe.id}-step-${index + 1}`}>
-                                    <span className={styles.stepNumber}>{index + 1}</span>
-                                    <p>{step}</p>
-                                  </li>
-                                ))}
-                              </ol>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-                    </article>
-                  );
-                })}
-              </div>
-            ) : null}
-          </article>
-        ))}
+                        {isOpen ? renderRecipeDetails(recipe) : null}
+                      </article>
+                    );
+                  })}
+                  {group.recipes.length === 0 ? (
+                    <p className={styles.emptyState}>Keine passenden Rezepte in diesem Mahlzeitentyp.</p>
+                  ) : null}
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
       </section>
     </main>
   );
+}
+
+function normalizeSearch(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ß/g, "ss")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function recipeMatchesSearch(recipe: Recipe, searchTerms: string[]) {
+  const searchableText = normalizeSearch(
+    [
+      recipe.name,
+      recipe.description,
+      formatMealType(recipe.mealType),
+      recipe.proteinSource,
+      ...recipe.tags,
+      ...recipe.ingredients.flatMap((ingredient) => [ingredient.name, ingredient.category]),
+      ...recipe.instructions,
+    ].join(" "),
+  );
+
+  return searchTerms.every((term) => searchableText.includes(term));
 }

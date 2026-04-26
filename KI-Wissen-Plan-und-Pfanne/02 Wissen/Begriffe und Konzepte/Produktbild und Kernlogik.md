@@ -1,7 +1,7 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-24
+letzte_aktualisierung: 2026-04-26
 quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../src/lib/planner.ts
@@ -69,6 +69,12 @@ Jede geplante Mahlzeit trägt:
 - Frühstück und Snack bleiben standardmäßig nur ihrem primären Typ zugeordnet.
 - Mittagessen und Abendessen sind standardmäßig gegenseitig zulässig.
 - Nutzeranpassungen an Zulassung und Gewichtung liegen getrennt von App-Standardzuordnungen und sollen Seed-Updates überdauern.
+
+## Rezeptsuche und Rezeptdetails
+- Die Rezeptseite bietet eine Suche über Rezeptname, Beschreibung, Mahlzeitentyp, Eiweißquelle, Tags, Zutaten, Zutatenkategorien und Zubereitungsschritte.
+- Suchtreffer werden in den Mahlzeitentyp-Gruppen direkt sichtbar gemacht.
+- Rezeptdetails sind sowohl aus der Planungszulassungs-Liste als auch aus der Rezeptbibliothek erreichbar.
+- Die Rezeptdetails können zwischen `Zubereitung` und `Zutaten` wechseln; `Zubereitung` ist die Standardansicht beim Öffnen.
 
 ## Planungslogik
 - Der Nutzer wählt beim Generieren Startdatum, Enddatum und Standard-Personenzahl.
