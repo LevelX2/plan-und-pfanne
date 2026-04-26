@@ -1,7 +1,7 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-23
+letzte_aktualisierung: 2026-04-24
 quellen:
   - ../../../src/lib/auth.ts
   - ../../../src/app/actions.ts
@@ -36,7 +36,7 @@ Damit verschiebt sich auch das Benutzerkonzept:
 ## Zielbild
 - Es gibt genau einen primären Anwender.
 - Die App soll ohne Benutzerverwaltung direkt vom Handy aus nutzbar sein.
-- Persönliche Daten wie Einstellungen, Historie, Wochenstände und Einkaufsfortschritt bleiben lokal auf dem Gerät.
+- Persönliche Daten wie Einstellungen, Rezeptpräferenzen, Tagespläne und Historie bleiben lokal auf dem Gerät.
 - Der Rezeptbestand ist im aktuellen Stand ebenfalls lokal und wird zunächst aus Seed-Daten befüllt.
 
 ## Verifikation im aktuellen Produktmodell
@@ -56,8 +56,9 @@ Stattdessen gilt:
 - Die fachlichen Daten liegen im lokalen Store statt in benutzerscharfer Serverpersistenz.
 
 ## Datenzugriff im aktuellen Zuschnitt
-- Einstellungen, Wochenpläne, Historie und lokale Rezeptdaten liegen in IndexedDB.
-- Aktive Gerichte und Einkaufs-Häkchen werden zusätzlich lokal pro Woche und Kontext gespeichert.
+- Einstellungen, Tagespläne, geplante Mahlzeiten, Historie und lokale Rezeptdaten liegen in IndexedDB.
+- Aktivstatus und Einkaufslisten-Berücksichtigung liegen direkt an der geplanten Mahlzeit über `isEnabled` und `includeInShoppingList`.
+- Einkaufshäkchen sind im aktuellen Tageskonzept kein langlebiger Kernzustand der lokalen Datenbank.
 - Der aktuelle Zugriffsschutz ist damit nicht kontobasiert, sondern geräte- und originbasiert.
 
 ## Was der aktuelle Zuschnitt bewusst nicht bietet

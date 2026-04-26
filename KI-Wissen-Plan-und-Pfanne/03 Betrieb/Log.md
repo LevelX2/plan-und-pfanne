@@ -481,3 +481,13 @@
 - `AGENTS.md` beschreibt jetzt ausdrücklich, dass Git auch ohne GitHub genutzt wird, GitHub-Schritte aber nur bei vorhandenem Remote oder ausdrücklichem Wunsch erfolgen.
 - Die Finito-Sequenz unterscheidet jetzt zwischen Projekten mit Remote und Projekten ohne Remote.
 - `Generische Entwicklungsvorgaben.md` enthält die gleiche wiederverwendbare Leitplanke für lokale Git-Projekte ohne GitHub-Anbindung.
+
+## [2026-04-24] qualität | Wissensbasis auf veraltete Aussagen geprüft
+- Health-Check der Wissensbasis durchgeführt:
+  34 Markdown-Dateien wurden auf defekte Wiki- und Markdown-Links geprüft; es wurden keine defekten Links und keine Orphan-Wissensseiten außerhalb der Rohquellen gefunden.
+- `Quellenlage und Aktualität`, `Benutzerkonzept und Verifikation`, `Lokale Mobile-App vs gehosteter Betrieb`, `Umstiegspfad auf lokale PWA` und `Lokaler Start von Entwicklung und Test` wurden auf den aktuellen lokalen PWA- und Tagesplanungsstand nachgezogen.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne` mit `NEXT_PUBLIC_SITE_URL=https://levelx2.github.io/plan-und-pfanne` erfolgreich gebaut.
+- Ein erster Buildversuch scheiterte mit `EBUSY` auf `.next/server/pages-manifest.json`; nach kontrolliertem Löschen des generierten `.next`-Ordners lief der Build erfolgreich.

@@ -1,7 +1,7 @@
 ---
 typ: risiko
 status: aktiv
-letzte_aktualisierung: 2026-04-23
+letzte_aktualisierung: 2026-04-24
 quellen:
   - ../Begriffe und Konzepte/Systembild und technischer Zuschnitt.md
   - ../Begriffe und Konzepte/Benutzerkonzept und Verifikation.md
@@ -25,15 +25,23 @@ tags:
 Für `Plan und Pfanne` steht eine echte Richtungsfrage im Raum:
 Soll die App als gehostete Web- beziehungsweise PWA-Anwendung mit Nutzerkonten laufen oder bewusst als rein lokale Mobile-App, bei der Planungsdaten nur auf dem Gerät liegen und neue Rezepte nur per Dateiimport oder optionaler Serverabfrage hinzukommen.
 
+## Aktuelle Einordnung nach dem Tageskonzept-Umbau
+Der primäre Produktpfad ist inzwischen die lokale, statisch exportierte PWA mit IndexedDB-Datenhaltung auf dem Gerät.
+
+Damit ist die ursprüngliche Richtungsfrage nicht mehr offen im Sinn von `Server-App oder lokale App`, sondern als historische Abwägung und als Warnung vor Rückfällen relevant:
+- Login, Server-Scheduler, SQLite und Railway-Zuschnitt sind nicht mehr der aktuelle Produktkern.
+- Alte Servermodule liegen weiterhin im Repository und können für spätere Varianten oder Aufräumarbeiten wichtig sein.
+- Die bleibenden Risiken der lokalen Variante sind Export, Backup, Gerätewechsel, Origin-Stabilität und echte Mobil-/Offline-Tests.
+
 ## Kurzantwort
 Ja, eine rein lokale Mobile-Variante ist fachlich möglich.
-Sie wäre aber kein bloßes Abschalten von Login und Railway, sondern ein anderes Produkt- und Architekturmodell als der aktuelle Workspace.
+Sie ist inzwischen der eingeschlagene Hauptpfad. Die Seite bleibt nützlich, weil sie erklärt, welche Folgen dieser Pfad hat und was bei einem späteren Wechsel zurück zu Hosting, Sync oder Mehrnutzerbetrieb neu entschieden werden müsste.
 
-## Was der aktuelle Workspace tatsächlich ist
-- Der aktuelle Stand vom 2026-04-23 ist serverzentriert:
+## Was der Workspace vor dem lokalen Umbau war
+- Der Stand vom 2026-04-23 war serverzentriert:
   Next.js-App mit Server Components, Server Actions, Route Handlern, `better-sqlite3` und passwortloser Anmeldung.
 - `src/lib/db.ts` und `src/lib/store.ts` sind als `server-only` angelegt und setzen eine laufende Serverumgebung mit SQLite-Datei voraus.
-- Die aktuelle Offline-Fähigkeit ist ein lesender PWA-Modus für bereits geladene Inhalte, keine vollständig lokal schreibende App.
+- Die damalige Offline-Fähigkeit war ein lesender PWA-Modus für bereits geladene Inhalte, keine vollständig lokal schreibende App.
 - Neue Rezepte kommen derzeit als kuratierte Seed-Datensätze in den Repository-Bestand und werden beim App-Start in SQLite übernommen, nicht als freier Laufzeitimport.
 
 ## Was bei einer rein lokalen Mobile-Variante wegfallen könnte
@@ -88,7 +96,7 @@ Sie wäre aber kein bloßes Abschalten von Login und Railway, sondern ein andere
 | Gerätewechsel und Backup | kritisch, wenn kein Export- oder Backup-Konzept existiert | einfacher, weil Daten zentral gesichert und erneut geladen werden können |
 | Mehrgeräte-Nutzung | schwach oder nur über Zusatzlösungen | deutlich einfacher erweiterbar |
 | Rezept-Nachschub | Dateiimport oder öffentlicher Feed gut möglich, aber als eigener Importfluss zu bauen | zentral leichter steuerbar und für alle Nutzer gleichzeitig aktualisierbar |
-| Technische Komplexität im aktuellen Projekt | hoher Umbau, weil der aktuelle Workspace stark serverzentriert ist | passt zum aktuellen Workspace deutlich besser |
+| Technische Komplexität im aktuellen Projekt | Hauptpfad ist inzwischen umgesetzt, Restaufwand liegt bei Import, Backup, Tests und Bereinigung | wäre wieder ein Richtungswechsel mit Sync-, Auth- und Betriebsfragen |
 | Datenschutzgefühl | stark, weil Daten standardmäßig nur lokal liegen | braucht saubere Kommunikation zu Login, Hosting und Datenspeicherung |
 | Produktpflege | weniger Betriebsaufwand, aber mehr Sorgfalt bei lokalem Datenmodell und Migrationen | mehr Betriebsaufwand, aber zentrale Updates und Fehlerbehebungen |
 | Scheduler und Automatisierung | lokal anders zu denken oder ganz zu streichen | zentral einfacher umsetzbar |
@@ -110,7 +118,7 @@ Sie wäre aber kein bloßes Abschalten von Login und Railway, sondern ein andere
 
 ### Gehostete Web-/PWA-App
 **Vorteile**
-- passt zum aktuellen Next.js-, SQLite- und Auth-Aufbau
+- könnte bei späterem Mehrgeräte- oder Sharing-Bedarf wieder attraktiv werden
 - Daten sind zentral verfügbar und damit leichter über mehrere Geräte nutzbar
 - neue Rezepte, Korrekturen und Produktänderungen lassen sich zentral ausrollen
 - spätere Erweiterungen wie Sharing oder serverseitige Synchronisation bleiben offen
@@ -136,7 +144,7 @@ Sie wäre aber kein bloßes Abschalten von Login und Railway, sondern ein andere
 **GitHub-Passung**
 - sehr gut, wenn die App vollständig statisch gebaut werden kann
 - wichtig:
-  GitHub Pages ist nur für statische Dateien geeignet, nicht für den aktuellen serverzentrierten Next.js- und SQLite-Stand
+  GitHub Pages ist nur für statische Dateien geeignet und passt deshalb zum aktuellen lokalen PWA-Zuschnitt, nicht zu einem serverzentrierten SQLite-/Auth-Betrieb
 
 ### Option B: Echte Mobile-App-Hülle mit lokaler Datenhaltung
 Zum Beispiel über eine Web-Hülle wie Capacitor oder über einen nativeren App-Pfad.
@@ -242,7 +250,7 @@ Ja, das ist grundsätzlich möglich und sogar ein normaler PWA-Ansatz.
 ### Was erhalten bleiben kann
 - Einstellungen
 - Verlauf oder Historie
-- lokal gespeicherte Wochenstände
+- lokal gespeicherte Tagespläne
 - lokale Import- und Sync-Metadaten
 
 ### Unter welchen Bedingungen das zuverlässig funktioniert
@@ -274,10 +282,11 @@ Für `Plan und Pfanne` wäre es fachlich gut passend, mindestens diese Daten lok
 Damit ließe sich ein Update über GitHub oder statisches Hosting gut mit dauerhafter lokaler Datennutzung verbinden, solange der Origin stabil bleibt und Migrationen als fester Teil der App gepflegt werden.
 
 ## Praktische Entscheidungsregel
-- Wenn das Ziel bewusst `eine Person, ein Handy, lokale Daten` ist, ist eine lokale Mobile-Architektur plausibel und vereinfacht das Produkt stark.
-- Wenn das Ziel `Web/PWA, später vielleicht mehrere Geräte, sauberer persönlicher Zugriff und mögliche Erweiterbarkeit` bleibt, passt der aktuelle gehostete Zuschnitt deutlich besser.
+- Wenn das Ziel bewusst `eine Person, ein Handy, lokale Daten` bleibt, passt der aktuelle lokale PWA-Zuschnitt.
+- Wenn das Ziel später Richtung mehrere Geräte, Sharing, zentraler Sync oder Nutzerkonten kippt, muss das Produktmodell bewusst neu entschieden werden.
 
 ## Konsequenz für die aktuelle Roadmap
 Die Frage ist keine Detailoptimierung, sondern eine Richtungsentscheidung:
-- Entweder der aktuelle serverzentrierte Pfad mit Login, Hosting und späterer Synchronisationsfähigkeit wird bewusst weiterverfolgt.
-- Oder `Plan und Pfanne` wird wieder als lokale Single-Device-App zugeschnitten; dann sollten Login, Server-Scheduler, Railway-Zuschnitt und Teile der Persistenz bewusst zurückgebaut und neu modelliert werden.
+- Der lokale Single-Device-Pfad ist aktuell eingeschlagen.
+- Deshalb sollten Login, Server-Scheduler, Railway-Zuschnitt und SQLite-Persistenz nicht stillschweigend wieder zum Hauptpfad werden.
+- Die nächsten Roadmap-Fragen liegen bei Offline-/Update-Tests, Export und Backup, Rezeptnachschub und späterer Bereinigung alter Serverartefakte.

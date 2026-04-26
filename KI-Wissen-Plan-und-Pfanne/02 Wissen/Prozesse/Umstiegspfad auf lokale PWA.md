@@ -1,7 +1,7 @@
 ---
 typ: prozess
 status: aktiv
-letzte_aktualisierung: 2026-04-23
+letzte_aktualisierung: 2026-04-24
 quellen:
   - ../Risiken und offene Punkte/Lokale Mobile-App vs gehosteter Betrieb.md
   - ../../01 Rohquellen/externe-quellen/2026-04-23 Mobile Distribution und Updates.md
@@ -31,6 +31,15 @@ tags:
 ## Einordnung
 Diese Seite ist kein aktueller Produktleittext mehr, sondern eine historische Migrationsdokumentation.
 Sie beschreibt den Umstieg von der früheren serverzentrierten App auf den heute primären PWA-Zuschnitt und bleibt als Referenz für Origin-Fragen, Migrationsschritte und noch offene Restarbeiten relevant.
+
+## Aktueller Stand nach dem Tageskonzept-Umbau
+Der lokale PWA-Pfad ist inzwischen der primäre Produktzuschnitt:
+- statischer Export für GitHub Pages
+- lokale IndexedDB-Datenhaltung für Einstellungen, Rezepte, Tagespläne, geplante Mahlzeiten, Historie und Meta-Daten
+- querybasierte Detailansichten für Static Export
+- App-Shell, Manifest und Service Worker mit GitHub-Pages-Unterpfad
+
+Offen bleiben vor allem Rezeptnachschub, Export und Wiederherstellung, produktnahe Mobil-/Offline-Tests und die spätere Bereinigung alter Serverartefakte.
 
 ## Historisches Zielbild des Umstiegs
 `Plan und Pfanne` soll als lokale PWA auf dem Handy laufen:
@@ -95,23 +104,23 @@ Ja, das ist grundsätzlich möglich.
   `start_url`, `scope`, Asset-Pfade und Service-Worker-Pfade sauber auf dieses Unterverzeichnis abgestimmt werden.
 - Eine Root-Domain oder eigene Domain ist für PWAs meist einfacher als ein dauerhaftes Unterpfad-Modell.
 
-## Einordnung des aktuellen Workspace
-Der aktuelle Stand ist keine lokale PWA-Architektur, sondern eine serverzentrierte Web-App:
+## Einordnung des früheren Workspace vor dem Umstieg
+Der frühere Stand vor dem lokalen Umbau war keine lokale PWA-Architektur, sondern eine serverzentrierte Web-App:
 - `src/lib/db.ts` arbeitet mit `better-sqlite3` und echter Serverdatei
 - `src/lib/store.ts` ist `server-only`
 - `src/lib/auth.ts` setzt Sessions, Cookies und Serverprüfungen voraus
 - der Service Worker in `public/service-worker.js` unterstützt aktuell nur einen lesenden Offline-Modus
 - `src/lib/offline-store.ts` speichert derzeit nur Snapshots in einer kleinen IndexedDB-Struktur
 
-Für den Umstieg müssen daher Rechenkern, Persistenz und Zustandsmodell systematisch vom Server auf das Gerät verlagert werden.
+Für den inzwischen eingeschlagenen Umstieg mussten daher Rechenkern, Persistenz und Zustandsmodell systematisch vom Server auf das Gerät verlagert werden.
 
 ## Zielarchitektur nach dem Umstieg
 ### Lokal auf dem Gerät
 - Einstellungen
 - Historie
-- Wochenpläne
-- Einkaufsstatus
-- aktive Gerichte
+- Tagespläne
+- Mahlzeitenstatus
+- Einkaufslisten-Berücksichtigung
 - optional importierte oder synchronisierte Rezept-Metadaten
 
 ### Statisch ausgeliefert
@@ -217,7 +226,7 @@ Für den Umstieg müssen daher Rechenkern, Persistenz und Zustandsmodell systema
 2. Mindestens diese Bereiche exportierbar machen:
    - Einstellungen
    - Historie
-   - Wochenstände
+   - Tagespläne
    - Importzustand
 3. Wiederherstellung bewusst versioniert aufbauen, damit Exporte auch nach App-Updates wieder einspielbar bleiben.
 
@@ -243,7 +252,7 @@ Für den Umstieg müssen daher Rechenkern, Persistenz und Zustandsmodell systema
 1. Feste Origin und Distributionsweg festlegen.
 2. Fachkern aus dem Servercode herauslösen.
 3. Lokales IndexedDB-Datenmodell mit Migrationen einführen.
-4. Einstellungen, Historie und Wochenpläne lokal nutzbar machen.
+4. Einstellungen, Historie und Tagespläne lokal nutzbar machen.
 5. Auth und serverseitige Planungsaktionen entfernen.
 6. Rezeptfeed oder Dateiimport ergänzen.
 7. Service-Worker-Updatefluss robust machen.
@@ -274,7 +283,7 @@ Der Umstieg ist nicht mehr nur geplant, sondern in zentralen Teilen bereits umge
 ### Bereits im Code angekommen
 - Statischer Export für GitHub Pages mit buildzeitlichem `basePath`
 - PWA-Manifest, Service Worker und Registrierungslogik für den Unterpfad `/<repo>/`
-- lokale IndexedDB-Struktur für Einstellungen, Rezepte, Historie, Wochenpläne und Meta-Informationen
+- lokale IndexedDB-Struktur für Einstellungen, Rezepte, Historie, Tagespläne und Meta-Informationen
 - Dashboard, Einstellungen, Rezepte, Tagesansicht und Einkaufsliste auf lokale Datenquellen umgestellt
 - Detailansichten über Query-Parameter statt dynamische Exportpfade
 - GitHub-Actions-Workflow für den Pages-Deploy
@@ -284,3 +293,19 @@ Der Umstieg ist nicht mehr nur geplant, sondern in zentralen Teilen bereits umge
 - Export und Wiederherstellung lokaler Daten
 - produktnahe Handy- und Update-Tests
 - vollständige Bereinigung des alten serverzentrierten Zwischenstands
+
+## Workspace-Stand ab 2026-04-24
+Mit der Umstellung auf das Tageskonzept ist der lokale PWA-Pfad im Produktkern angekommen.
+
+### Aktueller Kernstand
+- Tagesplanung statt Wochenplanmodell
+- pro Datum maximal ein lokaler Tagesplan
+- `plannedDays` und `plannedMeals` als zentrale IndexedDB-Stores
+- lokale Planung, Bearbeitung, Kochansicht, Einkaufsliste, Historie und Einstellungen
+- GitHub-Pages-Build mit `NEXT_PUBLIC_BASE_PATH=/plan-und-pfanne`
+
+### Weiter offene Restarbeiten
+- Dateiimport oder Feed für neue Rezepte
+- Export und Wiederherstellung lokaler Daten
+- echte Mobilgeräte-, Offline- und Update-Tests
+- bewusste Bereinigung oder Kapselung alter Auth-, SQLite- und Scheduler-Pfade

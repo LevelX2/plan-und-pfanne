@@ -1,7 +1,7 @@
 ---
 typ: prozess
 status: aktiv
-letzte_aktualisierung: 2026-04-23
+letzte_aktualisierung: 2026-04-24
 quellen:
   - ../../../01 Rohquellen/repo-root/2026-04-22 Repository-Startquellen.md
   - ../../../README.md
@@ -27,6 +27,7 @@ tags:
 ## Verfügbare Standardskripte
 - `npm run dev`
 - `npm run dev:handy`
+- `npm test`
 - `npm run build`
 - `npm run lint`
 
