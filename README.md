@@ -2,6 +2,22 @@
 
 `Plan und Pfanne` ist eine installierbare Tagesplan- und Rezept-App für glutenfreie Mahlzeiten. Die App speichert Tagespläne, Einstellungen, Rezeptzulassung und Historie lokal auf dem Gerät und läuft als statisch exportierte PWA über GitHub Pages.
 
+## Was die App bietet
+
+Die App unterstützt Dich dabei, glutenfreie Mahlzeiten über frei wählbare Datumsbereiche zu planen, einzelne Tage nachzubearbeiten und aus dem Plan heraus direkt zu kochen. Du erzeugst Tagespläne mit Frühstück, Mittagessen, Abendessen und optionalen Snacks, passt Personenzahlen oder Rezepte pro Mahlzeit an und steuerst, welche Gerichte in der Einkaufsliste landen.
+
+Der aktuelle Plan zeigt Tageskarten mit Kalorien, Makros und aktiven Mahlzeiten. Die Kochansicht skaliert Zutaten temporär auf die gewünschte Personenzahl, ohne den Tagesplan zu verändern. Die Rezeptseite verwaltet, welche Rezepte der Generator je Mahlzeitentyp verwenden darf, inklusive Suche, Details, Gewichtung und Zulassung. Die Einkaufsliste fasst Zutaten über einen Datumsbereich zusammen und berücksichtigt nur aktive, einkaufsrelevante Mahlzeiten.
+
+## Screenshots
+
+| Aktueller Plan | Tagesdetail |
+| --- | --- |
+| ![Aktueller Plan mit Zeitraum, Kennzahlen und Tageskarten](public/screenshots/aktueller-plan.png) | ![Tagesdetail mit Makros, Datumsnavigation und Mahlzeitenbearbeitung](public/screenshots/tagesdetail.png) |
+
+| Einkaufsliste | Rezeptauswahl |
+| --- | --- |
+| ![Einkaufsliste mit Datumsbereich und aggregierten Zutaten](public/screenshots/einkaufsliste.png) | ![Rezeptauswahl mit Suche und Zulassung nach Mahlzeitentyp](public/screenshots/rezepte.png) |
+
 ## Produktmodell
 
 - direkte Nutzung ohne Kontoverwaltung
@@ -11,7 +27,7 @@
 - Personenzahl pro Plan und pro einzelner Mahlzeit
 - direkte Kochansicht aus dem Tagesdetail mit temporär skalierbarer Menge
 - Einkaufsliste aus einem gewählten Datumsbereich
-- Rezeptzulassung und Gewichtung je Mahlzeitentyp
+- Rezeptsuche, Rezeptdetails, Zulassung und Gewichtung je Mahlzeitentyp
 
 ## Was aktuell funktioniert
 
@@ -19,10 +35,10 @@
 - Plan-Generator mit Startdatum, Enddatum, Personenzahl und Überschneidungswarnung
 - Tagesdetail mit Gerichtstausch, Personenzahl, Ausfall-Schalter, Einkaufslisten-Flag und zusätzlichen Snacks
 - Rezept-Kochansicht mit skalierten Zutaten und Zubereitungsschritten
-- Rezeptauswahl je Mahlzeitentyp mit Gewichtung `selten`, `normal`, `häufig`
+- Rezeptauswahl je Mahlzeitentyp mit Suche, Detailansicht und Gewichtung `selten`, `normal`, `häufig`
 - Einkaufsliste mit Datumsbereich, aktiven Mahlzeiten und aggregierten Mengen
 - Historie als Tagesliste mit Kopieren historischer Zeiträume
-- Einstellungen für Standard-Personenzahl, Kalorienziel, Makros und Löschen alter Pläne
+- Einstellungen für Standard-Personenzahl, Kalorienziel, Makros, Eiweißziel, Snacks, Zielmix, ausgeschlossene Zutaten und Löschen alter Pläne
 
 ## Wichtige Grenzen
 

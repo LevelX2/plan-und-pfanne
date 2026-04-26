@@ -501,3 +501,14 @@
   `npm test` erfolgreich,
   `npm run lint` erfolgreich,
   `npm run build` erfolgreich.
+
+## [2026-04-26] dokumentation | README mit Produktüberblick und Screenshots ergänzt
+- `README.md` wurde vollständig gegen Wissensbasis, Paketkonfiguration und aktuelle App-Routen gegengeprüft.
+- Am Anfang der README steht jetzt eine kurze Erklärung, welchen Nutzen die App bietet und welche Hauptfunktionen zusammenwirken.
+- Neue README-Screenshots liegen unter `public/screenshots/`:
+  `aktueller-plan.png`, `tagesdetail.png`, `einkaufsliste.png` und `rezepte.png`.
+- Die Featureliste der README wurde um Rezeptsuche und Rezeptdetails aktualisiert.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  Screenshots im In-App-Browser erzeugt und visuell geprüft.
