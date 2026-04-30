@@ -33,3 +33,4 @@
 - [[../../01 Rohquellen/repo-root/2026-04-22 Repository-Startquellen]]: erste ausgewertete Repository-Quellen beim Aufbau der Wissensbasis.
 - [[../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse]]: vertiefte Repository-Analyse mit Build-, Datenbank- und Routensichtung.
 - [[../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept]]: fachliche und technische Zielvorgabe für die Umstellung vom Wochenplanmodell auf datumsbezogene Tagesplanung.
+- [[../../01 Rohquellen/2026-04-30 Rezeptgenaue Zubereitungen mit Mengen]]: Anforderung, Zubereitungsschritte gerichtsspezifisch statt pauschal zu formulieren und Mengen passend zur Personenzahl einzubinden.

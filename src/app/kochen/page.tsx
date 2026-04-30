@@ -12,6 +12,7 @@ import {
   formatShoppingQuantity,
 } from "@/lib/format";
 import { getLocalPlannedMealForCooking, getScaledIngredientAmount } from "@/lib/local-store";
+import { renderRecipeInstructions } from "@/lib/recipe-instructions";
 import type { DayPlan, PlannedMeal } from "@/lib/types";
 import styles from "@/app/rezepte/recipes.module.css";
 
@@ -70,6 +71,7 @@ function CookingPageContent() {
   const meal = state?.meal ?? null;
   const day = state?.day ?? null;
   const recipe = meal?.recipe ?? null;
+  const recipeInstructions = recipe ? renderRecipeInstructions(recipe, peopleCount) : [];
 
   return (
     <main className={styles.page}>
@@ -177,7 +179,7 @@ function CookingPageContent() {
               <span>{formatGrams(recipe.fatG)} Fett</span>
             </div>
             <ol className={styles.instructions}>
-              {recipe.instructions.map((step, index) => (
+              {recipeInstructions.map((step, index) => (
                 <li key={`${recipe.id}-step-${index + 1}`}>
                   <span className={styles.stepNumber}>{index + 1}</span>
                   <p>{step}</p>

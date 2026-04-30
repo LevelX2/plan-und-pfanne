@@ -53,6 +53,10 @@ const {
 } = require("../src/lib/protein-targets.ts");
 const { calculateTargets, evaluateMeals, multiplyRecipe } = require("../src/lib/planner.ts");
 const { seedRecipes } = require("../src/lib/data/seed-recipes.ts");
+const {
+  findUnknownInstructionIngredientReferences,
+  renderRecipeInstructions,
+} = require("../src/lib/recipe-instructions.ts");
 const { buildShoppingListGroupsForPlannedDays } = require("../src/lib/week-plan-selection.ts");
 
 function settings(overrides = {}) {
@@ -230,7 +234,30 @@ test("planned-day shopping list scales people counts and normalizes eggs", () =>
   assert.deepEqual(dairyGroup.items[0], { name: "Quark", unit: "g", totalAmount: 200 });
 });
 
-test("seed recipe pool contains additional recipes and detailed preparation steps", () => {
+test("recipe instruction renderer scales ingredient quantities and reports unknown references", () => {
+  const omelet = recipe({
+    baseServings: 1,
+    ingredients: [
+      { category: "Eier", name: "Eier", amount: 3, unit: "Stk" },
+      { category: "Eier", name: "Eiweiß", amount: 120, unit: "g" },
+      { category: "Milchprodukte", name: "Feta", amount: 50, unit: "g" },
+    ],
+    instructions: [
+      "{{Eier}} und {{Eiweiß}} verquirlen.",
+      "Mit {{Feta}} bestreuen.",
+      "{{Nicht vorhanden}} später ergänzen.",
+    ],
+  });
+
+  assert.deepEqual(renderRecipeInstructions(omelet, 2), [
+    "6 Eier und 240 g Eiweiß verquirlen.",
+    "Mit 100 g Feta bestreuen.",
+    "Nicht vorhanden später ergänzen.",
+  ]);
+  assert.deepEqual(findUnknownInstructionIngredientReferences(omelet), ["Nicht vorhanden"]);
+});
+
+test("seed recipe pool contains additional recipes and recipe-specific preparation steps", () => {
   assert.equal(seedRecipes.length, 94);
 
   const recipeCounts = seedRecipes.reduce((counts, currentRecipe) => {
@@ -246,8 +273,13 @@ test("seed recipe pool contains additional recipes and detailed preparation step
   });
 
   for (const currentRecipe of seedRecipes) {
-    assert.equal(currentRecipe.instructions[0].startsWith("Vorbereitung:"), true);
-    assert.equal(currentRecipe.instructions.at(-1).startsWith("Abschluss:"), true);
-    assert.equal(currentRecipe.instructions.length >= 4, true);
+    const renderedInstructions = renderRecipeInstructions(currentRecipe, 2);
+
+    assert.equal(currentRecipe.instructions[0].startsWith("Vorbereitung:"), false, currentRecipe.id);
+    assert.equal(currentRecipe.instructions.at(-1).startsWith("Abschluss:"), false, currentRecipe.id);
+    assert.equal(currentRecipe.instructions.length >= 2, true, currentRecipe.id);
+    assert.deepEqual(findUnknownInstructionIngredientReferences(currentRecipe), [], currentRecipe.id);
+    assert.equal(renderedInstructions.some((instruction) => instruction.includes("{{")), false, currentRecipe.id);
+    assert.match(renderedInstructions.join(" "), /\d/, currentRecipe.id);
   }
 });
