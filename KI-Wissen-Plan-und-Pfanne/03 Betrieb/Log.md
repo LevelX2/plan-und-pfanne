@@ -556,3 +556,30 @@
   `npm test` erfolgreich,
   `npm run lint` erfolgreich,
   `npm run build` erfolgreich.
+
+## [2026-04-30] nachbesserung | Rezeptübersicht mit einklappbarer Anleitung
+- Die Rezeptübersicht zeigt nach dem ersten Besuch nur noch eine kompakte grüne Leiste mit Rezeptanzahl und dem Button `Was kann ich hier machen?`, damit Suche, Favoriten und Rezeptlisten schneller erreichbar sind.
+- Beim allerersten Besuch wird die Anleitung einmal automatisch aufgeklappt; danach merkt sich der Browser, dass die Einführung bereits gezeigt wurde.
+- Die allgemeine Anleitung wurde im aufgeklappten Zustand ausführlicher formuliert und kann wieder eingeklappt werden.
+- Die früher direkt aufeinanderfolgenden Gruppen für Planungszulassung und Rezeptbibliothek sind jetzt unter `Alle Rezepte` per Modus-Schalter getrennt:
+  `Rezepte ansehen` zeigt die normale Bibliothek, `Planung bearbeiten` zeigt die Zulassung und Gewichtung je Mahlzeittyp.
+- Navigation, Rezeptanleitung, Suche, Reiter und Modus-Schalter haben jetzt gleichmäßigere vertikale Abstände.
+- Das Projektwissen hält fest, dass die Rezeptseite den schnellen Zugriff auf Suche, Favoriten und Listen priorisiert.
+- Verifikation:
+  `npm run lint` erfolgreich,
+  `npx tsc --noEmit` erfolgreich,
+  `npm test` erfolgreich.
+  In-App-Browser-Prüfung auf `http://localhost:3001/rezepte/` erfolgreich:
+  kompakte Leiste nach erneutem Besuch sichtbar, manuelles Aufklappen zeigt die ausführliche Anleitung,
+  `Rezepte ansehen` und `Planung bearbeiten` zeigen jeweils nur ihren eigenen Mahlzeitentyp-Bereich.
+  `npm run build` konnte in diesem Lauf nicht abgeschlossen werden, weil ein bereits laufender Next-Dev-Server im Projekt `.next/static/...` gesperrt hielt.
+
+## [2026-04-30] nachbesserung | Tagesdetail kompakter gemacht
+- Das Tagesdetail führt nach einem verkürzten Tageskopf direkt zu den Tagesgerichten.
+- Tageskennzahlen und die Liste anderer geplanter Tage sind als einklappbare Zusatzbereiche in der Seitenleiste untergebracht.
+- Pro Mahlzeit bleiben Beschreibung und Nährwertdetails einklappbar, damit die Bearbeitungsfelder schneller erreichbar sind.
+- Die Vor-/Zurück-Navigation im Tageskopf verlinkt nur noch auf vorhandene geplante Tage; am Rand des verfügbaren Zeitraums wird der jeweilige Eintrag deaktiviert statt auf die Startseite zu führen.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.

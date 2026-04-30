@@ -78,6 +78,9 @@ Jede geplante Mahlzeit trägt:
 - Nutzeranpassungen an Zulassung und Gewichtung liegen getrennt von App-Standardzuordnungen und sollen Seed-Updates überdauern.
 
 ## Rezeptsuche und Rezeptdetails
+- Die Rezeptseite priorisiert den schnellen Zugriff auf Suche, Favoriten und Rezeptlisten.
+- Die allgemeine Anleitung am Seitenanfang ist beim allerersten Besuch aufgeklappt, danach standardmäßig auf eine kompakte Rezeptanzahl-Leiste reduziert und kann bei Bedarf erneut geöffnet werden.
+- Unter `Alle Rezepte` trennt ein Modus-Schalter die normale Rezeptbibliothek von der Bearbeitung der Planungszulassung, damit die Mahlzeitentyp-Gruppen nicht doppelt hintereinander erscheinen.
 - Die Rezeptseite bietet eine Suche über Rezeptname, Beschreibung, Mahlzeitentyp, Eiweißquelle, Tags, Zutaten, Zutatenkategorien und Zubereitungsschritte.
 - Suchtreffer werden in den Mahlzeitentyp-Gruppen direkt sichtbar gemacht.
 - Rezeptdetails sind sowohl aus der Planungszulassungs-Liste als auch aus der Rezeptbibliothek erreichbar.
@@ -107,6 +110,8 @@ Nach der Generierung ist jede geplante Mahlzeit im Tagesdetail bearbeitbar:
 - Mahlzeit deaktivieren
 - Einkaufslisten-Berücksichtigung ein- oder ausschalten
 - Snacks hinzufügen
+
+Die Tagesbearbeitung priorisiert den schnellen Zugriff auf die Tagesgerichte. Tageskennzahlen, Datumsübersicht und erklärende Rezept-Zusatzinfos sollen die Mahlzeitenliste nicht verdrängen und werden kompakt beziehungsweise einklappbar angeboten.
 
 Deaktivierte Mahlzeiten:
 - bleiben als Slot sichtbar
