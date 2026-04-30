@@ -22,6 +22,8 @@ const frequencyLabels: Record<FrequencyWeight, string> = {
   often: "häufig",
 };
 
+const recipeIntroSeenKey = "plan-und-pfanne:recipe-intro-seen";
+
 type RecipeState = {
   recipes: Recipe[];
   preferences: EffectiveRecipeMealTypePreference[];
@@ -30,6 +32,7 @@ type RecipeState = {
 
 type RecipeDetailTab = "preparation" | "ingredients";
 type RecipeViewTab = "all" | "favorites";
+type RecipeMode = "planning" | "library";
 
 async function loadRecipeState(): Promise<RecipeState> {
   const [recipes, preferences, favoriteRecipeIds] = await Promise.all([
@@ -50,7 +53,9 @@ export function RecipesClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isIntroOpen, setIsIntroOpen] = useState(false);
   const [activeViewTab, setActiveViewTab] = useState<RecipeViewTab>("all");
+  const [activeRecipeMode, setActiveRecipeMode] = useState<RecipeMode>("library");
   const [openRecipeKey, setOpenRecipeKey] = useState<string | null>(null);
   const [recipeDetailTabs, setRecipeDetailTabs] = useState<Record<string, RecipeDetailTab>>({});
   const [openPlanningMealTypes, setOpenPlanningMealTypes] = useState<MealType[]>([]);
@@ -118,6 +123,31 @@ export function RecipesClient() {
           setIsLoading(false);
         }
       });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    try {
+      if (window.localStorage.getItem(recipeIntroSeenKey)) {
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      window.localStorage.setItem(recipeIntroSeenKey, "1");
+      window.queueMicrotask(() => {
+        if (!cancelled) {
+          setIsIntroOpen(true);
+        }
+      });
+    } catch {
+      // Die Anleitung bleibt im Fallback eingeklappt.
+    }
 
     return () => {
       cancelled = true;
@@ -254,20 +284,61 @@ export function RecipesClient() {
     <main className={styles.page}>
       <AppNav currentPath="/rezepte" />
 
-      <section className={styles.hero}>
-        <div>
-          <p className={styles.eyebrow}>Rezeptauswahl</p>
-          <h1>Welche Rezepte darf der Generator verwenden?</h1>
-          <p className={styles.lead}>
-            Pro Mahlzeitentyp entscheidest Du, welche Rezepte zugelassen sind und ob sie selten,
-            normal oder häufig in die automatische Planung einfließen sollen.
-          </p>
-        </div>
-        <div className={styles.heroStat}>
-          <span>{isLoading ? "wird geladen" : "Rezepte"}</span>
-          <strong>{state.recipes.length}</strong>
-          <p>gespeicherte glutenfreie Optionen</p>
-        </div>
+      <section className={`${styles.hero} ${isIntroOpen ? styles.heroExpanded : styles.heroCompact}`}>
+        {isIntroOpen ? (
+          <>
+            <div>
+              <p className={styles.eyebrow}>Rezeptauswahl</p>
+              <h1>Welche Rezepte darf der Generator verwenden?</h1>
+              <div className={styles.leadStack} id="recipe-intro-text">
+                <p>
+                  Hier steuerst Du, welche Rezepte der Generator für Frühstück, Mittagessen,
+                  Abendessen und Snacks verwenden darf.
+                </p>
+                <p>
+                  Über die Suche findest Du Rezepte nach Namen, Zutaten oder Zubereitungsschritten.
+                  Mit dem Stern sammelst Du Favoriten, und in den Mahlzeitentypen kannst Du festlegen,
+                  ob ein Rezept selten, normal oder häufig in die automatische Planung einfließen soll.
+                </p>
+              </div>
+              <button
+                aria-controls="recipe-intro-text"
+                aria-expanded={isIntroOpen}
+                className={styles.introToggle}
+                onClick={() => setIsIntroOpen(false)}
+                type="button"
+              >
+                Anleitung einklappen
+                <span className={styles.toggleIcon}>-</span>
+              </button>
+            </div>
+            <div className={styles.heroStat}>
+              <span>{isLoading ? "wird geladen" : "Rezepte"}</span>
+              <strong>{state.recipes.length}</strong>
+              <p>gespeicherte glutenfreie Optionen</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className={styles.compactRecipeCount}>
+              <span>{isLoading ? "Rezepte werden geladen" : "Rezepte"}</span>
+              <strong>{state.recipes.length}</strong>
+            </div>
+            <button
+              aria-controls="recipe-intro-text"
+              aria-expanded={isIntroOpen}
+              className={styles.introToggle}
+              onClick={() => setIsIntroOpen(true)}
+              type="button"
+            >
+              Was kann ich hier machen?
+              <span className={styles.toggleIcon}>+</span>
+            </button>
+            <span className={styles.visuallyHidden} id="recipe-intro-text">
+              Anleitung zur Rezeptübersicht
+            </span>
+          </>
+        )}
       </section>
 
       <section className={styles.searchPanel} aria-label="Rezepte suchen">
@@ -318,6 +389,40 @@ export function RecipesClient() {
         </button>
       </section>
 
+      {!loadError && activeViewTab === "all" ? (
+        <section className={styles.modePanel} aria-label="Rezeptmodus wählen">
+          <div>
+            <p className={styles.sectionKicker}>Modus</p>
+            <h2>{activeRecipeMode === "planning" ? "Planung bearbeiten" : "Rezepte ansehen"}</h2>
+            <p>
+              {activeRecipeMode === "planning"
+                ? "Lege je Mahlzeittyp fest, welche Rezepte der Generator nutzen darf."
+                : "Stöbere in der Rezeptbibliothek und öffne Zubereitung oder Zutaten."}
+            </p>
+          </div>
+          <div className={styles.modeTabs} role="tablist" aria-label="Rezeptmodus">
+            <button
+              aria-selected={activeRecipeMode === "library"}
+              className={activeRecipeMode === "library" ? styles.modeTabActive : styles.modeTab}
+              onClick={() => setActiveRecipeMode("library")}
+              role="tab"
+              type="button"
+            >
+              Rezepte ansehen
+            </button>
+            <button
+              aria-selected={activeRecipeMode === "planning"}
+              className={activeRecipeMode === "planning" ? styles.modeTabActive : styles.modeTab}
+              onClick={() => setActiveRecipeMode("planning")}
+              role="tab"
+              type="button"
+            >
+              Planung bearbeiten
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       {loadError ? (
         <section className={styles.groupStack}>
           <article className={styles.groupCard}>
@@ -328,7 +433,7 @@ export function RecipesClient() {
         </section>
       ) : null}
 
-      {!loadError && activeViewTab === "all" ? (
+      {!loadError && activeViewTab === "all" && activeRecipeMode === "planning" ? (
         <section className={styles.groupStack}>
           {mealTypes.map((mealType) => {
             const allPreferences = state.preferences.filter((preference) => preference.mealType === mealType);
@@ -509,7 +614,7 @@ export function RecipesClient() {
         </section>
       ) : null}
 
-      {activeViewTab === "all" ? (
+      {activeViewTab === "all" && activeRecipeMode === "library" ? (
       <section className={styles.groupStack}>
         {groupedRecipes.map((group) => {
           const isGroupOpen = openLibraryMealTypes.includes(group.mealType);

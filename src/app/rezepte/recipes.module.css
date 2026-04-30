@@ -23,6 +23,11 @@
   font-size: 0.94rem;
 }
 
+.page > nav {
+  max-width: 1320px;
+  margin: 0 auto 20px;
+}
+
 .hero,
 .detailHero {
   display: grid;
@@ -48,6 +53,20 @@
   color: #f8f4ee;
 }
 
+.heroCompact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border-radius: 22px;
+}
+
+.heroExpanded {
+  align-items: stretch;
+}
+
 .eyebrow,
 .sectionKicker,
 .recipeTop span,
@@ -66,10 +85,77 @@
   letter-spacing: -0.05em;
 }
 
-.lead {
+.lead,
+.leadStack {
   max-width: 44rem;
   line-height: 1.7;
   color: rgba(248, 244, 238, 0.86);
+}
+
+.leadStack {
+  display: grid;
+  gap: 12px;
+}
+
+.introToggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  margin-top: 18px;
+  padding: 0 12px 0 16px;
+  border: 1px solid rgba(248, 244, 238, 0.18);
+  border-radius: 999px;
+  background: rgba(248, 244, 238, 0.1);
+  color: #f8f4ee;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.introToggle:hover,
+.introToggle:focus-visible {
+  background: rgba(248, 244, 238, 0.16);
+}
+
+.introToggle .toggleIcon {
+  min-width: 28px;
+  min-height: 28px;
+  background: rgba(248, 244, 238, 0.14);
+  color: #f8f4ee;
+  font-size: 1rem;
+}
+
+.compactRecipeCount {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.compactRecipeCount span {
+  color: rgba(248, 244, 238, 0.78);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.compactRecipeCount strong {
+  color: #f8f4ee;
+  font-size: clamp(1.6rem, 3vw, 2.15rem);
+  letter-spacing: -0.04em;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .heroStat,
@@ -219,6 +305,61 @@
   min-height: 26px;
   border-radius: 999px;
   background: rgba(255, 252, 247, 0.18);
+}
+
+.modePanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  max-width: 1320px;
+  margin: 0 auto 20px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(19, 38, 29, 0.08);
+  box-shadow: 0 18px 46px rgba(19, 38, 29, 0.07);
+  background: rgba(255, 252, 247, 0.84);
+  backdrop-filter: blur(12px);
+}
+
+.modePanel h2 {
+  margin: 6px 0 6px;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+}
+
+.modePanel p {
+  color: rgba(19, 38, 29, 0.68);
+  line-height: 1.55;
+}
+
+.modeTabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.modeTab,
+.modeTabActive {
+  appearance: none;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(19, 38, 29, 0.1);
+  border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.modeTab {
+  background: rgba(20, 76, 57, 0.07);
+  color: rgba(19, 38, 29, 0.78);
+}
+
+.modeTabActive {
+  background: #144c39;
+  color: #f8f4ee;
 }
 
 .installCard {
@@ -685,8 +826,18 @@
   .detailGrid,
   .recipeDetails,
   .searchPanel,
+  .modePanel,
   .installCard {
     grid-template-columns: 1fr;
+  }
+
+  .modePanel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .modeTabs {
+    justify-content: flex-start;
   }
 
   .searchMeta {
@@ -711,6 +862,16 @@
   .hero h1,
   .detailHero h1 {
     font-size: 2.3rem;
+  }
+
+  .heroCompact {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .heroCompact .introToggle {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .groupButton,
