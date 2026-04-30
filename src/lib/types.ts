@@ -100,6 +100,13 @@ export type RecipeMealTypePreference = {
   updatedAt: string;
 };
 
+export type RecipeFavorite = {
+  id: string;
+  recipeId: string;
+  isFavorite: boolean;
+  updatedAt: string;
+};
+
 export type EffectiveRecipeMealTypePreference = {
   recipe: Recipe;
   mealType: MealType;

@@ -16,7 +16,9 @@ import {
   getDefaultPlanEndDate,
   getDefaultPlanStartDate,
   getLocalSettings,
+  listLocalRecipeFavorites,
   listLocalPlannedDays,
+  saveLocalRecipeFavorite,
 } from "@/lib/local-store";
 import { buildShoppingListGroupsForPlannedDays, countShoppingItems } from "@/lib/week-plan-selection";
 import type { DayPlan, UserSettings } from "@/lib/types";
@@ -25,6 +27,7 @@ import styles from "./page.module.css";
 type HomeState = {
   days: DayPlan[];
   settings: UserSettings;
+  favoriteRecipeIds: string[];
   loadedAt: string;
 };
 
@@ -48,11 +51,16 @@ function formatSavedAt(isoString: string) {
 }
 
 async function loadHomeState(): Promise<HomeState> {
-  const [settings, days] = await Promise.all([getLocalSettings(), listLocalPlannedDays()]);
+  const [settings, days, favoriteRecipeIds] = await Promise.all([
+    getLocalSettings(),
+    listLocalPlannedDays(),
+    listLocalRecipeFavorites(),
+  ]);
 
   return {
     settings,
     days,
+    favoriteRecipeIds,
     loadedAt: new Date().toISOString(),
   };
 }
@@ -104,6 +112,27 @@ export function HomeClient() {
   const bestDay = [...sortedDays].sort((left, right) => left.score - right.score)[0] ?? null;
   const defaultStartDate = getDefaultPlanStartDate();
   const defaultEndDate = getDefaultPlanEndDate();
+  const favoriteRecipeIdSet = useMemo(
+    () => new Set(state?.favoriteRecipeIds ?? []),
+    [state?.favoriteRecipeIds],
+  );
+
+  async function toggleFavorite(recipeId: string) {
+    const nextIsFavorite = !favoriteRecipeIdSet.has(recipeId);
+    await saveLocalRecipeFavorite(recipeId, nextIsFavorite);
+    setState((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        favoriteRecipeIds: nextIsFavorite
+          ? Array.from(new Set([...current.favoriteRecipeIds, recipeId]))
+          : current.favoriteRecipeIds.filter((favoriteRecipeId) => favoriteRecipeId !== recipeId),
+      };
+    });
+  }
 
   return (
     <main className={styles.page}>
@@ -289,6 +318,28 @@ export function HomeClient() {
                                 <strong>{meal.isEnabled === false ? "fällt aus" : meal.recipe.name}</strong>
                               </div>
                               <div className={styles.mealActions}>
+                                <button
+                                  aria-label={
+                                    favoriteRecipeIdSet.has(meal.recipe.id)
+                                      ? `${meal.recipe.name} aus Favoriten entfernen`
+                                      : `${meal.recipe.name} als Favorit markieren`
+                                  }
+                                  aria-pressed={favoriteRecipeIdSet.has(meal.recipe.id)}
+                                  className={
+                                    favoriteRecipeIdSet.has(meal.recipe.id)
+                                      ? styles.favoriteButtonActive
+                                      : styles.favoriteButton
+                                  }
+                                  onClick={() => void toggleFavorite(meal.recipe.id)}
+                                  title={
+                                    favoriteRecipeIdSet.has(meal.recipe.id)
+                                      ? "Favorit entfernen"
+                                      : "Als Favorit markieren"
+                                  }
+                                  type="button"
+                                >
+                                  {favoriteRecipeIdSet.has(meal.recipe.id) ? "★" : "☆"}
+                                </button>
                                 <span>{meal.peopleCount ?? state.settings.defaultPeopleCount} Pers.</span>
                                 {meal.includeInShoppingList === false ? (
                                   <span className={styles.statusIdle}>nicht einkaufen</span>

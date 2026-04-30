@@ -622,6 +622,33 @@
   gap: 10px;
 }
 
+.favoriteButton,
+.favoriteButtonActive {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(19, 38, 29, 0.1);
+  border-radius: 50%;
+  font: inherit;
+  font-size: 1.12rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.favoriteButton {
+  background: rgba(255, 252, 247, 0.86);
+  color: rgba(19, 38, 29, 0.62);
+}
+
+.favoriteButtonActive {
+  background: rgba(221, 171, 55, 0.2);
+  color: #8a6500;
+  border-color: rgba(138, 101, 0, 0.18);
+}
+
 .toggleButton {
   min-height: 38px;
   padding: 0 14px;

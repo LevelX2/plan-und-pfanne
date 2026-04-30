@@ -9,6 +9,7 @@ import {
   type LocalPlannedDayRecord,
   type LocalPlannedMealRecord,
   type LocalRecipeDefaultMealTypeAssignmentRecord,
+  type LocalRecipeFavoriteRecord,
   type LocalRecipeMealTypePreferenceRecord,
   type LocalRecipeRecord,
   type LocalRecipeSource,
@@ -34,6 +35,7 @@ import type {
   PlannedMeal,
   PlannedMealRecord,
   Recipe,
+  RecipeFavorite,
   RecipeMealTypePreference,
   RecipeMixCategory,
   UserSettings,
@@ -278,6 +280,10 @@ function preferenceId(recipeId: string, mealType: MealType) {
   return `${LOCAL_USER_ID}:${recipeId}:${mealType}`;
 }
 
+function favoriteId(recipeId: string) {
+  return `${LOCAL_USER_ID}:${recipeId}`;
+}
+
 function isDefaultMealTypeEnabled(recipe: Recipe, mealType: MealType) {
   const lunchOrDinnerRecipe = recipe.mealType === "lunch" || recipe.mealType === "dinner";
   return recipe.mealType === mealType || (lunchOrDinnerRecipe && (mealType === "lunch" || mealType === "dinner"));
@@ -382,6 +388,15 @@ async function readUserRecipePreferences() {
       return (records as LocalRecipeMealTypePreferenceRecord[] | undefined) ?? [];
     },
   );
+}
+
+async function readUserRecipeFavorites() {
+  return runLocalTransaction(LOCAL_APP_STORES.userRecipeFavorites, "readonly", async (transaction) => {
+    const records = await requestToPromise(
+      transaction.objectStore(LOCAL_APP_STORES.userRecipeFavorites).getAll(),
+    );
+    return (records as LocalRecipeFavoriteRecord[] | undefined) ?? [];
+  });
 }
 
 async function readPlannedDayRecords(startDate?: string, endDate?: string) {
@@ -816,6 +831,33 @@ export async function getLocalRecipeById(id: string) {
 
 export async function listLocalRecipeMealTypePreferences() {
   return cloneLocalData(await readEffectiveRecipeMealTypePreferences());
+}
+
+export async function listLocalRecipeFavorites() {
+  await ensureLocalAppData();
+  const favorites = await readUserRecipeFavorites();
+  const recipeIds = favorites
+    .filter((favorite) => favorite.isFavorite)
+    .map((favorite) => favorite.recipeId);
+
+  return cloneLocalData(recipeIds);
+}
+
+export async function saveLocalRecipeFavorite(recipeId: string, isFavorite: boolean) {
+  await ensureLocalAppData();
+
+  const record: RecipeFavorite = {
+    id: favoriteId(recipeId),
+    recipeId,
+    isFavorite,
+    updatedAt: nowIso(),
+  };
+
+  await runLocalTransaction(LOCAL_APP_STORES.userRecipeFavorites, "readwrite", async (transaction) => {
+    await requestToPromise(transaction.objectStore(LOCAL_APP_STORES.userRecipeFavorites).put(record));
+  });
+
+  return cloneLocalData(record);
 }
 
 export async function saveLocalRecipeMealTypePreference(input: {

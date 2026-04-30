@@ -5,13 +5,14 @@ import type {
   PlannedDayRecord,
   PlannedMealRecord,
   Recipe,
+  RecipeFavorite,
   RecipeMealTypeDefaultAssignment,
   RecipeMealTypePreference,
   UserSettings,
 } from "@/lib/types";
 
 export const LOCAL_APP_DB_NAME = "gf-wochenplan-offline";
-export const LOCAL_APP_DB_VERSION = 3;
+export const LOCAL_APP_DB_VERSION = 4;
 
 export const LOCAL_APP_STORES = {
   snapshots: "snapshots",
@@ -21,6 +22,7 @@ export const LOCAL_APP_STORES = {
   mealTypes: "mealTypes",
   recipeDefaultMealTypeAssignments: "recipeDefaultMealTypeAssignments",
   userRecipeMealTypePreferences: "userRecipeMealTypePreferences",
+  userRecipeFavorites: "userRecipeFavorites",
   plannedDays: "plannedDays",
   plannedMeals: "plannedMeals",
 } as const;
@@ -52,6 +54,7 @@ export type LocalRecipeRecord = Recipe & {
 export type LocalMealTypeRecord = MealTypeDefinition;
 export type LocalRecipeDefaultMealTypeAssignmentRecord = RecipeMealTypeDefaultAssignment;
 export type LocalRecipeMealTypePreferenceRecord = RecipeMealTypePreference;
+export type LocalRecipeFavoriteRecord = RecipeFavorite;
 export type LocalPlannedDayRecord = PlannedDayRecord;
 export type LocalPlannedMealRecord = PlannedMealRecord;
 
@@ -144,6 +147,15 @@ function configureUpgrade(database: IDBDatabase, transaction: IDBTransaction, ol
   );
   ensureIndex(userPreferencesStore, "byRecipe", "recipeId");
   ensureIndex(userPreferencesStore, "byMealType", "mealType");
+
+  const userRecipeFavoritesStore = getOrCreateStore(
+    database,
+    transaction,
+    LOCAL_APP_STORES.userRecipeFavorites,
+    { keyPath: "id" },
+  );
+  ensureIndex(userRecipeFavoritesStore, "byRecipe", "recipeId", { unique: true });
+  ensureIndex(userRecipeFavoritesStore, "byFavorite", "isFavorite");
 
   const plannedDaysStore = getOrCreateStore(database, transaction, LOCAL_APP_STORES.plannedDays, {
     keyPath: "date",

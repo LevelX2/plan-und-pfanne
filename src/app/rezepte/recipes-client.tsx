@@ -4,10 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import { AppNav } from "@/app/app-nav";
 import { formatCalories, formatGrams, formatMealType, formatShoppingQuantity } from "@/lib/format";
 import {
+  listLocalRecipeFavorites,
   listLocalRecipeMealTypePreferences,
   listLocalRecipes,
+  saveLocalRecipeFavorite,
   saveLocalRecipeMealTypePreference,
 } from "@/lib/local-store";
+import { renderRecipeInstructions } from "@/lib/recipe-instructions";
 import type { EffectiveRecipeMealTypePreference, FrequencyWeight, MealType, Recipe } from "@/lib/types";
 import styles from "./recipes.module.css";
 
@@ -22,32 +25,38 @@ const frequencyLabels: Record<FrequencyWeight, string> = {
 type RecipeState = {
   recipes: Recipe[];
   preferences: EffectiveRecipeMealTypePreference[];
+  favoriteRecipeIds: string[];
 };
 
 type RecipeDetailTab = "preparation" | "ingredients";
+type RecipeViewTab = "all" | "favorites";
 
 async function loadRecipeState(): Promise<RecipeState> {
-  const [recipes, preferences] = await Promise.all([
+  const [recipes, preferences, favoriteRecipeIds] = await Promise.all([
     listLocalRecipes({ applySettings: false }),
     listLocalRecipeMealTypePreferences(),
+    listLocalRecipeFavorites(),
   ]);
 
   return {
     recipes,
     preferences,
+    favoriteRecipeIds,
   };
 }
 
 export function RecipesClient() {
-  const [state, setState] = useState<RecipeState>({ recipes: [], preferences: [] });
+  const [state, setState] = useState<RecipeState>({ recipes: [], preferences: [], favoriteRecipeIds: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeViewTab, setActiveViewTab] = useState<RecipeViewTab>("all");
   const [openRecipeKey, setOpenRecipeKey] = useState<string | null>(null);
   const [recipeDetailTabs, setRecipeDetailTabs] = useState<Record<string, RecipeDetailTab>>({});
   const [openPlanningMealTypes, setOpenPlanningMealTypes] = useState<MealType[]>([]);
   const [openLibraryMealTypes, setOpenLibraryMealTypes] = useState<MealType[]>([]);
   const normalizedSearchQuery = normalizeSearch(searchQuery);
+  const favoriteRecipeIdSet = useMemo(() => new Set(state.favoriteRecipeIds), [state.favoriteRecipeIds]);
   const matchingRecipeIds = useMemo(() => {
     if (!normalizedSearchQuery) {
       return new Set(state.recipes.map((recipe) => recipe.id));
@@ -73,6 +82,10 @@ export function RecipesClient() {
         totalRecipes: state.recipes.filter((recipe) => recipe.mealType === mealType).length,
       })),
     [filteredRecipes, state.recipes],
+  );
+  const favoriteRecipes = useMemo(
+    () => filteredRecipes.filter((recipe) => favoriteRecipeIdSet.has(recipe.id)),
+    [favoriteRecipeIdSet, filteredRecipes],
   );
   const hasSearch = normalizedSearchQuery.length > 0;
 
@@ -124,6 +137,17 @@ export function RecipesClient() {
     await refresh();
   }
 
+  async function toggleFavorite(recipeId: string) {
+    const nextIsFavorite = !favoriteRecipeIdSet.has(recipeId);
+    await saveLocalRecipeFavorite(recipeId, nextIsFavorite);
+    setState((current) => ({
+      ...current,
+      favoriteRecipeIds: nextIsFavorite
+        ? Array.from(new Set([...current.favoriteRecipeIds, recipeId]))
+        : current.favoriteRecipeIds.filter((favoriteRecipeId) => favoriteRecipeId !== recipeId),
+    }));
+  }
+
   function toggleMealType(mealTypes: MealType[], mealType: MealType) {
     return mealTypes.includes(mealType)
       ? mealTypes.filter((entry) => entry !== mealType)
@@ -146,8 +170,29 @@ export function RecipesClient() {
     setDetailTab(recipeId, "preparation");
   }
 
+  function renderFavoriteButton(recipe: Recipe) {
+    const isFavorite = favoriteRecipeIdSet.has(recipe.id);
+
+    return (
+      <button
+        aria-label={isFavorite ? `${recipe.name} aus Favoriten entfernen` : `${recipe.name} als Favorit markieren`}
+        aria-pressed={isFavorite}
+        className={isFavorite ? styles.favoriteButtonActive : styles.favoriteButton}
+        onClick={(event) => {
+          event.stopPropagation();
+          void toggleFavorite(recipe.id);
+        }}
+        title={isFavorite ? "Favorit entfernen" : "Als Favorit markieren"}
+        type="button"
+      >
+        {isFavorite ? "★" : "☆"}
+      </button>
+    );
+  }
+
   function renderRecipeDetails(recipe: Recipe) {
     const activeTab = getDetailTab(recipe.id);
+    const recipeInstructions = renderRecipeInstructions(recipe);
 
     return (
       <div className={styles.recipeExpandedContent}>
@@ -177,7 +222,7 @@ export function RecipesClient() {
           <div className={styles.recipeDetailColumn}>
             <p className={styles.sectionKicker}>Zubereitung</p>
             <ol className={styles.instructions}>
-              {recipe.instructions.map((step, index) => (
+              {recipeInstructions.map((step, index) => (
                 <li key={`${recipe.id}-step-${index + 1}`}>
                   <span className={styles.stepNumber}>{index + 1}</span>
                   <p>{step}</p>
@@ -251,6 +296,28 @@ export function RecipesClient() {
         </p>
       </section>
 
+      <section className={styles.viewTabs} aria-label="Rezeptansicht wählen">
+        <button
+          aria-selected={activeViewTab === "all"}
+          className={activeViewTab === "all" ? styles.viewTabActive : styles.viewTab}
+          onClick={() => setActiveViewTab("all")}
+          role="tab"
+          type="button"
+        >
+          Alle Rezepte
+        </button>
+        <button
+          aria-selected={activeViewTab === "favorites"}
+          className={activeViewTab === "favorites" ? styles.viewTabActive : styles.viewTab}
+          onClick={() => setActiveViewTab("favorites")}
+          role="tab"
+          type="button"
+        >
+          Favoriten
+          <span>{state.favoriteRecipeIds.length}</span>
+        </button>
+      </section>
+
       {loadError ? (
         <section className={styles.groupStack}>
           <article className={styles.groupCard}>
@@ -261,7 +328,7 @@ export function RecipesClient() {
         </section>
       ) : null}
 
-      {!loadError ? (
+      {!loadError && activeViewTab === "all" ? (
         <section className={styles.groupStack}>
           {mealTypes.map((mealType) => {
             const allPreferences = state.preferences.filter((preference) => preference.mealType === mealType);
@@ -317,6 +384,7 @@ export function RecipesClient() {
                                 </span>
                               </div>
                             </div>
+                            {renderFavoriteButton(preference.recipe)}
                           </div>
 
                           <div className={styles.mealLinks}>
@@ -380,6 +448,68 @@ export function RecipesClient() {
         </section>
       ) : null}
 
+      {activeViewTab === "favorites" ? (
+        <section className={styles.groupStack}>
+          <article className={`${styles.groupCard} ${favoriteRecipes.length > 0 ? styles.groupCardExpanded : ""}`}>
+            <div className={styles.groupHeaderRow}>
+              <div>
+                <p className={styles.sectionKicker}>
+                  {hasSearch ? `${favoriteRecipes.length} Treffer` : `${state.favoriteRecipeIds.length} markiert`}
+                </p>
+                <h2>Favoriten</h2>
+              </div>
+              <span className={styles.groupAction}>Rezepte sind zunächst eingeklappt</span>
+            </div>
+
+            <div className={styles.recipeGrid}>
+              {favoriteRecipes.map((recipe) => {
+                const recipeKey = `favorite-${recipe.id}`;
+                const isOpen = openRecipeKey === recipeKey;
+
+                return (
+                  <article className={`${styles.recipeCard} ${isOpen ? styles.recipeCardExpanded : ""}`} key={recipe.id}>
+                    <div className={styles.recipeButton}>
+                      <div className={styles.recipeTop}>
+                        <div className={styles.recipeHeading}>
+                          <h3>{recipe.name}</h3>
+                          <div className={styles.recipeSummaryRow}>
+                            <span className={styles.summaryPill}>{formatMealType(recipe.mealType)}</span>
+                            <span className={styles.summaryPill}>{formatCalories(recipe.calories)}</span>
+                            <span className={styles.summaryPill}>{formatGrams(recipe.proteinG)} Protein</span>
+                          </div>
+                        </div>
+                        <span className={styles.recipeCardActions}>
+                          {renderFavoriteButton(recipe)}
+                          <span className={styles.toggleIcon}>{isOpen ? "-" : "+"}</span>
+                        </span>
+                      </div>
+                      <button
+                        aria-expanded={isOpen}
+                        className={styles.recipeDetailTrigger}
+                        onClick={() => toggleRecipeDetails(recipeKey, recipe.id)}
+                        type="button"
+                      >
+                        {isOpen ? "Details schließen" : "Zubereitung anzeigen"}
+                      </button>
+                    </div>
+
+                    {isOpen ? renderRecipeDetails(recipe) : null}
+                  </article>
+                );
+              })}
+              {favoriteRecipes.length === 0 ? (
+                <p className={styles.emptyState}>
+                  {hasSearch
+                    ? "Keine Favoriten passen zur Suche."
+                    : "Noch keine Favoriten markiert. Nutze den Stern an einem Rezept."}
+                </p>
+              ) : null}
+            </div>
+          </article>
+        </section>
+      ) : null}
+
+      {activeViewTab === "all" ? (
       <section className={styles.groupStack}>
         {groupedRecipes.map((group) => {
           const isGroupOpen = openLibraryMealTypes.includes(group.mealType);
@@ -422,12 +552,7 @@ export function RecipesClient() {
 
                     return (
                       <article className={`${styles.recipeCard} ${isOpen ? styles.recipeCardExpanded : ""}`} key={recipe.id}>
-                        <button
-                          aria-expanded={isOpen}
-                          className={styles.recipeButton}
-                          onClick={() => toggleRecipeDetails(recipeKey, recipe.id)}
-                          type="button"
-                        >
+                        <div className={styles.recipeButton}>
                           <div className={styles.recipeTop}>
                             <div className={styles.recipeHeading}>
                               <h3>{recipe.name}</h3>
@@ -437,9 +562,20 @@ export function RecipesClient() {
                                 <span className={styles.summaryPill}>{recipe.prepTimeMinutes} Min.</span>
                               </div>
                             </div>
-                            <span className={styles.toggleIcon}>{isOpen ? "-" : "+"}</span>
+                            <span className={styles.recipeCardActions}>
+                              {renderFavoriteButton(recipe)}
+                              <span className={styles.toggleIcon}>{isOpen ? "-" : "+"}</span>
+                            </span>
                           </div>
-                        </button>
+                          <button
+                            aria-expanded={isOpen}
+                            className={styles.recipeDetailTrigger}
+                            onClick={() => toggleRecipeDetails(recipeKey, recipe.id)}
+                            type="button"
+                          >
+                            {isOpen ? "Details schließen" : "Zubereitung anzeigen"}
+                          </button>
+                        </div>
 
                         {isOpen ? renderRecipeDetails(recipe) : null}
                       </article>
@@ -454,6 +590,7 @@ export function RecipesClient() {
           );
         })}
       </section>
+      ) : null}
     </main>
   );
 }
@@ -477,7 +614,7 @@ function recipeMatchesSearch(recipe: Recipe, searchTerms: string[]) {
       recipe.proteinSource,
       ...recipe.tags,
       ...recipe.ingredients.flatMap((ingredient) => [ingredient.name, ingredient.category]),
-      ...recipe.instructions,
+      ...renderRecipeInstructions(recipe),
     ].join(" "),
   );
 
