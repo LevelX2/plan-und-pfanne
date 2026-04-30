@@ -64,6 +64,7 @@ Jede geplante Mahlzeit trägt:
 - Glutenfreiheit ist im Seed-Bestand durchgängig gesetzt.
 - Die Zubereitungsschritte werden nicht mehr pauschal um allgemeine Vorbereitung- oder Abschluss-Hinweise ergänzt.
 - Rezeptdetails und Kochansicht rendern gerichtsspezifische Zubereitungsschritte mit Zutatenmengen; in der Kochansicht orientieren sich diese Mengen an der temporär eingestellten Personenzahl.
+- Zu einzelnen Zubereitungsschritten können kompakte Hinweis-Chips erscheinen, etwa für Zeit, Pfanne, Topf, Ofen, Hitze, konkreten Garpunkt oder Schneiden.
 
 ## Rezeptzulassung und Gewichtung
 - Die App verwendet nicht automatisch alle Rezepte für jeden Mahlzeitentyp.
@@ -126,6 +127,7 @@ Deaktivierte Mahlzeiten:
 - Angezeigt werden Rezeptname, geplanter Tag, Mahlzeitentyp, geplante Personenzahl, skalierte Zutaten und Zubereitungsschritte.
 - Die Personenzahl ist in der Kochansicht temporär änderbar.
 - Zubereitungsschritte werden dabei mit zur Personenzahl passenden Zutatenmengen gerendert.
+- Schrittbezogene Chips machen praktische Kochhinweise sichtbar, ohne die Zubereitungstexte aufzublähen; Zeit- und Garpunkt-Chips sollen möglichst konkrete Hinweise wie `ca. 2-3 Min.` oder `bis gestockt` zeigen.
 - Temporäre Änderungen in der Kochansicht schreiben nicht zurück in Planung, Tagesmakros oder Einkaufsliste.
 
 ## Einkaufslogik

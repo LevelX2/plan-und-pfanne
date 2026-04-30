@@ -55,6 +55,7 @@ const { calculateTargets, evaluateMeals, multiplyRecipe } = require("../src/lib/
 const { seedRecipes } = require("../src/lib/data/seed-recipes.ts");
 const {
   findUnknownInstructionIngredientReferences,
+  renderRecipeInstructionDetails,
   renderRecipeInstructions,
 } = require("../src/lib/recipe-instructions.ts");
 const { buildShoppingListGroupsForPlannedDays } = require("../src/lib/week-plan-selection.ts");
@@ -255,6 +256,22 @@ test("recipe instruction renderer scales ingredient quantities and reports unkno
     "Nicht vorhanden später ergänzen.",
   ]);
   assert.deepEqual(findUnknownInstructionIngredientReferences(omelet), ["Nicht vorhanden"]);
+});
+
+test("recipe instruction details expose practical step chips", () => {
+  const panRecipe = recipe({
+    baseServings: 1,
+    ingredients: [{ category: "Gemüse und Obst", name: "Spinat", amount: 80, unit: "g" }],
+    instructions: ["Spinat in der Pfanne bei mittlerer Hitze kurz anbraten, bis er weich ist."],
+  });
+
+  const [step] = renderRecipeInstructionDetails(panRecipe, 2);
+
+  assert.equal(step.text, "160 g Spinat in der Pfanne bei mittlerer Hitze kurz anbraten, bis er weich ist.");
+  assert.deepEqual(
+    step.chips.map((chip) => chip.label),
+    ["ca. 2-3 Min.", "Pfanne", "mittlere Hitze", "bis weich"],
+  );
 });
 
 test("seed recipe pool contains additional recipes and recipe-specific preparation steps", () => {

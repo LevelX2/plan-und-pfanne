@@ -10,7 +10,7 @@ import {
   saveLocalRecipeFavorite,
   saveLocalRecipeMealTypePreference,
 } from "@/lib/local-store";
-import { renderRecipeInstructions } from "@/lib/recipe-instructions";
+import { renderRecipeInstructionDetails, renderRecipeInstructions } from "@/lib/recipe-instructions";
 import type { EffectiveRecipeMealTypePreference, FrequencyWeight, MealType, Recipe } from "@/lib/types";
 import styles from "./recipes.module.css";
 
@@ -222,7 +222,7 @@ export function RecipesClient() {
 
   function renderRecipeDetails(recipe: Recipe) {
     const activeTab = getDetailTab(recipe.id);
-    const recipeInstructions = renderRecipeInstructions(recipe);
+    const recipeInstructions = renderRecipeInstructionDetails(recipe);
 
     return (
       <div className={styles.recipeExpandedContent}>
@@ -255,7 +255,19 @@ export function RecipesClient() {
               {recipeInstructions.map((step, index) => (
                 <li key={`${recipe.id}-step-${index + 1}`}>
                   <span className={styles.stepNumber}>{index + 1}</span>
-                  <p>{step}</p>
+                  <div>
+                    <p>{step.text}</p>
+                    {step.chips.length > 0 ? (
+                      <span className={styles.instructionChips} aria-label="Hinweise zu diesem Schritt">
+                        {step.chips.map((chip) => (
+                          <span className={styles.instructionChip} key={`${recipe.id}-step-${index + 1}-${chip.kind}-${chip.label}`}>
+                            <span aria-hidden="true">{chip.icon}</span>
+                            {chip.label}
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
+                  </div>
                 </li>
               ))}
             </ol>

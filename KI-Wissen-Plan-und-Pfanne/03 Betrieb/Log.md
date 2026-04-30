@@ -557,6 +557,13 @@
   `npm run lint` erfolgreich,
   `npm run build` erfolgreich.
 
+## [2026-04-30] nachbesserung | Hinweis-Chips für Zubereitungsschritte ergänzt
+- Zubereitungsschritte erhalten automatisch erkannte kompakte Chips für praktische Kochhinweise wie Zeit, Equipment, Hitze, Garpunkt und Vorbereitung.
+- Rezeptdetails und Kochansicht zeigen diese Chips unter dem jeweiligen Schritt mit kleinen Piktogrammen.
+- Die Chips werden aus dem gerenderten Schritttext abgeleitet und blähen die Rezepttexte nicht dauerhaft auf.
+- Zeit-Chips wurden konkretisiert: `kurz` wird zu groben Minutenangaben, Wartehinweise zeigen geschätzte Wartezeit und Garpunkt-Chips benennen den Zielzustand wie `bis weich`, `bis gestockt` oder `cremig halten`.
+- Der frühere Chip `Vorbereiten` wurde in `Schneiden` umbenannt; der redundante Hitze-Chip `heiß` wird bei normalen Pfannen-/Anbrat-Schritten nicht mehr angezeigt.
+
 ## [2026-04-30] nachbesserung | Rezeptübersicht mit einklappbarer Anleitung
 - Die Rezeptübersicht zeigt nach dem ersten Besuch nur noch eine kompakte grüne Leiste mit Rezeptanzahl und dem Button `Was kann ich hier machen?`, damit Suche, Favoriten und Rezeptlisten schneller erreichbar sind.
 - Beim allerersten Besuch wird die Anleitung einmal automatisch aufgeklappt; danach merkt sich der Browser, dass die Einführung bereits gezeigt wurde.

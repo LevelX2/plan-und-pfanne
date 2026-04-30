@@ -2,6 +2,17 @@ import { formatShoppingQuantity } from "@/lib/format";
 import { getScaledIngredientAmount } from "@/lib/local-store";
 import type { Ingredient, Recipe } from "@/lib/types";
 
+export type RecipeInstructionChip = {
+  kind: "time" | "equipment" | "heat" | "texture" | "cutting";
+  icon: string;
+  label: string;
+};
+
+export type RenderedRecipeInstruction = {
+  text: string;
+  chips: RecipeInstructionChip[];
+};
+
 const ingredientPlaceholderPattern = /\{\{([^{}]+)\}\}/g;
 const ingredientAdjectives = new Set([
   "glutenfrei",
@@ -230,6 +241,138 @@ export function renderRecipeInstruction(recipe: Recipe, instruction: string, peo
 
 export function renderRecipeInstructions(recipe: Recipe, peopleCount = recipe.baseServings ?? 1) {
   return recipe.instructions.map((instruction) => renderRecipeInstruction(recipe, instruction, peopleCount));
+}
+
+function addChip(chips: RecipeInstructionChip[], chip: RecipeInstructionChip) {
+  if (!chips.some((currentChip) => currentChip.kind === chip.kind && currentChip.label === chip.label)) {
+    chips.push(chip);
+  }
+}
+
+function timeChipForInstruction(instruction: string): RecipeInstructionChip | null {
+  const explicitTime = instruction.match(/\b\d+(?:[-–]\d+)?\s*(?:Min\.?|Minuten|Std\.?|Stunden)\b/i)?.[0];
+
+  if (explicitTime) {
+    return { kind: "time", icon: "⏱", label: explicitTime.replace(/\s+/g, " ") };
+  }
+
+  const lowerInstruction = instruction.toLocaleLowerCase("de-DE");
+
+  if (lowerInstruction.includes("kurz")) {
+    if (lowerInstruction.includes("anbraten") || lowerInstruction.includes("braten") || lowerInstruction.includes("rösten")) {
+      return { kind: "time", icon: "⏱", label: "ca. 2-3 Min." };
+    }
+
+    if (lowerInstruction.includes("unterheben") || lowerInstruction.includes("erwärmen")) {
+      return { kind: "time", icon: "⏱", label: "ca. 1-2 Min." };
+    }
+
+    return { kind: "time", icon: "⏱", label: "ca. 2 Min." };
+  }
+
+  if (lowerInstruction.includes("quellen lassen")) {
+    return { kind: "time", icon: "⏱", label: "ca. 10 Min. quellen" };
+  }
+
+  if (lowerInstruction.includes("abkühlen")) {
+    return { kind: "time", icon: "⏱", label: "ca. 10 Min. abkühlen" };
+  }
+
+  if (lowerInstruction.includes("ruhen lassen") || lowerInstruction.includes("ziehen lassen")) {
+    return { kind: "time", icon: "⏱", label: "ca. 5 Min. ruhen" };
+  }
+
+  return null;
+}
+
+function textureChipForInstruction(lowerInstruction: string): RecipeInstructionChip | null {
+  const textureLabels: Array<[string, string]> = [
+    ["goldbraun", "bis goldbraun"],
+    ["knusprig", "bis knusprig"],
+    ["bissfest", "bis bissfest"],
+    ["gestockt", "bis gestockt"],
+    ["cremig", "cremig halten"],
+    ["weich", "bis weich"],
+    ["rosa", "bis rosa"],
+  ];
+
+  const textureLabel = textureLabels.find(([keyword]) => lowerInstruction.includes(keyword))?.[1];
+  return textureLabel ? { kind: "texture", icon: "✓", label: textureLabel } : null;
+}
+
+function chipsForInstruction(instruction: string): RecipeInstructionChip[] {
+  const lowerInstruction = instruction.toLocaleLowerCase("de-DE");
+  const chips: RecipeInstructionChip[] = [];
+  const timeChip = timeChipForInstruction(instruction);
+
+  if (timeChip) {
+    addChip(chips, timeChip);
+  }
+
+  if (
+    lowerInstruction.includes("pfanne") ||
+    lowerInstruction.includes("anbraten") ||
+    lowerInstruction.includes("braten") ||
+    lowerInstruction.includes("rösten")
+  ) {
+    addChip(chips, { kind: "equipment", icon: "🍳", label: "Pfanne" });
+  } else if (
+    lowerInstruction.includes("ofen") ||
+    lowerInstruction.includes("backen") ||
+    lowerInstruction.includes("blech") ||
+    lowerInstruction.includes("form")
+  ) {
+    addChip(chips, { kind: "equipment", icon: "♨", label: "Ofen" });
+  } else if (
+    lowerInstruction.includes("topf") ||
+    lowerInstruction.includes("kochen") ||
+    lowerInstruction.includes("köcheln")
+  ) {
+    addChip(chips, { kind: "equipment", icon: "🍲", label: "Topf" });
+  } else if (
+    lowerInstruction.includes("schale") ||
+    lowerInstruction.includes("schüssel") ||
+    lowerInstruction.includes("vermengen") ||
+    lowerInstruction.includes("verrühren")
+  ) {
+    addChip(chips, { kind: "equipment", icon: "🥣", label: "Schüssel" });
+  }
+
+  if (lowerInstruction.includes("mittlerer hitze") || lowerInstruction.includes("mittlere hitze")) {
+    addChip(chips, { kind: "heat", icon: "🔥", label: "mittlere Hitze" });
+  } else if (lowerInstruction.includes("starke hitze") || lowerInstruction.includes("hohe hitze")) {
+    addChip(chips, { kind: "heat", icon: "🔥", label: "hohe Hitze" });
+  } else if (lowerInstruction.includes("sanft") || lowerInstruction.includes("niedrig")) {
+    addChip(chips, { kind: "heat", icon: "🔥", label: "sanft" });
+  }
+
+  const textureChip = textureChipForInstruction(lowerInstruction);
+
+  if (textureChip) {
+    addChip(chips, textureChip);
+  }
+
+  if (
+    lowerInstruction.includes("schneiden") ||
+    lowerInstruction.includes("würfeln") ||
+    lowerInstruction.includes("halbieren") ||
+    lowerInstruction.includes("raspeln") ||
+    lowerInstruction.includes("zupfen")
+  ) {
+    addChip(chips, { kind: "cutting", icon: "🔪", label: "Schneiden" });
+  }
+
+  return chips;
+}
+
+export function renderRecipeInstructionDetails(recipe: Recipe, peopleCount = recipe.baseServings ?? 1) {
+  return recipe.instructions.map<RenderedRecipeInstruction>((instruction) => {
+    const text = renderRecipeInstruction(recipe, instruction, peopleCount);
+    return {
+      text,
+      chips: chipsForInstruction(text),
+    };
+  });
 }
 
 export function findUnknownInstructionIngredientReferences(recipe: Recipe) {

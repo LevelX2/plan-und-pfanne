@@ -12,7 +12,7 @@ import {
   formatShoppingQuantity,
 } from "@/lib/format";
 import { getLocalPlannedMealForCooking, getScaledIngredientAmount } from "@/lib/local-store";
-import { renderRecipeInstructions } from "@/lib/recipe-instructions";
+import { renderRecipeInstructionDetails } from "@/lib/recipe-instructions";
 import type { DayPlan, PlannedMeal } from "@/lib/types";
 import styles from "@/app/rezepte/recipes.module.css";
 
@@ -71,7 +71,7 @@ function CookingPageContent() {
   const meal = state?.meal ?? null;
   const day = state?.day ?? null;
   const recipe = meal?.recipe ?? null;
-  const recipeInstructions = recipe ? renderRecipeInstructions(recipe, peopleCount) : [];
+  const recipeInstructions = recipe ? renderRecipeInstructionDetails(recipe, peopleCount) : [];
 
   return (
     <main className={styles.page}>
@@ -182,7 +182,19 @@ function CookingPageContent() {
               {recipeInstructions.map((step, index) => (
                 <li key={`${recipe.id}-step-${index + 1}`}>
                   <span className={styles.stepNumber}>{index + 1}</span>
-                  <p>{step}</p>
+                  <div>
+                    <p>{step.text}</p>
+                    {step.chips.length > 0 ? (
+                      <span className={styles.instructionChips} aria-label="Hinweise zu diesem Schritt">
+                        {step.chips.map((chip) => (
+                          <span className={styles.instructionChip} key={`${recipe.id}-step-${index + 1}-${chip.kind}-${chip.label}`}>
+                            <span aria-hidden="true">{chip.icon}</span>
+                            {chip.label}
+                          </span>
+                        ))}
+                      </span>
+                    ) : null}
+                  </div>
                 </li>
               ))}
             </ol>
