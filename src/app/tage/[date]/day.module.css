@@ -36,15 +36,15 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 14px;
   max-width: 1320px;
-  margin: 0 auto 24px;
+  margin: 0 auto 14px;
 }
 
 .heroText {
-  padding: 36px;
-  border-radius: 32px;
+  padding: 22px 26px;
+  border-radius: 24px;
   background:
     linear-gradient(135deg, rgba(20, 76, 57, 0.98), rgba(33, 105, 77, 0.9)),
     #144c39;
@@ -62,10 +62,10 @@
 }
 
 .heroText h1 {
-  margin: 16px 0 14px;
-  font-size: clamp(2.8rem, 5vw, 5rem);
-  line-height: 0.96;
-  letter-spacing: -0.05em;
+  margin: 8px 0;
+  font-size: clamp(2rem, 4vw, 3.8rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
 }
 
 .lead,
@@ -80,6 +80,7 @@
 .lead {
   color: rgba(248, 244, 238, 0.86);
   max-width: 46rem;
+  line-height: 1.45;
 }
 
 .heroPanel,
@@ -93,9 +94,9 @@
 }
 
 .heroPanel {
-  padding: 28px;
+  padding: 20px;
   display: grid;
-  gap: 18px;
+  gap: 12px;
   align-content: start;
 }
 
@@ -103,7 +104,7 @@
 .sectionCard h2,
 .macroAside h2 {
   margin-top: 8px;
-  font-size: 1.8rem;
+  font-size: 1.55rem;
   line-height: 1.06;
   letter-spacing: -0.04em;
 }
@@ -134,15 +135,16 @@
 .heroActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
-.heroActions a {
+.heroActions a,
+.disabledAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 46px;
-  padding: 0 18px;
+  min-height: 40px;
+  padding: 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(19, 38, 29, 0.1);
   background: rgba(255, 252, 247, 0.66);
@@ -150,23 +152,27 @@
   font-weight: 600;
 }
 
+.disabledAction {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  max-width: 1320px;
-  margin: 0 auto 24px;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .metricCard {
   display: grid;
   gap: 8px;
-  padding: 22px 24px;
+  padding: 14px;
 }
 
 .metricCard strong {
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
-  letter-spacing: -0.04em;
+  font-size: 1.22rem;
+  letter-spacing: -0.02em;
 }
 
 .metricCard p,
@@ -188,21 +194,21 @@
 }
 
 .sectionCard {
-  padding: 28px;
+  padding: 22px;
 }
 
 .weekStrip {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 8px;
   list-style: none;
-  margin-top: 20px;
+  margin-top: 14px;
 }
 
 .weekStrip a {
   display: grid;
-  gap: 6px;
-  padding: 16px 14px;
+  gap: 4px;
+  padding: 12px;
 }
 
 .activeDay {
@@ -225,8 +231,8 @@
 
 .contentGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.45fr);
+  gap: 16px;
 }
 
 .mainColumn,
@@ -234,7 +240,7 @@
 .mealList,
 .macroList {
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .mealList,
@@ -243,7 +249,7 @@
 }
 
 .mealCard {
-  padding: 24px;
+  padding: 18px;
 }
 
 .mealTop {
@@ -255,7 +261,7 @@
 
 .mealTop h3 {
   margin-top: 6px;
-  font-size: 1.35rem;
+  font-size: 1.18rem;
   line-height: 1.1;
 }
 
@@ -281,16 +287,16 @@
 .mealLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 12px;
 }
 
 .mealLinks a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 0 16px;
+  min-height: 40px;
+  padding: 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(19, 38, 29, 0.1);
   background: rgba(255, 252, 247, 0.72);
@@ -301,7 +307,7 @@
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  min-height: 44px;
+  min-height: 40px;
   padding: 8px 12px;
   border-radius: 16px;
   background: rgba(20, 76, 57, 0.06);
@@ -332,6 +338,42 @@
   gap: 16px;
 }
 
+.compactDetails,
+.dayDetailsPanel {
+  margin-top: 14px;
+}
+
+.compactDetails summary,
+.dayDetailsPanel summary {
+  width: fit-content;
+  cursor: pointer;
+  color: #116541;
+  font-weight: 700;
+}
+
+.compactDetails summary {
+  font-size: 0.92rem;
+}
+
+.compactDetails[open] {
+  padding-top: 12px;
+  border-top: 1px solid rgba(19, 38, 29, 0.08);
+}
+
+.dayDetailsPanel {
+  margin-top: 0;
+}
+
+.dayDetailsPanel .metricsGrid {
+  grid-template-columns: 1fr;
+}
+
+.dayDetailsPanel .metricCard {
+  border-radius: 16px;
+  box-shadow: none;
+  background: rgba(20, 76, 57, 0.05);
+}
+
 .macroList li {
   display: flex;
   justify-content: space-between;
@@ -344,8 +386,7 @@
 @media (max-width: 1080px) {
   .hero,
   .contentGrid,
-  .metricsGrid,
-  .weekStrip {
+  .metricsGrid {
     grid-template-columns: 1fr;
   }
 
@@ -364,7 +405,7 @@
   .sectionCard,
   .metricCard,
   .mealCard {
-    padding: 22px;
+    padding: 18px;
     border-radius: 24px;
   }
 

@@ -172,7 +172,7 @@ function DayPageContent() {
           <h1>{selectedDay ? selectedDay.weekdayLabel : "Kein Tag gewählt"}</h1>
           <p className={styles.lead}>
             {selectedDay
-              ? `${formatDateGerman(selectedDay.date)} mit ${selectedDay.meals.length} geplanten Mahlzeiten. Änderungen am Tag schreiben dauerhaft zurück in Planung und Einkaufsliste.`
+              ? `${formatDateGerman(selectedDay.date)} · ${selectedDay.meals.length} geplante Mahlzeiten`
               : "Wähle einen geplanten Tag oder erstelle zuerst einen Ernährungsplan."}
           </p>
         </div>
@@ -181,13 +181,22 @@ function DayPageContent() {
           <div>
             <p className={styles.sectionKicker}>Navigation</p>
             <h2>{availableDates.length > 0 ? `${availableDates.length} Tage verfügbar` : "Noch kein Plan"}</h2>
-            <p>
-              Jeder Tag ist ein eigener Datensatz. Zwischen den Tagen springst Du frei nach Datum.
-            </p>
           </div>
           <div className={styles.heroActions}>
-            <Link href={previousDay ? buildDayHref(previousDay) : "/"}>Vorheriger Tag</Link>
-            <Link href={nextDay ? buildDayHref(nextDay) : "/"}>Nächster Tag</Link>
+            {previousDay ? (
+              <Link href={buildDayHref(previousDay)}>Vorheriger Tag</Link>
+            ) : (
+              <span aria-disabled="true" className={styles.disabledAction}>
+                Vorheriger Tag
+              </span>
+            )}
+            {nextDay ? (
+              <Link href={buildDayHref(nextDay)}>Nächster Tag</Link>
+            ) : (
+              <span aria-disabled="true" className={styles.disabledAction}>
+                Nächster Tag
+              </span>
+            )}
           </div>
         </aside>
       </section>
@@ -226,56 +235,11 @@ function DayPageContent() {
 
       {!isLoading && !loadError && selectedDay ? (
         <>
-          <section className={styles.metricsGrid}>
-            <article className={styles.metricCard}>
-              <span className={styles.sectionKicker}>Kalorien</span>
-              <strong>{formatCalories(selectedDay.totals.calories)}</strong>
-              <p>Ziel: {formatCalories(selectedDay.targets.calories)}</p>
-            </article>
-            <article className={styles.metricCard}>
-              <span className={styles.sectionKicker}>Protein</span>
-              <strong>{formatGrams(selectedDay.totals.protein)}</strong>
-              <p>Ziel: {formatGrams(selectedDay.targets.protein)}</p>
-            </article>
-            <article className={styles.metricCard}>
-              <span className={styles.sectionKicker}>Kohlenhydrate</span>
-              <strong>{formatGrams(selectedDay.totals.carbs)}</strong>
-              <p>{formatPercent(selectedDay.macroPercents.carbs)}</p>
-            </article>
-            <article className={styles.metricCard}>
-              <span className={styles.sectionKicker}>Fett</span>
-              <strong>{formatGrams(selectedDay.totals.fat)}</strong>
-              <p>{formatPercent(selectedDay.macroPercents.fat)}</p>
-            </article>
-          </section>
-
-          {availableDates.length > 0 ? (
-            <article className={`${styles.sectionCard} ${styles.weekCard}`}>
-              <p className={styles.sectionKicker}>Datumsbereich</p>
-              <h2>Direkt zu einem geplanten Tag</h2>
-              <ul className={styles.weekStrip}>
-                {availableDates.map((date) => {
-                  const day = state.days.find((entry) => entry.date === date);
-
-                  return (
-                    <li key={date}>
-                      <Link className={date === selectedDay.date ? styles.activeDay : ""} href={buildDayHref(date)}>
-                        <span>{date === selectedDay.date ? "Ausgewählter Tag" : "Geplanter Tag"}</span>
-                        <strong>{day?.weekdayLabel ?? formatDateGerman(date)}</strong>
-                        <small>{formatDateGerman(date)}</small>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </article>
-          ) : null}
-
           <section className={styles.contentGrid}>
             <div className={styles.mainColumn}>
               <article className={styles.sectionCard}>
                 <p className={styles.sectionKicker}>Mahlzeiten</p>
-                <h2>Mahlzeiten bearbeiten</h2>
+                <h2>Tagesgerichte</h2>
                 <div className={styles.mealList}>
                   {selectedDay.meals.map((meal) => {
                     const allowedRecipes = allowedRecipesForMealType(state.preferences, meal.mealType);
@@ -294,19 +258,6 @@ function DayPageContent() {
                           <span className={meal.isEnabled === false ? styles.badgeWarn : styles.badgeGood}>
                             {meal.isEnabled === false ? "deaktiviert" : `${meal.peopleCount ?? 1} Personen`}
                           </span>
-                        </div>
-
-                        <p className={styles.mealDescription}>
-                          {meal.isEnabled === false
-                            ? "Die Mahlzeit bleibt sichtbar, fließt aber nicht in Makros, Einkaufsliste oder Kochansicht ein."
-                            : meal.recipe.description}
-                        </p>
-
-                        <div className={styles.mealMeta}>
-                          <strong>{formatCalories(meal.calculated.calories)}</strong>
-                          <strong>{formatGrams(meal.calculated.protein)} Protein</strong>
-                          <strong>{formatGrams(meal.calculated.carbs)} KH</strong>
-                          <strong>{formatGrams(meal.calculated.fat)} Fett</strong>
                         </div>
 
                         <div className={styles.mealLinks}>
@@ -390,6 +341,21 @@ function DayPageContent() {
                             </button>
                           ) : null}
                         </div>
+
+                        <details className={styles.compactDetails}>
+                          <summary>Zusatzinfos anzeigen</summary>
+                          <p className={styles.mealDescription}>
+                            {meal.isEnabled === false
+                              ? "Die Mahlzeit bleibt sichtbar, fließt aber nicht in Makros, Einkaufsliste oder Kochansicht ein."
+                              : meal.recipe.description}
+                          </p>
+                          <div className={styles.mealMeta}>
+                            <strong>{formatCalories(meal.calculated.calories)}</strong>
+                            <strong>{formatGrams(meal.calculated.protein)} Protein</strong>
+                            <strong>{formatGrams(meal.calculated.carbs)} KH</strong>
+                            <strong>{formatGrams(meal.calculated.fat)} Fett</strong>
+                          </div>
+                        </details>
                       </article>
                     );
                   })}
@@ -422,6 +388,53 @@ function DayPageContent() {
                   </div>
                 </div>
               </article>
+
+              <details className={`${styles.sectionCard} ${styles.dayDetailsPanel}`}>
+                <summary>Tagesinfos anzeigen</summary>
+                <section className={styles.metricsGrid} aria-label="Tageskennzahlen">
+                  <article className={styles.metricCard}>
+                    <span className={styles.sectionKicker}>Kalorien</span>
+                    <strong>{formatCalories(selectedDay.totals.calories)}</strong>
+                    <p>Ziel: {formatCalories(selectedDay.targets.calories)}</p>
+                  </article>
+                  <article className={styles.metricCard}>
+                    <span className={styles.sectionKicker}>Protein</span>
+                    <strong>{formatGrams(selectedDay.totals.protein)}</strong>
+                    <p>Ziel: {formatGrams(selectedDay.targets.protein)}</p>
+                  </article>
+                  <article className={styles.metricCard}>
+                    <span className={styles.sectionKicker}>Kohlenhydrate</span>
+                    <strong>{formatGrams(selectedDay.totals.carbs)}</strong>
+                    <p>{formatPercent(selectedDay.macroPercents.carbs)}</p>
+                  </article>
+                  <article className={styles.metricCard}>
+                    <span className={styles.sectionKicker}>Fett</span>
+                    <strong>{formatGrams(selectedDay.totals.fat)}</strong>
+                    <p>{formatPercent(selectedDay.macroPercents.fat)}</p>
+                  </article>
+                </section>
+              </details>
+
+              {availableDates.length > 0 ? (
+                <details className={`${styles.sectionCard} ${styles.dayDetailsPanel}`}>
+                  <summary>Andere Tage anzeigen</summary>
+                  <ul className={styles.weekStrip}>
+                    {availableDates.map((date) => {
+                      const day = state.days.find((entry) => entry.date === date);
+
+                      return (
+                        <li key={date}>
+                          <Link className={date === selectedDay.date ? styles.activeDay : ""} href={buildDayHref(date)}>
+                            <span>{date === selectedDay.date ? "Aktuell" : "Geplant"}</span>
+                            <strong>{day?.weekdayLabel ?? formatDateGerman(date)}</strong>
+                            <small>{formatDateGerman(date)}</small>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </details>
+              ) : null}
             </aside>
           </section>
         </>
