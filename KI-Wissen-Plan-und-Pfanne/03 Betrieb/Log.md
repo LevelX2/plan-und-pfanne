@@ -590,3 +590,12 @@
   `npm test` erfolgreich,
   `npm run lint` erfolgreich,
   `npm run build` erfolgreich.
+
+## [2026-04-30] dokumentation | README nach Rezept- und UI-Änderungen geprüft
+- `README.md` wurde gegen aktuellen Projektstatus, Produktlogik, Routen und letzte Log-Einträge geprüft.
+- Die README beschreibt jetzt 94 eingebaute glutenfreie Seed-Rezepte, Rezeptfavoriten, mengenfähige Zubereitungsschritte, Hinweis-Chips, die einklappbare Rezeptanleitung und das kompaktere Tagesdetail.
+- Die bestehenden README-Screenshots wurden aus dem aktuellen UI-Stand neu erzeugt und visuell geprüft.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.

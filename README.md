@@ -6,7 +6,7 @@
 
 Die App unterstützt Dich dabei, glutenfreie Mahlzeiten über frei wählbare Datumsbereiche zu planen, einzelne Tage nachzubearbeiten und aus dem Plan heraus direkt zu kochen. Du erzeugst Tagespläne mit Frühstück, Mittagessen, Abendessen und optionalen Snacks, passt Personenzahlen oder Rezepte pro Mahlzeit an und steuerst, welche Gerichte in der Einkaufsliste landen.
 
-Der aktuelle Plan zeigt Tageskarten mit Kalorien, Makros und aktiven Mahlzeiten. Die Kochansicht skaliert Zutaten temporär auf die gewünschte Personenzahl, ohne den Tagesplan zu verändern. Die Rezeptseite verwaltet, welche Rezepte der Generator je Mahlzeitentyp verwenden darf, inklusive Suche, Details, Gewichtung und Zulassung. Die Einkaufsliste fasst Zutaten über einen Datumsbereich zusammen und berücksichtigt nur aktive, einkaufsrelevante Mahlzeiten.
+Der aktuelle Plan zeigt Tageskarten mit Kalorien, Makros und aktiven Mahlzeiten. Die Kochansicht skaliert Zutaten und Zubereitungsschritte temporär auf die gewünschte Personenzahl, ohne den Tagesplan zu verändern. Die Rezeptseite verwaltet, welche Rezepte der Generator je Mahlzeitentyp verwenden darf, inklusive Suche, Favoriten, Details, Gewichtung und Zulassung. Die Einkaufsliste fasst Zutaten über einen Datumsbereich zusammen und berücksichtigt nur aktive, einkaufsrelevante Mahlzeiten.
 
 ## Screenshots
 
@@ -25,17 +25,19 @@ Der aktuelle Plan zeigt Tageskarten mit Kalorien, Makros und aktiven Mahlzeiten.
 - Planung auf Tagesebene mit frei wählbaren Datumsbereichen
 - pro Datum maximal ein Plan
 - Personenzahl pro Plan und pro einzelner Mahlzeit
-- direkte Kochansicht aus dem Tagesdetail mit temporär skalierbarer Menge
+- direkte Kochansicht aus dem Tagesdetail mit temporär skalierbaren Zutaten und Zubereitungsschritten
 - Einkaufsliste aus einem gewählten Datumsbereich
-- Rezeptsuche, Rezeptdetails, Zulassung und Gewichtung je Mahlzeitentyp
+- 94 eingebaute glutenfreie Seed-Rezepte
+- Rezeptsuche, Favoriten, Rezeptdetails, Zulassung und Gewichtung je Mahlzeitentyp
 
 ## Was aktuell funktioniert
 
 - Aktueller Plan mit Tageskarten und Makroübersicht
 - Plan-Generator mit Startdatum, Enddatum, Personenzahl und Überschneidungswarnung
-- Tagesdetail mit Gerichtstausch, Personenzahl, Ausfall-Schalter, Einkaufslisten-Flag und zusätzlichen Snacks
-- Rezept-Kochansicht mit skalierten Zutaten und Zubereitungsschritten
-- Rezeptauswahl je Mahlzeitentyp mit Suche, Detailansicht und Gewichtung `selten`, `normal`, `häufig`
+- Tagesdetail mit Gerichtstausch, Personenzahl, Ausfall-Schalter, Einkaufslisten-Flag, zusätzlichen Snacks und einklappbaren Zusatzinfos
+- Rezept-Kochansicht mit skalierten Zutaten, mengenfähigen Zubereitungsschritten und kompakten Hinweis-Chips
+- Rezeptauswahl je Mahlzeitentyp mit Suche, Favoriten, Detailansicht und Gewichtung `selten`, `normal`, `häufig`
+- Rezeptübersicht mit Favoriten-Reiter, einklappbarer Anleitung und Umschaltung zwischen Rezeptbibliothek und Planungszulassung
 - Einkaufsliste mit Datumsbereich, aktiven Mahlzeiten und aggregierten Mengen
 - Historie als Tagesliste mit Kopieren historischer Zeiträume
 - Einstellungen für Standard-Personenzahl, Kalorienziel, Makros, Eiweißziel, Snacks, Zielmix, ausgeschlossene Zutaten und Löschen alter Pläne
