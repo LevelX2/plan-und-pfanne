@@ -536,3 +536,23 @@
   `npm test` erfolgreich,
   `npm run lint` erfolgreich,
   `npm run build` nach Entfernen des stale `.next`-Caches erfolgreich.
+
+## [2026-04-30] feature | Rezept-Favoriten ergänzt
+- Rezepte können jetzt in der Rezeptübersicht und in der aktuellen generierten Plansicht per Stern als Favorit markiert oder entfernt werden.
+- Die Rezeptseite enthält einen eigenen Reiter `Favoriten`, der nur markierte Rezepte zeigt.
+- Favoriten-Rezepte bleiben dort zunächst eingeklappt; beim Öffnen erscheinen vollständige Rezeptdetails mit Zubereitung und Zutaten.
+- Die lokale IndexedDB wurde auf Version `4` angehoben und speichert Favoriten getrennt im Store `userRecipeFavorites`.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.
+
+## [2026-04-30] nachbesserung | Zubereitungsschritte rezeptgenau und mengenfähig gemacht
+- Die Nutzeranforderung zu weniger generischen Zubereitungstexten wurde als Rohquelle `2026-04-30 Rezeptgenaue Zubereitungen mit Mengen.md` erfasst.
+- Die pauschale Seed-Anreicherung über `src/lib/data/detailed-instructions.ts` wurde entfernt; Seed-Rezepte werden wieder aus ihren gerichtsspezifischen Rezeptdaten exportiert.
+- `src/lib/recipe-instructions.ts` rendert Zutatenmengen in Zubereitungsschritten zentral und skaliert sie für die Kochansicht nach Personenzahl.
+- Rezeptdetails und Rezeptsuche verwenden die gerenderten Schritttexte; die Kochansicht verwendet die temporär eingestellte Personenzahl.
+- Verifikation:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.

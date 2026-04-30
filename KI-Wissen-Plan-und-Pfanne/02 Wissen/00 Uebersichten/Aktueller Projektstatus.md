@@ -1,9 +1,10 @@
 ---
 typ: status
 status: aktiv
-letzte_aktualisierung: 2026-04-26
+letzte_aktualisierung: 2026-04-30
 quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
+  - ../../../01 Rohquellen/2026-04-30 Rezeptgenaue Zubereitungen mit Mengen.md
   - ../../../README.md
   - ../../../KODEX_STAND.md
   - ../../../src/app/home-client.tsx
@@ -17,6 +18,7 @@ quellen:
   - ../../../src/lib/local-db.ts
   - ../../../src/lib/local-store.ts
   - ../../../src/lib/planner.ts
+  - ../../../src/lib/recipe-instructions.ts
   - ../../../src/lib/types.ts
 tags:
   - status
@@ -32,13 +34,15 @@ tags:
   `/`, `/planen`, `/tage`, `/kochen`, `/rezepte`, `/einkaufsliste`, `/historie` und `/einstellungen`.
 - Frühere Login-, Logout- und statische API-Platzhalterrouten wurden entfernt; es gibt keinen aktuellen Kompatibilitätsbedarf für diese Pfade.
 - Die lokale Persistenz nutzt IndexedDB mit Stores für:
-  `settings`, `recipes`, `mealTypes`, `recipeDefaultMealTypeAssignments`, `userRecipeMealTypePreferences`, `plannedDays`, `plannedMeals`, `meta` und `snapshots`.
+  `settings`, `recipes`, `mealTypes`, `recipeDefaultMealTypeAssignments`, `userRecipeMealTypePreferences`, `userRecipeFavorites`, `plannedDays`, `plannedMeals`, `meta` und `snapshots`.
 - Alte Wochenplan-Testdaten werden mit dem neuen lokalen Schema nicht migriert.
 - Der Generator erzeugt frei wählbare Datumsbereiche, prüft Überschneidungen und überschreibt bestehende Tage erst nach Bestätigung.
 - Das Tagesdetail erlaubt Gerichtstausch, Personenzahl je Mahlzeit, Deaktivieren, Einkaufslisten-Flag und zusätzliche Snacks.
 - Jede aktive geplante Mahlzeit kann direkt in eine Rezept-Kochansicht geöffnet werden.
 - Die Kochansicht übernimmt die geplante Personenzahl und erlaubt temporäres Skalieren, ohne die Planung zurückzuschreiben.
+- Die Kochansicht zeigt Zubereitungsschritte mit zur Personenzahl passenden Zutatenmengen; allgemeine automatische Vorbereitung- und Abschluss-Sätze werden nicht mehr an Seed-Rezepte angehängt.
 - Die Rezeptseite pflegt Rezeptzulassung und Gewichtung je Mahlzeitentyp, bietet eine Rezeptsuche über Zutaten und Zubereitungstexte und zeigt Rezeptdetails mit Umschaltung zwischen Zubereitung und Zutaten.
+- Rezepte können in der Rezeptübersicht und in der aktuellen Plansicht als Favoriten markiert werden; die Rezeptseite bietet dafür einen eigenen Favoriten-Reiter mit eingeklappten Rezeptkarten und vollständigen Details beim Öffnen.
 - Mittagessen und Abendessen sind standardmäßig gegenseitig zulässig; Frühstück und Snack bleiben standardmäßig getrennt.
 - Die Einkaufsliste wird aus einem frei gewählten Datumsbereich erzeugt und berücksichtigt aktive Mahlzeiten mit Einkaufslisten-Flag.
 - Die Historie zeigt geplante Tage und kann Quellzeiträume in neue Zielzeiträume kopieren.

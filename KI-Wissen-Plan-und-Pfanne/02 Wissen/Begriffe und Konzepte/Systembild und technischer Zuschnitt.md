@@ -1,7 +1,7 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-26
+letzte_aktualisierung: 2026-04-30
 quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../README.md
@@ -75,13 +75,14 @@ tags:
 
 ## Persistenzbild
 - `src/lib/local-db.ts` verwaltet die lokale App-Datenbank `gf-wochenplan-offline`.
-- Die Datenbank wurde für das Tageskonzept auf Version `3` angehoben.
+- Die Datenbank steht aktuell auf Version `4`; Version `3` war die Umstellung auf das Tageskonzept, Version `4` ergänzt Rezept-Favoriten.
 - Beim Upgrade von älteren lokalen Testständen werden die alten Wochenplan-Stores verworfen; es gibt bewusst keine Migration alter Testdaten.
 - Aktuelle Stores:
-  `snapshots`, `meta`, `settings`, `recipes`, `mealTypes`, `recipeDefaultMealTypeAssignments`, `userRecipeMealTypePreferences`, `plannedDays` und `plannedMeals`.
+  `snapshots`, `meta`, `settings`, `recipes`, `mealTypes`, `recipeDefaultMealTypeAssignments`, `userRecipeMealTypePreferences`, `userRecipeFavorites`, `plannedDays` und `plannedMeals`.
 - `plannedDays.date` ist eindeutig; pro Datum gibt es maximal einen Tagesplan.
 - `plannedMeals` speichert pro Slot Rezept, Mahlzeitentyp, Personenzahl, Aktivstatus, Einkaufslisten-Flag und Sortierung.
 - App-Standardzuordnungen für Rezepte und nutzerseitige Rezeptpräferenzen sind getrennt, damit neue Seed-Daten Nutzeranpassungen nicht überschreiben.
+- Rezept-Favoriten liegen getrennt im Store `userRecipeFavorites`, damit Markierungen nicht an Seed-Rezept-Updates gekoppelt sind.
 - `src/lib/db.ts` und `src/lib/store.ts` liegen noch als frühere serverseitige Zwischenstufe im Repository, sind aber nicht Teil des primären PWA-Laufzeitpfads.
 
 ## Fachlicher Laufzeitfluss

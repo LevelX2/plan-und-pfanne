@@ -1,9 +1,10 @@
 ---
 typ: konzept
 status: aktiv
-letzte_aktualisierung: 2026-04-26
+letzte_aktualisierung: 2026-04-30
 quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
+  - ../../../01 Rohquellen/2026-04-30 Rezeptgenaue Zubereitungen mit Mengen.md
   - ../../../src/lib/planner.ts
   - ../../../src/lib/local-store.ts
   - ../../../src/lib/types.ts
@@ -12,10 +13,11 @@ quellen:
   - ../../../src/app/kochen/page.tsx
   - ../../../src/app/einkaufsliste/shopping-list-client.tsx
   - ../../../src/app/rezepte/recipes-client.tsx
+  - ../../../src/app/home-client.tsx
   - ../../../src/lib/data/demo-recipes.ts
   - ../../../src/lib/data/imported-recipes.ts
   - ../../../src/lib/data/additional-recipes.ts
-  - ../../../src/lib/data/detailed-instructions.ts
+  - ../../../src/lib/recipe-instructions.ts
 tags:
   - fachlogik
   - rezepte
@@ -60,7 +62,8 @@ Jede geplante Mahlzeit trägt:
   - 23 Snacks
 - Standard-Snacks enthalten jetzt unter anderem Proteinshakes und glutenfreie Proteinriegel-Varianten mit 30 %, 40 %, 50 % und 60 % Eiweißanteil.
 - Glutenfreiheit ist im Seed-Bestand durchgängig gesetzt.
-- Die Zubereitungsschritte werden beim Seed-Export zentral um Vorbereitung, genauere Arbeitshinweise und Abschluss-Hinweise ergänzt, sodass Kochansicht und Rezeptdetails ausführlichere Schritte anzeigen.
+- Die Zubereitungsschritte werden nicht mehr pauschal um allgemeine Vorbereitung- oder Abschluss-Hinweise ergänzt.
+- Rezeptdetails und Kochansicht rendern gerichtsspezifische Zubereitungsschritte mit Zutatenmengen; in der Kochansicht orientieren sich diese Mengen an der temporär eingestellten Personenzahl.
 
 ## Rezeptzulassung und Gewichtung
 - Die App verwendet nicht automatisch alle Rezepte für jeden Mahlzeitentyp.
@@ -79,6 +82,10 @@ Jede geplante Mahlzeit trägt:
 - Suchtreffer werden in den Mahlzeitentyp-Gruppen direkt sichtbar gemacht.
 - Rezeptdetails sind sowohl aus der Planungszulassungs-Liste als auch aus der Rezeptbibliothek erreichbar.
 - Die Rezeptdetails können zwischen `Zubereitung` und `Zutaten` wechseln; `Zubereitung` ist die Standardansicht beim Öffnen.
+- Rezepte können als Favoriten markiert werden.
+- Favoriten lassen sich sowohl aus der Rezeptübersicht als auch aus der aktuellen generierten Plansicht setzen oder entfernen.
+- Die Rezeptseite enthält einen eigenen Reiter `Favoriten`, der nur markierte Favoriten-Rezepte zeigt.
+- Favoriten-Rezepte sind dort zunächst eingeklappt; beim Öffnen werden vollständige Rezeptdetails mit Zutaten und Zubereitung sichtbar.
 
 ## Planungslogik
 - Der Nutzer wählt beim Generieren Startdatum, Enddatum und Standard-Personenzahl.
@@ -113,6 +120,7 @@ Deaktivierte Mahlzeiten:
 - Die Kochansicht ist auf den konkreten geplanten Slot bezogen.
 - Angezeigt werden Rezeptname, geplanter Tag, Mahlzeitentyp, geplante Personenzahl, skalierte Zutaten und Zubereitungsschritte.
 - Die Personenzahl ist in der Kochansicht temporär änderbar.
+- Zubereitungsschritte werden dabei mit zur Personenzahl passenden Zutatenmengen gerendert.
 - Temporäre Änderungen in der Kochansicht schreiben nicht zurück in Planung, Tagesmakros oder Einkaufsliste.
 
 ## Einkaufslogik
