@@ -113,22 +113,22 @@ Eine ausdrückliche Zustimmung vor der Änderung ist nur dann wichtig, wenn:
 - `KI-Wissen-Plan-und-Pfanne/03 Betrieb/Log.md` bleibt chronologisch und append-only und beantwortet primär, was wann passiert ist.
 - Wenn sich Statusseite und Log inhaltlich überschneiden, ist die Statusseite zu verdichten statt das Log auszudünnen.
 
-## Finito-Sequenz
+## Abschlusskommandos
 
-Wenn der Nutzer `Finito` oder `Ende` schreibt, führt der Agent die Abschlusssequenz für den aktuellen Thread aus.
+Wenn der Nutzer `Finito`, `Ende`, `Finale` oder `Endfinale` schreibt, gelten grundsätzlich die globalen Abschlusskommandos aus dem Skill `abschlusskommandos`.
 
-Dabei gilt:
+Das persönliche Haupt-Vault `mein-wissen` wird auf den Systemen des Nutzers vorausgesetzt. Wenn der Skill lokal nicht installiert ist, soll `mein-wissen` über `MEIN_WISSEN_PATH` oder typische OneDrive-Pfade gesucht und der Skill aus `07 Codex/skills/abschlusskommandos/` installiert werden. Private absolute Pfade gehören nicht in diese commitbare Datei.
 
-1. Der Agent teilt die Änderungen in sinnvolle Commit-Blöcke auf. Nicht direkt zusammenhängende Änderungen sollen in getrennten Commits mit jeweils eigener passender Commit-Message landen.
-2. Der Agent committet alle Teile, zu denen keine offenen Fragen mehr bestehen und die fachlich wie technisch konsistent abgeschlossen sind.
-3. Nötige Anpassungen am KI-Wissen werden nach den sonstigen Wissensregeln nachgezogen, dokumentiert und ebenfalls committed.
-4. Verbleibende offene Fragen, Konflikte oder bewusste Entscheidungsbedarfe werden danach kompakt benannt.
+Wenn diese globale Auflösung nicht verfügbar ist, gilt als lokaler Minimalkontrakt:
 
-Zusätzlich gilt:
+- `Finito` oder `Ende`: lokaler Abschluss ohne automatischen Merge und ohne automatischen Push; offene Änderungen und untracked Dateien prüfen, abgeschlossene Änderungen in sinnvolle Commit-Blöcke aufteilen, committen und offene Punkte kompakt benennen.
+- `Finale`: zuerst denselben lokalen Abschluss wie bei `Finito` durchführen; wenn nichts Relevantes offen ist, nach Projektregel nach `main` oder `master` integrieren und bei eindeutigem Remote/GitHub-Modell pushen oder einen Pull Request erstellen.
+- `Endfinale`: zuerst erweiterten Verify-Lauf ausführen; nur bei Erfolg `Finale` ausführen; danach Wissenspflege-, Status- und Restpunkteprüfung nachziehen.
 
-- Teile, die noch von offenen Fragen abhängen, sollen nicht vorschnell committed werden.
-- Uncommittete Änderungen, die erkennbar nicht zu diesem Thread gehören, sind kein automatischer Blocker und können am Ende kurz als Hinweis genannt werden.
-- Gemachte Commits sollen im Abschluss jeweils in einer eigenen Zeile mit ihrer Commit-Message genannt werden, damit sie schnell erkennbar sind.
-- Push, Pull Request und GitHub-Actions-Prüfung erfolgen nur, wenn ein passender Remote existiert oder der Nutzer das ausdrücklich verlangt.
-- In Projekten ohne Remote endet die Sequenz nach lokalen Commits und einer klaren Statusmeldung.
-- Wenn nach der Finito-Sequenz keine relevanten offenen Punkte mehr für diesen Thread übrig sind, gilt der Thread als abgeschlossen und archivierungsreif.
+Für dieses Projekt gilt ergänzend:
+
+- Vor Push-, Pull-Request-, GitHub-Actions- oder Deployment-Schritten immer prüfen, ob ein passender Remote existiert.
+- Wenn kein Remote existiert, entfallen GitHub-Schritte vollständig. Dann lokal committen und den lokalen Stand klar benennen.
+- Einen Remote nicht ungefragt einrichten.
+- Bei Abschluss ohne Remote die Commit-Messages und Commit-Hashes nennen und ausdrücklich sagen, dass nicht gepusht wurde.
+- Lokale offene Änderungen außerhalb dieses Threads sind kein automatischer Blocker, sollen aber im Abschluss sichtbar benannt werden.

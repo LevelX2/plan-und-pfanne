@@ -20,7 +20,7 @@ Dieser Workflow beschreibt, wie die Wissensbasis im Alltag genutzt und gepflegt 
 - Neue Quellen werden als Rohquellen aufgenommen oder referenziert und in bestehendes Wissen integriert.
 - Projektfragen werden zuerst gegen die Wissensbasis beantwortet.
 - Wiederverwendbare Ergebnisse aus Analysen, Entscheidungen oder Aufgaben fließen zurück in die Wissensbasis.
-- Zustandsübersichten und Chronik bleiben getrennt: `Aktueller Projektstatus` zeigt den verdichteten Ist-Zustand, das `Log` hält die zeitliche Abfolge fest.
+- Zustandsübersichten und Chronik bleiben getrennt: `Aktueller Projektstatus` zeigt den verdichteten Ist-Zustand, das `Log` hält relevante zeitliche Abfolgen, Entscheidungen, Verifikationen und Abschlussstände fest.
 
 ## Fall 1: Neue Quelle aufnehmen
 ### Typischer Auslöser
@@ -33,7 +33,7 @@ Dieser Workflow beschreibt, wie die Wissensbasis im Alltag genutzt und gepflegt 
 4. Bestehende Seiten aktualisieren oder neue Seiten anlegen.
 5. Verlinkungen und Quellenbasis ergänzen.
 6. Index aktualisieren, falls neue relevante Seiten entstanden sind.
-7. Eintrag im Log schreiben.
+7. Log nach Relevanzregel aktualisieren.
 
 ## Fall 2: Frage zum Projekt beantworten
 ### Typischer Auslöser
@@ -56,8 +56,8 @@ Dieser Workflow beschreibt, wie die Wissensbasis im Alltag genutzt und gepflegt 
 3. Die Einordnung im Chat kurz sichtbar machen, ohne bei klaren Fällen auf ausdrückliche Freigabe zu warten.
 4. Bei Statuswissen bewusst trennen:
    - `Aktueller Projektstatus` nur als verdichteten Snapshot aktualisieren.
-   - `Log` für zeitliche Abfolge, Verifikation und konkrete Änderungsschritte ergänzen.
-5. Index und Log nachziehen.
+   - `Log` nur für relevante zeitliche Abfolge, Entscheidungen, Verifikation, Risiken oder Abschlussstände ergänzen.
+5. Index nachziehen und Log nur bei relevanter Entwicklungsänderung, Entscheidung, Verifikation, Risiko oder Abschlussstand ergänzen.
 
 ## Fall 4: Wissensbasis health-checken
 ### Typischer Auslöser
@@ -69,19 +69,16 @@ Dieser Workflow beschreibt, wie die Wissensbasis im Alltag genutzt und gepflegt 
 3. Konkrete Korrekturhinweise in [[../../03 Betrieb/Qualitaetspruefung]] dokumentieren.
 4. Wenn sinnvoll, fehlende Verlinkungen oder kleinere Strukturkorrekturen direkt nachziehen.
 
-## Fall 5: Thread mit Finito abschließen
+## Fall 5: Thread mit Abschlusskommando abschließen
 ### Typischer Auslöser
-- Du schreibst sinngemäß: `Finito` oder `Ende`.
+- Du schreibst sinngemäß: `Finito`, `Ende`, `Finale` oder `Endfinale`.
 
 ### Ablauf
-1. Prüfen, ob für den aktuellen Thread noch fachliche, technische oder organisatorische Punkte offen sind.
-2. Teile mit offenen Fragen oder bewussten Entscheidungsbedarfen klar benennen und noch nicht vorschnell committen.
-3. Alle konsistent abgeschlossenen Änderungen in sinnvolle Commit-Blöcke aufteilen.
-4. Nötige Wissenspflege nach den normalen Regeln nachziehen und als Teil des Abschlussstands mit berücksichtigen.
-5. Alle abgeschlossenen Teile mit jeweils passender Commit-Message committen.
-6. Die gemachten Commits im Abschluss jeweils in einer eigenen Zeile nennen.
-7. Verbleibende offene Fragen, Konflikte oder nicht zu diesem Thread gehörende uncommittete Änderungen kompakt einordnen.
-8. Wenn keine relevanten offenen Punkte für diesen Thread übrig bleiben, den Thread als abgeschlossen und archivierungsreif behandeln.
+1. Die globale Detailsequenz liegt im Haupt-Vault-Skill `abschlusskommandos`.
+2. Projektlokal bleiben die Wissenspflege, Remote-Prüfung und die klare Statusmeldung nach lokalen Commits relevant.
+3. `Finito` und `Ende` schließen lokal ohne Merge und Push ab.
+4. `Finale` integriert nur nach sauberem lokalem Abschluss und eindeutigem Projekt-/Remote-Modell.
+5. `Endfinale` verlangt vor der Integration einen erweiterten Verify-Lauf und danach eine Status- und Restpunkteprüfung.
 
 ## Empfohlene Kurzbefehle für den Alltag
 - `Nimm diese Quelle in die Projekt-Wissensbasis auf.`
@@ -89,6 +86,8 @@ Dieser Workflow beschreibt, wie die Wissensbasis im Alltag genutzt und gepflegt 
 - `Führe dieses Ergebnis als Projektwissen in die Wissensbasis zurück.`
 - `Mach einen Lint-Check für die Wissensbasis.`
 - `Finito`
+- `Finale`
+- `Endfinale`
 - `Ende`
 
 ## Verwandte Seiten
