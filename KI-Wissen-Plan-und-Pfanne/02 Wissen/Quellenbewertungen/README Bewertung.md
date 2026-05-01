@@ -2,7 +2,7 @@
 
 ## Aktuell bewertete Quellen
 - `README.md`: gut für Betriebs- und Startinformationen, eingeschränkt für Detailstand einzelner Features
-- `KODEX_STAND.md`: gut für Zielbild und Zwischenstand, mit möglichem Aktualitätsrisiko
+- `Vorhandene Workspaces.md`: gut für lokale Workspace-Orientierung, Zielbild und Zwischenstand, mit möglichem Aktualitätsrisiko
 - `package.json`: hoch verlässlich für Stack und Skripte
 - direkt gelesene Code-Dateien: hoch verlässlich für den konkret verifizierten Ausschnitt
 - `data/planner.sqlite`: hoch verlässlich für den aktuell persistierten lokalen Datenstand

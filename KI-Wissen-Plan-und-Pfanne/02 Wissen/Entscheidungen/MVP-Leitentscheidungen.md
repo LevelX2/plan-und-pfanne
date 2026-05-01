@@ -6,7 +6,7 @@ quellen:
   - ../../../01 Rohquellen/repo-root/2026-04-22 Repository-Startquellen.md
   - ../../../01 Rohquellen/2026-04-23 Benutzerkonzept und nutzerscharfer Zugriff.md
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
-  - ../../../KODEX_STAND.md
+  - ../00 Uebersichten/Vorhandene Workspaces.md
   - ../Begriffe und Konzepte/Benutzerkonzept und Verifikation.md
 tags:
   - entscheidungen

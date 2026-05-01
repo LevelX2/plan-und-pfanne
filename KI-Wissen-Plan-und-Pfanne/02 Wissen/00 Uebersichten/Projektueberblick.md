@@ -5,7 +5,7 @@ letzte_aktualisierung: 2026-04-24
 quellen:
   - ../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../README.md
-  - ../../../KODEX_STAND.md
+  - Vorhandene Workspaces.md
 tags:
   - projektueberblick
   - mvp

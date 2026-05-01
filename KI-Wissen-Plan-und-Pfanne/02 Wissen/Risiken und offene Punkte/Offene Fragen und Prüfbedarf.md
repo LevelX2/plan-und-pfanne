@@ -4,7 +4,7 @@ status: aktiv
 letzte_aktualisierung: 2026-04-26
 quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
-  - ../../../KODEX_STAND.md
+  - ../00 Uebersichten/Vorhandene Workspaces.md
   - ../../../README.md
   - ../../../src/lib/local-db.ts
   - ../../../src/lib/local-store.ts

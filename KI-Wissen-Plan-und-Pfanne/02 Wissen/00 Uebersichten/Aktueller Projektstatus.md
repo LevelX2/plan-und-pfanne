@@ -6,7 +6,7 @@ quellen:
   - ../../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../01 Rohquellen/2026-04-30 Rezeptgenaue Zubereitungen mit Mengen.md
   - ../../../README.md
-  - ../../../KODEX_STAND.md
+  - Vorhandene Workspaces.md
   - ../../../src/app/home-client.tsx
   - ../../../src/app/planen/page.tsx
   - ../../../src/app/tage/page.tsx

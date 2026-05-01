@@ -3,6 +3,7 @@
 ## Einstieg
 - [[Projektueberblick]]: Zielbild, Nutzerfokus und grobe Richtung der glutenfreien Tagesplanungs-App.
 - [[Aktueller Projektstatus]]: momentaner Stand von Repository, Wissensbasis und Umsetzung.
+- [[Vorhandene Workspaces]]: aktive und frühere lokale Workspace-Pfade sowie technische Orientierung zum aktuellen Repository.
 - [[Quellenlage und Aktualitaet]]: Einordnung, welche Quellen bereits vorliegen und welche noch fehlen.
 - [[../Prozesse/Arbeitsworkflow Wissenspflege und Projektanfragen]]: alltäglicher Workflow für Quellenaufnahme, wiki-first Antworten und Rückführung von Erkenntnissen.
 

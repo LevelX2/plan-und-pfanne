@@ -6,7 +6,7 @@ quellen:
   - ../../01 Rohquellen/repo-root/2026-04-22 Repository-Iststand-Analyse.md
   - ../../01 Rohquellen/2026-04-24 Umstellung auf Tageskonzept.md
   - ../../../README.md
-  - ../../../KODEX_STAND.md
+  - Vorhandene Workspaces.md
   - ../../../package.json
   - ../../../next.config.ts
   - ../../../src/lib/local-db.ts
@@ -21,7 +21,7 @@ tags:
 
 ## Bereits ausgewertete Kernquellen
 - `README.md`
-- `KODEX_STAND.md`
+- `Vorhandene Workspaces.md`
 - `package.json`
 - `AGENTS.md`
 - `next.config.ts`
@@ -34,7 +34,7 @@ tags:
 
 ## Aussagekraft der aktuellen Quellenlage
 - Direkt gelesene Code-Dateien sind für den verifizierten Funktionsstand die stärkste Quelle.
-- `README.md` und `KODEX_STAND.md` sind auf das Tageskonzept, die lokale PWA-Ausrichtung und den GitHub-Pages-Pfad nachgezogen.
+- `README.md` und `Vorhandene Workspaces.md` sind auf das Tageskonzept, die lokale PWA-Ausrichtung und den GitHub-Pages-Pfad nachgezogen.
 - `package.json` ist belastbar für Stack, Versionen und Skripte.
 - `next.config.ts`, `.github/workflows/deploy-pages.yml`, Manifest und Service Worker belegen den statischen Exportpfad mit konfigurierbarem `basePath`.
 - `src/lib/local-db.ts` und `src/lib/local-store.ts` sind die maßgeblichen Quellen für den aktuellen IndexedDB- und Tagesplanungsstand.

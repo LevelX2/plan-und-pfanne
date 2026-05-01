@@ -1,8 +1,35 @@
-# KODEX-Stand
+---
+typ: uebersicht
+status: aktiv
+letzte_aktualisierung: 2026-05-01
+quellen:
+  - ../../../README.md
+  - ../../../package.json
+  - ../../../next.config.ts
+  - ../../03 Betrieb/Log.md
+tags:
+  - workspace
+  - repository
+  - lokaler-betrieb
+---
 
-## Projekt
+# Vorhandene Workspaces
 
-- Projektordner: `C:\Users\Lui\OneDrive\Projekte\plan-und-pfanne`
+## Aktiver lokaler Workspace
+
+- Aktiver Projektordner: `C:\Projekte\plan-und-pfanne`
+- Git-Repository: `plan-und-pfanne`
+- Hauptbranch: `main`
+- Remote: `https://github.com/LevelX2/plan-und-pfanne.git`
+
+## Frühere lokale Workspace-Pfade
+
+- `C:\Users\Lui\OneDrive\Projekte\plan-und-pfanne` war der aktive Workspace vor dem Umzug nach `C:\Projekte\plan-und-pfanne`.
+- Historische Logeinträge behalten diesen Pfad, wenn sie damalige Zustände dokumentieren.
+- `C:\Users\Lui\OneDrive\Projekte\gluten freie Rezepte` wurde früher als möglicher OneDrive-Reparse-Restzustand dokumentiert und nicht automatisch gelöscht.
+
+## Projektstand im aktiven Workspace
+
 - Ziel: glutenfreie Tagesplan-App mit Rezepten, Kochansicht und Einkaufsliste
 - Produktmodus aktuell: lokale PWA ohne Login
 - Datenstrategie aktuell: eingebauter glutenfreier Start-Rezeptbestand plus IndexedDB auf dem Gerät

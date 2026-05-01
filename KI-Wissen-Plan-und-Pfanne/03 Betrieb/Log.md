@@ -1,5 +1,16 @@
 # Log
 
+## [2026-05-01] migration | Workspace-Umzug nach C:\Projekte durchgeführt
+- Der Arbeitsbranch `codex/abschlusskommandos-skill` wurde per Fast-Forward nach `main` integriert.
+- Die bisherige Root-Datei `KODEX_STAND.md` wurde als Wissensseite `KI-Wissen-Plan-und-Pfanne/02 Wissen/00 Uebersichten/Vorhandene Workspaces.md` eingeordnet, weil sie keine temporäre Übergabenotiz mehr ist, sondern dauerhafte Orientierung zu vorhandenen Workspace-Pfaden und Repository-Stand gibt.
+- Der aktive lokale Zielpfad für den Workspace ist `C:\Projekte\plan-und-pfanne`.
+- Historische Logeinträge mit früheren OneDrive-Pfaden bleiben unverändert, weil sie den damaligen Zustand dokumentieren.
+- Der Git-Worktree zeigt nach dem Umzug auf `C:/Projekte/plan-und-pfanne`; der alte Ordner `C:\Users\Lui\OneDrive\Projekte\plan-und-pfanne` wurde nach Prüfung auf verbleibende Dateien als leerer Restbaum entfernt.
+- Verifikation nach dem Umzug:
+  `npm test` erfolgreich,
+  `npm run lint` erfolgreich,
+  `npm run build` erfolgreich.
+
 ## [2026-04-22] wissensbasis | Grundstruktur für Projekt angelegt
 - `AGENTS.md` auf projektbezogene Wissensbasis und wiki-first Arbeitsweise umgestellt.
 - Regel zur Freigabe vor Wissenspflege bewusst entschärft:
